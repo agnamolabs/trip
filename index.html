@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#faf7f0">
+<title>agnamo · trip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#faf7f0;--surface:#fff;--surface-2:#f5f0e6;--ink:#1c1c1e;--ink-2:#3a3a3c;--muted:#9999a0;--line:#e8e2d5;--line-soft:#f0ebe0;--orange:#ff4d00;--orange-hi:#ff6b2c;--pink:#ff3d7f;--teal:#0d9488;--teal-soft:#ccfbf1;--red:#ef4444;--green:#22c55e;--grad:linear-gradient(135deg,#ff3d7f,#ff4d00);--grad-teal:linear-gradient(135deg,#0d9488,#0891b2);--r:16px;--r-sm:10px;--r-xs:6px;--shadow-sm:0 1px 3px rgba(28,28,30,.06);--shadow:0 2px 12px rgba(28,28,30,.06);--shadow-lg:0 8px 30px rgba(28,28,30,.12);--safe:env(safe-area-inset-bottom,0px);--tab-h:56px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+body{font-family:'Space Grotesk',-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none;padding-bottom:calc(var(--tab-h) + var(--safe) + 8px)}
+h1,h2,h3,h4{font-family:'Unbounded',sans-serif;letter-spacing:-.02em;line-height:1.15}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+input,textarea{-webkit-appearance:none;appearance:none}
+:root{color-scheme:light}
+.tabbar{position:fixed;bottom:0;left:0;right:0;height:calc(var(--tab-h) + var(--safe));background:rgba(255,255,255,.85);backdrop-filter:blur(20px) saturate(1.8);-webkit-backdrop-filter:blur(20px) saturate(1.8);border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:flex-start;padding-top:8px;padding-bottom:var(--safe);z-index:100}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.62rem;font-weight:600;color:var(--muted);letter-spacing:.02em;flex:1;padding:4px 0;transition:color .15s;-webkit-user-select:none;user-select:none}
+.tab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tab.active{color:var(--orange)}
+.screen{display:none;max-width:520px;margin:0 auto;padding:20px 18px 40px}
+.screen.active{display:block;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.brand-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.brand{font-family:'Unbounded';font-weight:800;font-size:1.1rem;display:flex;align-items:baseline;gap:1px}
+.brand .a{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.brand .dot{color:var(--teal)}
+.section-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0}
+.trip-hero{background:var(--surface);border-radius:var(--r);padding:28px 24px;box-shadow:var(--shadow);border:1px solid var(--line);margin-bottom:20px;position:relative;overflow:hidden}
+.trip-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:var(--grad);opacity:.06;border-radius:50%;filter:blur(30px)}
+.trip-hero .eyebrow{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);margin-bottom:10px;position:relative}
+.trip-hero h1{font-size:clamp(1.5rem,7vw,2.1rem);font-weight:800;margin-bottom:6px;position:relative}
+.trip-hero .city{font-size:.95rem;color:var(--muted);font-weight:500;position:relative}
+.field-group{display:flex;flex-direction:column;gap:14px;margin-top:24px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lbl{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px;display:block}
+.inp{width:100%;padding:13px 14px;font-size:.92rem;font-weight:500;border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2);outline:none;transition:border-color .15s,background .15s}
+.inp:focus{border-color:var(--orange);background:var(--surface)}
+.inp::placeholder{color:var(--muted);font-weight:400}
+.dest-results{margin-top:8px}
+.dest-result{padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:6px;font-size:.88rem;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .12s}
+.dest-result:active{border-color:var(--orange);background:var(--surface-2)}
+.dest-result .flag{font-size:1.2rem}
+.dest-result .info{flex:1;min-width:0}
+.dest-result .name{font-weight:600}
+.dest-result .region{font-size:.76rem;color:var(--muted)}
+.btn{font-weight:700;font-size:.86rem;padding:14px 24px;border-radius:100px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;-webkit-user-select:none;user-select:none;text-align:center}
+.btn-fill{background:var(--grad);color:#fff}.btn-fill:active{transform:scale(.97)}
+.btn-dark{background:var(--ink);color:#fff}.btn-dark:active{transform:scale(.97)}
+.btn-ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink-2)}.btn-ghost:active{background:var(--surface-2)}
+.btn-block{display:flex;width:100%}
+.btn-row{display:flex;gap:10px;margin-top:20px}
+.scan-btn{display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--surface);border:1.5px dashed var(--orange);border-radius:var(--r-sm);cursor:pointer;transition:all .15s;width:100%;margin-top:16px}
+.scan-btn:active{background:rgba(255,77,0,.05)}
+.scan-btn .scan-text{font-size:.88rem;font-weight:600;color:var(--orange)}
+.scan-btn .scan-sub{font-size:.72rem;color:var(--muted);margin-top:2px}
+.trip-info{background:var(--ink);border-radius:var(--r);padding:20px 22px;margin-bottom:20px;display:flex;flex-direction:column;gap:16px}
+.trip-info .row{display:flex;justify-content:space-between;align-items:center}
+.trip-info .dest-name{font-family:'Unbounded';font-weight:700;font-size:1.15rem;color:#fff}
+.trip-info .dates{font-size:.82rem;color:rgba(255,255,255,.6);margin-top:4px}
+.trip-info .flight{display:flex;gap:16px;flex-wrap:wrap;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)}
+.trip-info .flight .item{font-size:.72rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.04em}
+.trip-info .flight .item strong{color:var(--orange-hi);font-weight:600;font-size:.85rem;display:block;margin-top:2px;text-transform:none;letter-spacing:0}
+.trip-info .edit-link{font-size:.76rem;color:rgba(255,255,255,.4);text-decoration:none}
+.trip-info .source-badge{font-size:.6rem;font-weight:700;padding:3px 8px;border-radius:100px;background:var(--teal);color:#fff;text-transform:uppercase;letter-spacing:.04em;align-self:flex-start}
+.trips-list{margin-top:24px}
+.trips-list .list-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px}
+.trip-card{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:16px;margin-bottom:10px;cursor:pointer;transition:all .12s;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.trip-card:active{border-color:var(--orange)}
+.trip-card.active{border-color:var(--orange);background:rgba(255,77,0,.02)}
+.trip-card .tc-main{flex:1;min-width:0}
+.trip-card .tc-city{font-family:'Unbounded';font-weight:700;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trip-card .tc-dates{font-size:.76rem;color:var(--muted);margin-top:3px}
+.trip-card .tc-source{font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:100px;background:var(--teal-soft);color:var(--teal);text-transform:uppercase;margin-top:4px;display:inline-block}
+.trip-card .tc-del{width:28px;height:28px;border-radius:50%;color:var(--muted);font-size:.8rem;flex-shrink:0;display:grid;place-items:center;transition:all .12s}
+.trip-card .tc-del:active{color:var(--red);background:rgba(239,68,68,.08)}
+.weather-current{background:var(--grad);border-radius:var(--r);padding:24px;margin-bottom:14px;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden}
+.weather-current::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.1)}
+.weather-current .w-icon{font-size:2.6rem;line-height:1;z-index:1}
+.weather-current .w-info{flex:1;z-index:1}
+.weather-current .w-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.7);font-weight:600}
+.weather-current .w-cond{font-size:1.05rem;font-weight:600;color:#fff;margin-top:2px}
+.weather-current .w-extra{font-size:.76rem;color:rgba(255,255,255,.6);margin-top:4px}
+.weather-current .w-temp{font-family:'Unbounded';font-weight:800;font-size:2.2rem;color:#fff;z-index:1}
+.weather-scroll{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.weather-scroll::-webkit-scrollbar{display:none}
+.w-day{flex:0 0 78px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px 10px;text-align:center;scroll-snap-align:start}
+.w-day .d-label{font-size:.62rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.w-day .d-icon{font-size:1.5rem;margin:6px 0;line-height:1}
+.w-day .d-hi{font-family:'Unbounded';font-weight:700;font-size:.95rem}
+.w-day .d-lo{font-size:.75rem;color:var(--muted);font-weight:600}
+.w-day .d-precip{font-size:.6rem;color:var(--teal);font-weight:600;margin-top:4px}
+.cat-section{margin-bottom:16px}
+.cat-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);cursor:pointer;transition:all .12s;-webkit-user-select:none;user-select:none}
+.cat-head:active{background:var(--surface-2)}
+.cat-head .left{display:flex;align-items:center;gap:10px}
+.cat-head .cat-name{font-size:.9rem;font-weight:700}
+.cat-head .chevron{width:18px;height:18px;transition:transform .2s;color:var(--muted)}
+.cat-section.open .cat-head .chevron{transform:rotate(180deg)}
+.cat-head .right{display:flex;align-items:center;gap:8px}
+.cat-head .pill{font-size:.66rem;font-weight:700;padding:3px 9px;border-radius:100px;background:var(--line-soft);color:var(--ink-2)}
+.cat-head .pill.done{background:var(--teal);color:#fff}
+.cat-body{max-height:0;overflow:hidden;transition:max-height .25s ease}
+.cat-section.open .cat-body{max-height:2000px}
+.pack-list{padding:6px 0 0}
+.pack-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line-soft);transition:opacity .15s}
+.pack-row:last-child{border-bottom:none}
+.pack-row.checked{opacity:.45}
+.pack-row .check{width:24px;height:24px;border:2px solid var(--line);border-radius:7px;flex-shrink:0;display:grid;place-items:center;transition:all .15s}
+.pack-row .check:active{transform:scale(.9)}
+.pack-row .check svg{width:13px;height:13px;opacity:0;transition:opacity .12s}
+.pack-row.checked .check{background:var(--orange);border-color:var(--orange)}
+.pack-row.checked .check svg{opacity:1}
+.pack-row .p-label{flex:1;font-size:.88rem;font-weight:500;min-width:0}
+.pack-row.checked .p-label{text-decoration:line-through}
+.pack-row .auto-badge{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 6px;border-radius:100px;background:var(--teal-soft);color:var(--teal);white-space:nowrap}
+.pack-row .qty-control{display:flex;align-items:center;gap:6px}
+.pack-row .qty-btn{width:26px;height:26px;border:1px solid var(--line);border-radius:7px;display:grid;place-items:center;font-size:.85rem;font-weight:700;color:var(--ink-2);transition:all .12s}
+.pack-row .qty-btn:active{border-color:var(--orange);color:var(--orange)}
+.pack-row .qty-val{font-size:.82rem;font-weight:700;min-width:18px;text-align:center}
+.pack-row .del-btn{width:24px;height:24px;color:var(--muted);font-size:.8rem;opacity:0;transition:opacity .12s}
+.pack-row:active .del-btn{opacity:.6}
+.pack-row .del-btn:active{opacity:1;color:var(--red)}
+.add-item{display:flex;gap:8px;padding:12px 16px 16px}
+.add-item .ai-inp{flex:1;padding:9px 12px;font-size:.82rem;border:1px solid var(--line);border-radius:var(--r-xs);background:var(--surface-2);outline:none}
+.add-item .ai-inp:focus{border-color:var(--orange)}
+.add-item .ai-btn{padding:9px 16px;font-size:.78rem;font-weight:700;background:var(--ink);color:#fff;border-radius:var(--r-xs)}
+.progress-card{background:var(--surface);border-radius:var(--r);padding:18px 22px;box-shadow:var(--shadow);border:1px solid var(--line);margin-bottom:20px}
+.progress-card .p-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.progress-card .p-top .p-title{font-size:.82rem;font-weight:600;color:var(--ink-2)}
+.progress-card .p-top .p-pct{font-family:'Unbounded';font-weight:800;font-size:1.3rem;color:var(--orange)}
+.progress-card .p-track{height:7px;background:var(--line-soft);border-radius:100px;overflow:hidden}
+.progress-card .p-fill{height:100%;background:var(--grad);border-radius:100px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.progress-card .p-fill.done{background:var(--grad-teal)}
+.upload-zone{border:2px dashed var(--line);border-radius:var(--r);padding:36px 20px;text-align:center;margin-bottom:16px;transition:all .18s;cursor:pointer;background:var(--surface)}
+.upload-zone:active,.upload-zone.drag{border-color:var(--orange);background:rgba(255,77,0,.03)}
+.upload-zone .uz-icon{width:44px;height:44px;margin:0 auto 10px;border-radius:12px;background:var(--surface-2);display:grid;place-items:center}
+.upload-zone .uz-icon svg{width:22px;height:22px;stroke:var(--muted);fill:none;stroke-width:2}
+.upload-zone .uz-text{font-size:.88rem;font-weight:600;color:var(--ink-2)}
+.upload-zone .uz-sub{font-size:.75rem;color:var(--muted);margin-top:4px}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.photo-cell{position:relative;aspect-ratio:3/4;border-radius:var(--r-sm);overflow:hidden;border:3px solid transparent;transition:border-color .15s;cursor:pointer}
+.photo-cell:active{transform:scale(.96)}
+.photo-cell img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-cell.selected{border-color:var(--teal)}
+.photo-cell .pc-badge{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);display:grid;place-items:center;transition:all .15s}
+.photo-cell.selected .pc-badge{background:var(--teal)}
+.photo-cell .pc-badge svg{width:11px;height:11px;stroke:#fff;fill:none;stroke-width:3;opacity:0;transition:opacity .12s}
+.photo-cell.selected .pc-badge svg{opacity:1}
+.photo-cell .pc-del{position:absolute;top:5px;left:5px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);color:#fff;font-size:.65rem;display:grid;place-items:center;z-index:2}
+.style-tags{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px}
+.style-tags::-webkit-scrollbar{display:none}
+.stag{flex:0 0 auto;font-size:.72rem;font-weight:700;padding:7px 14px;border-radius:100px;border:1.5px solid var(--line);background:transparent;color:var(--ink-2);white-space:nowrap;transition:all .12s}
+.stag.active{background:var(--ink);border-color:var(--ink);color:#fff}
+.stag:active{transform:scale(.95)}
+.style-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.style-card{background:var(--surface);border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+.style-card img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+.style-card .sc-body{padding:10px 12px}
+.style-card .sc-tag{font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--orange)}
+.style-card .sc-inp{width:100%;margin-top:6px;padding:5px 0;font-size:.78rem;border:none;border-bottom:1px solid var(--line-soft);outline:none;background:transparent;color:var(--ink-2)}
+.style-card .sc-inp:focus{border-bottom-color:var(--orange)}
+.style-card .sc-foot{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-top:1px solid var(--line-soft)}
+.style-card .sc-del{font-size:.7rem;color:var(--muted)}
+.style-card .sc-del:active{color:var(--red)}
+.sync-card{background:var(--surface);border-radius:var(--r);padding:24px;box-shadow:var(--shadow);border:1px solid var(--line);margin-bottom:16px}
+.sync-status{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:var(--r-sm);margin-top:16px;font-size:.82rem;font-weight:600}
+.sync-status.connected{background:rgba(34,197,94,.08);color:var(--green)}
+.sync-status.disconnected{background:var(--surface-2);color:var(--muted)}
+.sync-status .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sync-status.connected .dot{background:var(--green)}
+.sync-status.disconnected .dot{background:var(--muted)}
+.sync-trips-count{font-size:.8rem;color:var(--muted);margin-top:12px}
+.empty-state{text-align:center;padding:32px 20px;color:var(--muted);font-size:.85rem;font-style:italic}
+.toast{position:fixed;bottom:calc(var(--tab-h) + var(--safe) + 20px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 24px;border-radius:100px;font-size:.82rem;font-weight:600;z-index:200;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;box-shadow:var(--shadow-lg)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.modal-bg{position:fixed;inset:0;background:rgba(28,28,30,.5);backdrop-filter:blur(8px);display:none;place-items:center;z-index:300;padding:24px}
+.modal-bg.show{display:grid}
+.modal{background:var(--surface);border-radius:var(--r);padding:36px 28px;text-align:center;max-width:340px;width:100%;box-shadow:var(--shadow-lg)}
+.modal .m-icon{font-size:2.5rem;margin-bottom:12px}
+.modal h2{font-size:1.6rem;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.modal p{font-size:.88rem;color:var(--muted);margin-bottom:24px}
+.loading-overlay{position:fixed;inset:0;background:rgba(28,28,30,.6);backdrop-filter:blur(8px);display:none;place-items:center;z-index:400;padding:24px}
+.loading-overlay.show{display:grid}
+.loading-overlay .lo-box{background:var(--surface);border-radius:var(--r);padding:36px 28px;text-align:center;max-width:300px;width:100%;box-shadow:var(--shadow-lg)}
+.loading-overlay .spinner{width:40px;height:40px;border:3px solid var(--line);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay .lo-text{font-size:.9rem;font-weight:600;color:var(--ink)}
+.loading-overlay .lo-sub{font-size:.76rem;color:var(--muted);margin-top:6px}
+.hidden{display:none!important}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<nav class="tabbar">
+  <button class="tab active" data-screen="trip"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3v-6h6v6h3a1 1 0 001-1V10"/></svg>Trip</button>
+  <button class="tab" data-screen="pack"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Pack</button>
+  <button class="tab" data-screen="closet"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 12h16M12 4v16"/></svg>Closet</button>
+  <button class="tab" data-screen="style"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>Style</button>
+  <button class="tab" data-screen="sync"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-3-6.7M21 4v5h-5"/></svg>Sync</button>
+</nav>
+
+<div class="screen active" id="screen-trip">
+  <div class="brand-row"><div class="brand"><span class="a">agnamo</span><span class="dot">.</span></div><span class="section-label" style="color:var(--orange)">trip</span></div>
+  <div id="tripSetup">
+    <div class="trip-hero"><div class="eyebrow">Where to?</div><h1>Plan the<br>pack, not<br>the trip.</h1><p class="city">Search a city or scan a flight screenshot.</p></div>
+    <div class="field-group">
+      <div><label class="lbl">Destination</label><input id="destInput" class="inp" type="text" placeholder="Search any city — Tokyo, Lisbon…" autocomplete="off" autocapitalize="words"><div id="destResults" class="dest-results"></div></div>
+      <div class="field-row"><div><label class="lbl">Departure</label><input id="departDate" class="inp" type="date"></div><div><label class="lbl">Return</label><input id="returnDate" class="inp" type="date"></div></div>
+      <div class="field-row"><div><label class="lbl">Airline</label><input id="airline" class="inp" type="text" placeholder="JAL, Delta…" autocapitalize="characters"></div><div><label class="lbl">Flight #</label><input id="flightNum" class="inp" type="text" placeholder="JL 005" autocapitalize="characters"></div></div>
+      <div class="field-row"><div><label class="lbl">Departure Time</label><input id="flightTime" class="inp" type="text" placeholder="14:30"></div><div><label class="lbl">Booking Ref</label><input id="bookingRef" class="inp" type="text" placeholder="ABC123" autocapitalize="characters"></div></div>
+    </div>
+    <button class="scan-btn" onclick="document.getElementById('scanFile').click()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2M7 9h10v6H7z"/></svg><div><div class="scan-text">Scan Flight Screenshot</div><div class="scan-sub">Upload a booking screenshot — we'll parse it</div></div></button>
+    <input id="scanFile" type="file" accept="image/*" style="display:none" onchange="handleScanScreenshot(event)">
+    <div class="btn-row"><button class="btn btn-fill btn-block" onclick="saveTrip()">Set Trip →</button></div>
+  </div>
+  <div id="tripSummary" class="hidden">
+    <div class="trip-info"><div class="row"><div><div class="dest-name" id="tsDest">—</div><div class="dates" id="tsDates"></div></div><a class="edit-link" onclick="editTrip()">Edit ↑</a></div><div class="flight" id="tsFlight"></div><div id="tsSource"></div></div>
+    <div class="section-label" style="margin-bottom:14px">Weather at destination</div>
+    <div id="weatherBlock"></div>
+    <div class="btn-row"><button class="btn btn-dark btn-block" onclick="goScreen('pack')">Start Packing →</button></div>
+  </div>
+  <div id="tripsList" class="trips-list hidden"><div class="list-label">My Trips</div><div id="tripsListContent"></div></div>
+</div>
+
+<div class="screen" id="screen-pack">
+  <div class="brand-row"><div class="brand"><span class="a">agnamo</span><span class="dot">.</span></div><span class="section-label" style="color:var(--orange)">pack list</span></div>
+  <div class="progress-card"><div class="p-top"><span class="p-title" id="pTitle">0 of 0 packed</span><span class="p-pct" id="pPct">0%</span></div><div class="p-track"><div class="p-fill" id="pFill" style="width:0%"></div></div></div>
+  <div id="packList"></div>
+</div>
+
+<div class="screen" id="screen-closet">
+  <div class="brand-row"><div class="brand"><span class="a">agnamo</span><span class="dot">.</span></div><span class="section-label" style="color:var(--teal)">closet</span></div>
+  <div class="upload-zone" id="closetUpload" onclick="document.getElementById('closetFile').click()"><div class="uz-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></div><div class="uz-text">Upload closet photos</div><div class="uz-sub">Tap or drop — stays on your device</div></div>
+  <input id="closetFile" type="file" accept="image/*" multiple style="display:none" onchange="handleClosetUpload(event)">
+  <div id="closetGrid" class="photo-grid"></div>
+</div>
+
+<div class="screen" id="screen-style">
+  <div class="brand-row"><div class="brand"><span class="a">agnamo</span><span class="dot">.</span></div><span class="section-label" style="color:var(--pink)">style</span></div>
+  <div class="upload-zone" id="styleUpload" onclick="document.getElementById('styleFile').click()"><div class="uz-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></div><div class="uz-text">Upload outfit inspiration</div><div class="uz-sub">Tag by vibe, add notes</div></div>
+  <input id="styleFile" type="file" accept="image/*" multiple style="display:none" onchange="handleStyleUpload(event)">
+  <div class="style-tags" id="styleTags"></div>
+  <div id="styleGrid" class="style-grid"></div>
+</div>
+
+<div class="screen" id="screen-sync">
+  <div class="brand-row"><div class="brand"><span class="a">agnamo</span><span class="dot">.</span></div><span class="section-label" style="color:var(--teal)">sync</span></div>
+  <div class="sync-card">
+    <div class="field-group" style="margin-top:0">
+      <div><label class="lbl">Supabase URL</label><input id="sbUrl" class="inp" type="text" placeholder="https://xxxxx.supabase.co" autocapitalize="none" spellcheck="false"></div>
+      <div><label class="lbl">Anon Key</label><input id="sbKey" class="inp" type="password" placeholder="eyJhbGci…" autocapitalize="none" spellcheck="false"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-fill btn-block" onclick="syncConnect()">Connect & Sync</button></div>
+    <div id="syncStatus" class="sync-status disconnected"><div class="dot"></div><span id="syncStatusText">Not connected</span></div>
+    <div class="sync-trips-count" id="syncTripsCount"></div>
+  </div>
+  <div style="font-size:.78rem;color:var(--muted);padding:0 4px;line-height:1.6">
+    <p style="margin-bottom:8px"><strong style="color:var(--ink-2)">Setup:</strong></p>
+    <ol style="padding-left:20px;margin-bottom:12px"><li>Run <code style="background:var(--surface-2);padding:2px 6px;border-radius:4px;font-size:.72rem">schema.sql</code> in Supabase SQL Editor</li><li>Paste your Project URL + anon key above</li><li>Tap Connect & Sync</li></ol>
+    <p>Trip details sync to Supabase. Photos stay on your device.</p>
+    <p style="margin-top:12px">Send a flight screenshot to the bot on Telegram and it'll create a trip here automatically.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="modal-bg" id="modalBg"><div class="modal"><div class="m-icon">✈️</div><h2>Packed.</h2><p>You're ready to move. Safe travels.</p><button class="btn btn-fill btn-block" onclick="document.getElementById('modalBg').classList.remove('show')">Done</button></div></div>
+<div class="loading-overlay" id="loadingOverlay"><div class="lo-box"><div class="spinner"></div><div class="lo-text" id="loText">Scanning…</div><div class="lo-sub" id="loSub">Reading flight details</div></div></div>
+
+<script>
+const STORE='agnamoTripPack_v3';
+let S=load();let currentDest=null,destResults=[],destTimer=null;
+const SB_URL='https://ioogwysicqqiknjzczhe.supabase.co';const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlvb2d3eXNpY3FxaWtuanpjemhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NjAwNzYsImV4cCI6MjEwNjMzNjA3Nn0.N9l4iZ6taUziO3ceyXE7WGva4zmwXXDCu2I1ea4WLOI';
+function load(){try{const s=JSON.parse(localStorage.getItem(STORE));if(s&&s.trips)return s}catch{}return{config:{url:SB_URL,key:SB_KEY},trips:[],activeId:null}}
+function save(){localStorage.setItem(STORE,JSON.stringify(S))}
+function activeTrip(){return S.trips.find(t=>t.id===S.activeId)||null}
+function uuid(){return crypto.randomUUID?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(36).slice(2)}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2400)}
+function showLoading(text,sub){const o=document.getElementById('loadingOverlay');document.getElementById('loText').textContent=text||'Loading…';document.getElementById('loSub').textContent=sub||'';o.classList.add('show')}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
+
+/* Supabase */
+function sbConfigured(){return S.config.url&&S.config.key}
+async function sbFetch(path,opts={}){
+  if(!sbConfigured())return null;
+  try{return await fetch(`${S.config.url}/rest/v1/${path}`,{...opts,headers:{'apikey':S.config.key,'Authorization':`Bearer ${S.config.key}`,'Content-Type':'application/json',...opts.headers}})}catch{return null}
+}
+function tripToRow(t){return{id:t.id,city:t.city,country:t.country,cc:t.cc,lat:t.lat,lon:t.lon,tz:t.tz,depart:t.depart,return_date:t.return,airline:t.airline,flight_num:t.flightNum,flight_time:t.flightTime,booking_ref:t.bookingRef,items:t.items,closet:t.closet,style:t.style,weather:t.weather,source:t.source,raw_ocr:t.rawOcr}}
+function rowToTrip(r){return{id:r.id,city:r.city,country:r.country,cc:r.cc,lat:r.lat,lon:r.lon,tz:r.tz,depart:r.depart,return:r.return_date,airline:r.airline,flightNum:r.flight_num,flightTime:r.flight_time,bookingRef:r.booking_ref,items:r.items||{},closet:r.closet||[],style:r.style||[],weather:r.weather,source:r.source,rawOcr:r.raw_ocr}}
+async function sbLoadTrips(){const r=await sbFetch('trips?order=created_at.desc');if(!r||!r.ok)return[];return(await r.json()).map(rowToTrip)}
+async function sbSaveTrip(t){if(!sbConfigured())return;await sbFetch('trips',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates'},body:JSON.stringify(tripToRow(t))})}
+async function sbDeleteTrip(id){if(!sbConfigured())return;await sbFetch(`trips?id=eq.${id}`,{method:'DELETE'})}
+
+/* Screen nav */
+function goScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`.tab[data-screen="${name}"]`).classList.add('active');
+  window.scrollTo(0,0);
+  if(name==='trip')renderTripsList();if(name==='pack')renderPack();if(name==='closet')renderCloset();if(name==='style')renderStyle();if(name==='sync')renderSync();
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>goScreen(t.dataset.screen)));
+
+/* Destination search */
+const destInput=document.getElementById('destInput'),destResultsEl=document.getElementById('destResults');
+destInput.addEventListener('input',()=>{clearTimeout(destTimer);const q=destInput.value.trim();if(q.length<2){destResultsEl.innerHTML='';destResults=[];return}destTimer=setTimeout(async()=>{try{const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=en&format=json`);const d=await r.json();destResults=d.results||[];destResultsEl.innerHTML=destResults.map((c,i)=>{const flag=c.country_code?String.fromCodePoint(...[...c.country_code.toUpperCase()].map(ch=>ch.charCodeAt(0)+0x1F1E5-65)):'📍';return `<div class="dest-result" onclick="pickDest(${i})"><span class="flag">${flag}</span><div class="info"><div class="name">${c.name}</div><div class="region">${c.admin1||''}${c.admin1?', ':''}${c.country}</div></div></div>`}).join('')}catch{}},350)});
+function pickDest(i){currentDest=destResults[i];destInput.value=`${currentDest.name}, ${currentDest.country}`;destResultsEl.innerHTML=''}
+
+/* Trip CRUD */
+function saveTrip(){
+  if(!currentDest){toast('Search and pick a destination');destInput.focus();return}
+  const data={id:activeTrip()?.id||uuid(),city:currentDest.name,country:currentDest.country,cc:currentDest.country_code,lat:currentDest.latitude,lon:currentDest.longitude,tz:currentDest.timezone,depart:document.getElementById('departDate').value||null,return:document.getElementById('returnDate').value||null,airline:document.getElementById('airline').value||'',flightNum:document.getElementById('flightNum').value||'',flightTime:document.getElementById('flightTime').value||'',bookingRef:document.getElementById('bookingRef').value||'',items:activeTrip()?.items||{},closet:activeTrip()?.closet||[],style:activeTrip()?.style||[],weather:activeTrip()?.weather||null,source:activeTrip()?.source||'manual',rawOcr:activeTrip()?.rawOcr||null};
+  if(!S.activeId||!activeTrip()){S.trips.push(data);S.activeId=data.id}else Object.assign(activeTrip(),data);
+  save();sbSaveTrip(data);renderTripSummary();renderTripsList();autoSuggest();toast('Trip saved');
+  if(!activeTrip().weather)fetchWeather();
+}
+function editTrip(){document.getElementById('tripSetup').classList.remove('hidden');document.getElementById('tripSummary').classList.add('hidden');const t=activeTrip();if(!t)return;currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};destInput.value=`${t.city}, ${t.country}`;document.getElementById('departDate').value=t.depart||'';document.getElementById('returnDate').value=t.return||'';document.getElementById('airline').value=t.airline||'';document.getElementById('flightNum').value=t.flightNum||'';document.getElementById('flightTime').value=t.flightTime||'';document.getElementById('bookingRef').value=t.bookingRef||''}
+function renderTripSummary(){const t=activeTrip();if(!t)return;document.getElementById('tripSetup').classList.add('hidden');document.getElementById('tripSummary').classList.remove('hidden');document.getElementById('tsDest').textContent=`${t.city}, ${t.country}`;const dates=[];if(t.depart)dates.push(fmtDate(t.depart));if(t.return)dates.push(fmtDate(t.return));document.getElementById('tsDates').textContent=dates.join(' — ');const flight=[];if(t.airline)flight.push(`<div class="item">Airline<strong>${t.airline}${t.flightNum?' '+t.flightNum:''}</strong></div>`);if(t.flightTime)flight.push(`<div class="item">Departure<strong>${t.flightTime}</strong></div>`);if(t.bookingRef)flight.push(`<div class="item">Booking Ref<strong>${t.bookingRef}</strong></div>`);document.getElementById('tsFlight').innerHTML=flight.join('')||'';document.getElementById('tsSource').innerHTML=t.source&&t.source!=='manual'?`<div class="source-badge">${t.source}</div>`:''}
+function renderTripsList(){const el=document.getElementById('tripsList');if(!S.trips.length){el.classList.add('hidden');return}el.classList.remove('hidden');document.getElementById('tripsListContent').innerHTML=S.trips.map(t=>{const dates=[];if(t.depart)dates.push(fmtDate(t.depart));if(t.return)dates.push(fmtDate(t.return));const src=t.source&&t.source!=='manual'?`<span class="tc-source">${t.source}</span>`:'';return `<div class="trip-card ${t.id===S.activeId?'active':''}" onclick="selectTrip('${t.id}')"><div class="tc-main"><div class="tc-city">${t.city}, ${t.country}</div><div class="tc-dates">${dates.join(' — ')||'No dates'}</div>${src}</div><button class="tc-del" onclick="event.stopPropagation();deleteTrip('${t.id}')">✕</button></div>`}).join('')}
+function selectTrip(id){S.activeId=id;save();const t=activeTrip();if(t){currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};destInput.value=`${t.city}, ${t.country}`;document.getElementById('departDate').value=t.depart||'';document.getElementById('returnDate').value=t.return||'';document.getElementById('airline').value=t.airline||'';document.getElementById('flightNum').value=t.flightNum||'';document.getElementById('flightTime').value=t.flightTime||'';document.getElementById('bookingRef').value=t.bookingRef||'';renderTripSummary();renderTripsList();renderPack()}}
+function deleteTrip(id){S.trips=S.trips.filter(t=>t.id!==id);if(S.activeId===id)S.activeId=S.trips[0]?.id||null;save();sbDeleteTrip(id);if(S.activeId)selectTrip(S.activeId);else{document.getElementById('tripSetup').classList.remove('hidden');document.getElementById('tripSummary').classList.add('hidden')}renderTripsList();renderPack();toast('Trip deleted')}
+function fmtDate(s){const d=new Date(s+'T00:00');return d.toLocaleDateString('en',{month:'short',day:'numeric'})}
+
+/* Weather */
+async function fetchWeather(){const t=activeTrip();if(!t)return;try{const lat=t.lat.toFixed(2),lon=t.lon.toFixed(2);const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max&timezone=${encodeURIComponent(t.tz||'auto')}&forecast_days=14`);t.weather=await r.json();save();sbSaveTrip(t);renderWeather();autoSuggest()}catch{toast('Weather fetch failed')}}
+const W_ICON={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',56:'🌧️',57:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',66:'🌨️',67:'🌨️',71:'❄️',73:'❄️',75:'❄️',77:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',85:'🌨️',86:'🌨️',95:'⛈️',96:'⛈️',99:'⛈️'};
+const W_LABEL={0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',56:'Freezing drizzle',57:'Heavy freezing drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',66:'Freezing rain',67:'Heavy freezing rain',71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow grains',80:'Light showers',81:'Showers',82:'Violent showers',85:'Snow showers',86:'Heavy snow showers',95:'Thunderstorm',96:'Thunderstorm + hail',99:'Severe thunderstorm'};
+function renderWeather(){const t=activeTrip();if(!t||!t.weather)return;const w=t.weather,cur=w.current,daily=w.daily;let days=daily.time,start=0,end=Math.min(7,days.length);if(t.depart){const di=days.indexOf(t.depart);if(di>=0){start=di;end=t.return?Math.min((days.indexOf(t.return)??di)+1,days.length):Math.min(di+7,days.length)}}let html=`<div class="weather-current"><div class="w-icon">${W_ICON[cur.weather_code]||'🌡️'}</div><div class="w-info"><div class="w-label">Current in ${t.city}</div><div class="w-cond">${W_LABEL[cur.weather_code]||'—'}</div><div class="w-extra">💧 ${cur.relative_humidity_2m}% · 💨 ${Math.round(cur.wind_speed_10m)} km/h</div></div><div class="w-temp">${Math.round(cur.temperature_2m)}°</div></div><div class="weather-scroll">`;for(let i=start;i<end;i++){const d=new Date(days[i]);const lbl=d.toLocaleDateString('en',{weekday:'short',day:'numeric'});const hi=Math.round(daily.temperature_2m_max[i]);const lo=Math.round(daily.temperature_2m_min[i]);const prec=daily.precipitation_probability_max?.[i]??0;html+=`<div class="w-day"><div class="d-label">${lbl}</div><div class="d-icon">${W_ICON[daily.weather_code[i]]||'🌡️'}</div><div class="d-hi">${hi}°</div><div class="d-lo">${lo}°</div>${prec>25?`<div class="d-precip">💧${prec}%</div>`:''}</div>`}html+='</div>';document.getElementById('weatherBlock').innerHTML=html}
+
+/* Auto-suggest */
+function autoSuggest(){const t=activeTrip();if(!t)return;const w=t.weather;let maxT=22,minT=15,rain=false,snow=false,uvHi=false;if(w?.daily){const d=w.daily;const depIdx=t.depart?d.time.indexOf(t.depart):0;const n=Math.min(7,d.time.length-depIdx);for(let i=depIdx;i<depIdx+n&&i<d.time.length;i++){maxT=Math.max(maxT,d.temperature_2m_max[i]);minT=Math.min(minT,d.temperature_2m_min[i]);if((d.precipitation_probability_max?.[i]??0)>30)rain=true;if(d.weather_code[i]>=71&&d.weather_code[i]<=77)snow=true;if((d.uv_index_max?.[i]??0)>6)uvHi=true}}const add=(label,cat,key)=>{const k=`auto-${key}`;if(!t.items[k])t.items[k]={cat,label,checked:false,qty:1,auto:true}};if(maxT>=28){add('Sunscreen','grooming','sunscreen');add('Hat / Cap','apparel','hat')}if(minT<=5){add('Heavy jacket','apparel','heavy-jacket');add('Thermal base layer','apparel','thermal');add('Gloves','apparel','gloves')}if(minT<=-5){add('Scarf','apparel','scarf');add('Warm beanie','apparel','beanie')}if(rain){add('Rain jacket','gear','rain-jacket');add('Umbrella','gear','umbrella')}if(snow){add('Snow boots','gear','snow-boots')}if(uvHi){add('Sunglasses','gear','sunglasses')}if(maxT<=18&&minT>=6){add('Light layer','apparel','light-layer')}save();renderPack()}
+
+/* Packing */
+const CATS=[{id:'apparel',name:'Apparel'},{id:'grooming',name:'Grooming'},{id:'gear',name:'Gear'},{id:'tech',name:'Tech & Docs'}];
+function renderPack(){const el=document.getElementById('packList');const t=activeTrip();if(!t){el.innerHTML='<div class="empty-state">Set up a trip first → Trip tab</div>';updateProgress();return}if(Object.keys(t.items).length===0){const seeds=[['apparel','Tops / Tees',3],['apparel','Pants / Shorts',2],['apparel','Evening Fit',1],['apparel','Sleepwear',1],['apparel','Underwear & Socks',5],['apparel','Light Jacket',1],['grooming','Skincare',1],['grooming','Deodorant',1],['grooming','Hair Products',1],['grooming','Toothbrush & Paste',1],['grooming','Shower Kit',1],['gear','Sneakers',1],['gear','Dress Shoes',1],['gear','Sunglasses & Watch',1],['gear','Day Bag',1],['tech','Phone + Cable',1],['tech','Power Bank',1],['tech','Earbuds / Headphones',1],['tech','Wallet & ID',1]];seeds.forEach(([cat,label,qty])=>{t.items[`seed-${cat}-${label}`]={cat,label,checked:false,qty,auto:false}});save()}let html='';CATS.forEach(cat=>{const items=Object.entries(t.items).filter(([k,v])=>v.cat===cat.id);if(!items.length)return;const done=items.filter(([k,v])=>v.checked).length;const allDone=items.length>0&&done===items.length;html+=`<div class="cat-section" data-cat="${cat.id}"><div class="cat-head" onclick="this.parentElement.classList.toggle('open')"><div class="left"><span class="cat-name">${cat.name}</span></div><div class="right"><span class="pill ${allDone?'done':''}">${done}/${items.length}</span><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div></div><div class="cat-body"><div class="pack-list">${items.map(([k,v])=>`<div class="pack-row ${v.checked?'checked':''}" data-key="${k}"><div class="check" onclick="toggleItem('${k}')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="p-label">${v.label}${v.auto?' <span class="auto-badge">weather</span>':''}</span><div class="qty-control"><button class="qty-btn" onclick="qtyItem('${k}',-1)">−</button><span class="qty-val">${v.qty}</span><button class="qty-btn" onclick="qtyItem('${k}',1)">+</button></div><button class="del-btn" onclick="delItem('${k}')">✕</button></div>`).join('')}</div><div class="add-item"><input class="ai-inp" type="text" placeholder="Add item…" id="add-${cat.id}" onkeydown="if(event.key==='Enter'){addItem('${cat.id}');}"><button class="ai-btn" onclick="addItem('${cat.id}')">Add</button></div></div></div>`});el.innerHTML=html;const first=el.querySelector('.cat-section');if(first)first.classList.add('open');updateProgress()}
+function toggleItem(k){const t=activeTrip();if(!t||!t.items[k])return;t.items[k].checked=!t.items[k].checked;save();sbSaveTrip(t);renderPack();if(allPacked())document.getElementById('modalBg').classList.add('show')}
+function qtyItem(k,dir){const t=activeTrip();if(!t||!t.items[k])return;t.items[k].qty=Math.max(1,(t.items[k].qty||1)+dir);save();sbSaveTrip(t);renderPack()}
+function delItem(k){const t=activeTrip();if(!t||!t.items[k])return;delete t.items[k];save();sbSaveTrip(t);renderPack()}
+function addItem(catId){const t=activeTrip();if(!t)return;const inp=document.getElementById(`add-${catId}`);const label=inp.value.trim();if(!label)return;t.items[`c-${Date.now()}`]={cat:catId,label,checked:false,qty:1,auto:false};inp.value='';save();sbSaveTrip(t);renderPack()}
+function allPacked(){const t=activeTrip();if(!t)return false;const ks=Object.keys(t.items);return ks.length>0&&ks.every(k=>t.items[k].checked)}
+function updateProgress(){const t=activeTrip();const ks=t?Object.keys(t.items):[];const total=ks.length,done=t?ks.filter(k=>t.items[k].checked).length:0;const pct=total?Math.round(done/total*100):0;document.getElementById('pPct').textContent=pct+'%';document.getElementById('pPct').style.color=pct===100?'var(--teal)':'var(--orange)';document.getElementById('pFill').style.width=pct+'%';document.getElementById('pFill').classList.toggle('done',pct===100);document.getElementById('pTitle').textContent=`${done} of ${total} packed`}
+
+/* Closet */
+function handleClosetUpload(e){const t=activeTrip();if(!t){toast('Set up a trip first');return}const files=[...e.target.files];files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{t.closet.push({id:'c'+Date.now()+Math.random().toString(36).slice(2,6),src:ev.target.result,selected:false});save();renderCloset()};reader.readAsDataURL(file)});if(files.length)toast(`Added ${files.length} photo${files.length>1?'s':''}`)}
+function renderCloset(){const grid=document.getElementById('closetGrid');const t=activeTrip();if(!t){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">Set up a trip first → Trip tab</div>';return}if(!t.closet.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">No closet photos yet — upload above ↑</div>';return}grid.innerHTML=t.closet.map(c=>`<div class="photo-cell ${c.selected?'selected':''}" onclick="toggleCloset('${c.id}')"><img src="${c.src}" alt="closet"><div class="pc-badge"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><button class="pc-del" onclick="event.stopPropagation();delCloset('${c.id}')">✕</button></div>`).join('')}
+function toggleCloset(id){const t=activeTrip();if(!t)return;const c=t.closet.find(x=>x.id===id);if(!c)return;c.selected=!c.selected;save();renderCloset();toast(c.selected?'Added to trip':'Removed')}
+function delCloset(id){const t=activeTrip();if(!t)return;t.closet=t.closet.filter(x=>x.id!==id);save();renderCloset()}
+
+/* Style */
+const STYLE_TAGS=['Casual','Formal','Beach','Street','Athletic','Evening','Business'];let activeTag='Casual';
+function handleStyleUpload(e){const t=activeTrip();if(!t){toast('Set up a trip first');return}const files=[...e.target.files];files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{t.style.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,6),src:ev.target.result,tag:activeTag,note:''});save();renderStyle()};reader.readAsDataURL(file)});if(files.length)toast(`Added ${files.length} photo${files.length>1?'s':''}`)}
+function renderStyle(){document.getElementById('styleTags').innerHTML=STYLE_TAGS.map(t=>`<button class="stag ${t===activeTag?'active':''}" onclick="setTag('${t}')">${t}</button>`).join('');const grid=document.getElementById('styleGrid');const t=activeTrip();if(!t){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">Set up a trip first → Trip tab</div>';return}if(!t.style.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">No style photos yet — upload above ↑</div>';return}grid.innerHTML=t.style.map(s=>`<div class="style-card"><img src="${s.src}" alt="outfit"><div class="sc-body"><div class="sc-tag">${s.tag}</div><input class="sc-inp" placeholder="Note…" value="${s.note||''}" onchange="editStyleNote('${s.id}',this.value)"></div><div class="sc-foot"><button class="sc-del" onclick="delStyle('${s.id}')">Remove</button><span style="font-size:.65rem;color:var(--muted);">${s.tag}</span></div></div>`).join('')}
+function setTag(t){activeTag=t;renderStyle()}
+function editStyleNote(id,note){const tr=activeTrip();if(!tr)return;const s=tr.style.find(x=>x.id===id);if(s){s.note=note;save()}}
+function delStyle(id){const t=activeTrip();if(!t)return;t.style=t.style.filter(x=>x.id!==id);save();renderStyle()}
+
+/* Screenshot OCR */
+const AIRLINES={'JL':'JAL','NH':'ANA','AA':'American Airlines','UA':'United Airlines','DL':'Delta','WN':'Southwest','BA':'British Airways','AF':'Air France','LH':'Lufthansa','KL':'KLM','EK':'Emirates','QR':'Qatar Airways','SQ':'Singapore Airlines','CX':'Cathay Pacific','AC':'Air Canada','QF':'Qantas','NZ':'Air New Zealand','VS':'Virgin Atlantic','FI':'Icelandair','SK':'SAS','IB':'Iberia','AZ':'ITA Airways','KE':'Korean Air','OZ':'Asiana Airlines','CA':'Air China','MU':'China Eastern','CZ':'China Southern','TG':'Thai Airways','MH':'Malaysia Airlines','PR':'Philippine Airlines','5J':'Cebu Pacific','FJ':'Fiji Airways','HA':'Hawaiian Airlines','B6':'JetBlue','NK':'Spirit','AS':'Alaska Airlines','WS':'WestJet'};
+const MONTHS={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12,january:1,february:2,march:3,april:4,june:6,july:7,august:8,september:9,october:10,november:11,december:12};
+function loadTesseract(){return new Promise((resolve,reject)=>{if(window.Tesseract)return resolve();const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=()=>resolve();s.onerror=()=>reject(new Error('Failed to load OCR'));document.head.appendChild(s)})}
+async function handleScanScreenshot(e){const file=e.target.files?.[0];if(!file)return;showLoading('Scanning…','Reading flight details');try{await loadTesseract();const{data:{text}}=await Tesseract.recognize(file,'eng');hideLoading();const parsed=parseFlightText(text);if(parsed.airline)document.getElementById('airline').value=parsed.airline;if(parsed.flightNum)document.getElementById('flightNum').value=parsed.flightNum;if(parsed.flightTime)document.getElementById('flightTime').value=parsed.flightTime;if(parsed.depart)document.getElementById('departDate').value=parsed.depart;if(parsed.return)document.getElementById('returnDate').value=parsed.return;if(parsed.bookingRef)document.getElementById('bookingRef').value=parsed.bookingRef;if(parsed.destCity){showLoading('Geocoding…',parsed.destCity);try{const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(parsed.destCity)}&count=1&language=en&format=json`);const d=await r.json();if(d.results&&d.results[0]){currentDest=d.results[0];destInput.value=`${currentDest.name}, ${currentDest.country}`}}catch{}hideLoading()}toast(parsed.airline||parsed.destCity?'Scanned — review & save':'Scan done — fill in details')}catch{hideLoading();toast('OCR failed — fill in manually')}e.target.value=''}
+function parseFlightText(text){const result={airline:'',flightNum:'',flightTime:'',depart:'',return:'',bookingRef:'',destCity:''};const fn=text.match(/\b([A-Z0-9]{2})\s*(\d{1,4})\b/);if(fn&&AIRLINES[fn[1]]){result.airline=AIRLINES[fn[1]];result.flightNum=`${fn[1]} ${fn[2]}`}else if(fn)result.flightNum=`${fn[1]} ${fn[2]}`;if(!result.airline){for(const[name,code]of Object.entries(AIRLINES)){if(text.toLowerCase().includes(name.toLowerCase())){result.airline=name;if(!result.flightNum&&code)result.flightNum=code+' ';break}}}const tm=text.match(/\b(\d{1,2}):(\d{2})\s*(AM|PM)?\b/i);if(tm){let h=parseInt(tm[1]);const m=tm[2],ap=tm[3];if(ap&&ap.toUpperCase()==='PM'&&h<12)h+=12;if(ap&&ap.toUpperCase()==='AM'&&h===12)h=0;result.flightTime=`${String(h).padStart(2,'0')}:${m}`}const monthNames=Object.keys(MONTHS);const datesFound=[];const d4=text.match(/\b(\d{4})-(\d{1,2})-(\d{1,2})\b/);if(d4)datesFound.push({y:+d4[1],m:+d4[2],d:+d4[3]});const d1=text.match(new RegExp(`(${monthNames.join('|')})\\.?\\s+(\\d{1,2})(?:,?\\s*(\\d{4}))?`,'i'));if(d1){const m=MONTHS[d1[1].toLowerCase()];if(m)datesFound.push({y:d1[3]?+d1[3]:new Date().getFullYear(),m,d:+d1[2]})}const d2=text.match(new RegExp(`(\\d{1,2})\\s+(${monthNames.join('|')})\\.?(?:\\s+(\\d{4}))?`,'i'));if(d2){const m=MONTHS[d2[2].toLowerCase()];if(m)datesFound.push({y:d2[3]?+d2[3]:new Date().getFullYear(),m,d:+d2[1]})}if(!d4){const d3=text.match(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\b/);if(d3){const y=d3[3]?(d3[3].length===2?2000+ +d3[3]:+d3[3]):new Date().getFullYear();datesFound.push({y,m:+d3[1],d:+d3[2]})}}if(datesFound.length>=1)result.depart=`${datesFound[0].y}-${String(datesFound[0].m).padStart(2,'0')}-${String(datesFound[0].d).padStart(2,'0')}`;if(datesFound.length>=2)result.return=`${datesFound[1].y}-${String(datesFound[1].m).padStart(2,'0')}-${String(datesFound[1].d).padStart(2,'0')}`;const arrow=text.match(/[A-Za-z\s,]+?\s*(?:→|->|—>)\s*([A-Za-z][A-Za-z\s,]+)/);const toM=text.match(/(?:To|Arrive|Destination|Arriving)\s*:?\s*([A-Za-z][A-Za-z\s,]+?)(?:\s*(?:\(|\n|$))/i);if(arrow){const city=arrow[1].trim().split(',')[0].trim();if(city.length>2)result.destCity=city}else if(toM){const city=toM[1].trim().split(',')[0].trim();if(city.length>2)result.destCity=city}const refs=text.match(/\b([A-Z0-9]{6})\b/g);if(refs){for(const r of refs){if(r!==result.flightNum?.replace(/\s/g,'')&&!AIRLINES[r]){result.bookingRef=r;break}}}return result}
+
+/* Drag & drop */
+function setupDnD(uid,fid){const el=document.getElementById(uid);if(!el)return;el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag')});el.addEventListener('dragleave',()=>el.classList.remove('drag'));el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drag');const inp=document.getElementById(fid);inp.files=e.dataTransfer.files;inp.dispatchEvent(new Event('change'))})}
+setupDnD('closetUpload','closetFile');setupDnD('styleUpload','styleFile');
+
+/* Sync */
+function renderSync(){document.getElementById('sbUrl').value=S.config.url||'';document.getElementById('sbKey').value=S.config.key||'';const st=document.getElementById('syncStatus');if(sbConfigured()){st.className='sync-status connected';document.getElementById('syncStatusText').textContent='Connected — '+S.trips.length+' trips';document.getElementById('syncTripsCount').textContent=S.trips.length+' trips synced'}else{st.className='sync-status disconnected';document.getElementById('syncStatusText').textContent='Not connected';document.getElementById('syncTripsCount').textContent=''}}
+async function syncConnect(){const url=document.getElementById('sbUrl').value.trim().replace(/\/$/,'');const key=document.getElementById('sbKey').value.trim();if(!url||!key){toast('Enter URL and key');return}S.config={url,key};save();showLoading('Syncing…','Loading trips from Supabase');try{const trips=await sbLoadTrips();hideLoading();const sbIds=new Set(trips.map(t=>t.id));S.trips=[...S.trips.filter(t=>!sbIds.has(t.id)),...trips];if(!S.activeId&&S.trips.length)S.activeId=S.trips[0].id;save();renderSync();renderTripsList();if(activeTrip())renderTripSummary();toast(`Synced ${trips.length} trips`)}catch{hideLoading();toast('Sync failed — check URL and key')}}
+
+/* Init */
+async function init(){
+  if(sbConfigured()){const trips=await sbLoadTrips().catch(()=>[]);if(trips&&trips.length){const sbIds=new Set(trips.map(t=>t.id));S.trips=[...S.trips.filter(t=>!sbIds.has(t.id)),...trips];if(!S.activeId&&S.trips.length)S.activeId=S.trips[0].id;save()}}
+  if(S.activeId&&activeTrip()){const t=activeTrip();currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};destInput.value=`${t.city}, ${t.country}`;document.getElementById('departDate').value=t.depart||'';document.getElementById('returnDate').value=t.return||'';document.getElementById('airline').value=t.airline||'';document.getElementById('flightNum').value=t.flightNum||'';document.getElementById('flightTime').value=t.flightTime||'';document.getElementById('bookingRef').value=t.bookingRef||'';renderTripSummary()}
+  renderTripsList();renderPack();renderCloset();renderStyle();renderSync();
+}
+init();
+</script>
+</body>
+</html>
