@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#faf7f0">
 <title>agnamo · trip</title>
@@ -193,6 +193,42 @@ input,textarea{-webkit-appearance:none;appearance:none}
 .loading-overlay .lo-text{font-size:.9rem;font-weight:600;color:var(--ink)}
 .loading-overlay .lo-sub{font-size:.76rem;color:var(--muted);margin-top:6px}
 .hidden{display:none!important}
+
+/* Responsive — all screen sizes */
+@media(max-width:640px){
+  .field-row{grid-template-columns:1fr}
+  .style-grid{grid-template-columns:1fr 1fr}
+  .photo-grid{grid-template-columns:repeat(3,1fr)}
+  .w-day{flex:0 0 70px}
+  .trip-hero{padding:24px 20px}
+  .trip-hero h1{font-size:clamp(1.4rem,8vw,2rem)}
+  .progress-card{padding:16px 18px}
+  .cat-head{padding:12px 14px}
+  .pack-row{padding:10px 12px;gap:10px;min-height:48px}
+  .btn{padding:12px 20px;font-size:.82rem}
+  .scan-btn{padding:12px 14px}
+  .upload-zone{padding:28px 16px}
+  .sync-card{padding:20px}
+}
+@media(max-width:380px){
+  .field-row{grid-template-columns:1fr}
+  .style-grid{grid-template-columns:1fr}
+  .photo-grid{grid-template-columns:repeat(2,1fr)}
+  .w-day{flex:0 0 64px;padding:10px 8px}
+  .tab{font-size:.58rem}
+  .tab svg{width:20px;height:20px}
+  .brand{font-size:1rem}
+}
+@media(min-width:641px){
+  .screen{max-width:580px}
+}
+/* Prevent iOS input zoom */
+.inp,.lbl{font-size:max(.92rem,16px)}
+.inp{font-size:max(.92rem,16px)}
+/* Safe area for notch phones */
+.screen{padding-top:max(20px,env(safe-area-inset-top,20px))}
+
+
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 /* Auth gate */
