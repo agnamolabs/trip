@@ -431,7 +431,46 @@ function delStyle(id){const t=activeTrip();if(!t)return;t.style=t.style.filter(x
 const AIRLINES={'JL':'JAL','NH':'ANA','AA':'American Airlines','UA':'United Airlines','DL':'Delta','WN':'Southwest','BA':'British Airways','AF':'Air France','LH':'Lufthansa','KL':'KLM','EK':'Emirates','QR':'Qatar Airways','SQ':'Singapore Airlines','CX':'Cathay Pacific','AC':'Air Canada','QF':'Qantas','NZ':'Air New Zealand','VS':'Virgin Atlantic','FI':'Icelandair','SK':'SAS','IB':'Iberia','AZ':'ITA Airways','KE':'Korean Air','OZ':'Asiana Airlines','CA':'Air China','MU':'China Eastern','CZ':'China Southern','TG':'Thai Airways','MH':'Malaysia Airlines','PR':'Philippine Airlines','5J':'Cebu Pacific','FJ':'Fiji Airways','HA':'Hawaiian Airlines','B6':'JetBlue','NK':'Spirit','AS':'Alaska Airlines','WS':'WestJet'};
 const MONTHS={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12,january:1,february:2,march:3,april:4,june:6,july:7,august:8,september:9,october:10,november:11,december:12};
 function loadTesseract(){return new Promise((resolve,reject)=>{if(window.Tesseract)return resolve();const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=()=>resolve();s.onerror=()=>reject(new Error('Failed to load OCR'));document.head.appendChild(s)})}
-async function handleScanScreenshot(e){const file=e.target.files?.[0];if(!file)return;showLoading('Scanning…','Reading flight details');try{await loadTesseract();const{data:{text}}=await Tesseract.recognize(file,'eng');hideLoading();const parsed=parseFlightText(text);if(parsed.airline)document.getElementById('airline').value=parsed.airline;if(parsed.flightNum)document.getElementById('flightNum').value=parsed.flightNum;if(parsed.flightTime)document.getElementById('flightTime').value=parsed.flightTime;if(parsed.depart)document.getElementById('departDate').value=parsed.depart;if(parsed.return)document.getElementById('returnDate').value=parsed.return;if(parsed.bookingRef)document.getElementById('bookingRef').value=parsed.bookingRef;if(parsed.destCity){showLoading('Geocoding…',parsed.destCity);try{const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(parsed.destCity)}&count=1&language=en&format=json`);const d=await r.json();if(d.results&&d.results[0]){currentDest=d.results[0];destInput.value=`${currentDest.name}, ${currentDest.country}`}}catch{}hideLoading()}toast(parsed.airline||parsed.destCity?'Scanned — review & save':'Scan done — fill in details')}catch{hideLoading();toast('OCR failed — fill in manually')}e.target.value=''}
+async function handleScanScreenshot(e){const file=e.target.files?.[0];if(!file)return;showLoading('Scanning…','AI reading your screenshot');
+try{
+const reader=new FileReader();
+const base64=await new Promise((res,rej)=>{reader.onload=()=>res(reader.result);reader.onerror=rej;reader.readAsDataURL(file)});
+const fnUrl=SB_URL+'.functions.supabase.co/scan-trip';
+showLoading('Analyzing…','AI vision parsing flight details');
+const r=await fetch(fnUrl,{method:'POST',headers:{'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({image:base64})});
+if(!r.ok){const err=await r.text();throw new Error('Scan failed: '+err)}
+const result=await r.json();
+if(result.error)throw new Error(result.error);
+hideLoading();
+if(result.trip){
+const t=result.trip;
+currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};
+destInput.value=`${t.city}, ${t.country}`;
+document.getElementById('departDate').value=t.depart||'';
+document.getElementById('returnDate').value=t.return||'';
+document.getElementById('airline').value=t.airline||'';
+document.getElementById('flightNum').value=t.flightNum||'';
+document.getElementById('flightTime').value=t.flightTime||'';
+document.getElementById('bookingRef').value=t.bookingRef||'';
+const newTrip={id:t.id,city:t.city,country:t.country,cc:t.cc,lat:t.lat,lon:t.lon,tz:t.tz,depart:t.depart,return:t.return,airline:t.airline,flightNum:t.flightNum,flightTime:t.flightTime,bookingRef:t.bookingRef,items:t.items,closet:[],style:t.style||[],weather:t.weather,source:'screenshot',rawOcr:null};
+S.trips.push(newTrip);S.activeId=t.id;save();
+renderTripSummary();renderTripsList();renderPack();
+toast('Trip scanned & saved — packing list ready');
+}else if(result.parsed){
+const p=result.parsed;
+if(p.airline)document.getElementById('airline').value=p.airline;
+if(p.flightNumber)document.getElementById('flightNum').value=p.flightNumber;
+if(p.departureTime)document.getElementById('flightTime').value=p.departureTime;
+if(p.departureDate)document.getElementById('departDate').value=p.departureDate;
+if(p.returnDate)document.getElementById('returnDate').value=p.returnDate;
+if(p.bookingRef)document.getElementById('bookingRef').value=p.bookingRef;
+if(p.destinationCity){
+try{const gr=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(p.destinationCity)}&count=1&language=en&format=json`);const gd=await gr.json();if(gd.results&&gd.results[0]){currentDest=gd.results[0];destInput.value=`${currentDest.name}, ${currentDest.country}`}}catch{}
+}
+toast('Scanned — review & save');
+}
+}catch(err){hideLoading();toast('Scan failed — try again or fill in manually');console.error('Scan error:',err)}
+e.target.value=''}
 function parseFlightText(text){const result={airline:'',flightNum:'',flightTime:'',depart:'',return:'',bookingRef:'',destCity:''};const fn=text.match(/\b([A-Z0-9]{2})\s*(\d{1,4})\b/);if(fn&&AIRLINES[fn[1]]){result.airline=AIRLINES[fn[1]];result.flightNum=`${fn[1]} ${fn[2]}`}else if(fn)result.flightNum=`${fn[1]} ${fn[2]}`;if(!result.airline){for(const[name,code]of Object.entries(AIRLINES)){if(text.toLowerCase().includes(name.toLowerCase())){result.airline=name;if(!result.flightNum&&code)result.flightNum=code+' ';break}}}const tm=text.match(/\b(\d{1,2}):(\d{2})\s*(AM|PM)?\b/i);if(tm){let h=parseInt(tm[1]);const m=tm[2],ap=tm[3];if(ap&&ap.toUpperCase()==='PM'&&h<12)h+=12;if(ap&&ap.toUpperCase()==='AM'&&h===12)h=0;result.flightTime=`${String(h).padStart(2,'0')}:${m}`}const monthNames=Object.keys(MONTHS);const datesFound=[];const d4=text.match(/\b(\d{4})-(\d{1,2})-(\d{1,2})\b/);if(d4)datesFound.push({y:+d4[1],m:+d4[2],d:+d4[3]});const d1=text.match(new RegExp(`(${monthNames.join('|')})\\.?\\s+(\\d{1,2})(?:,?\\s*(\\d{4}))?`,'i'));if(d1){const m=MONTHS[d1[1].toLowerCase()];if(m)datesFound.push({y:d1[3]?+d1[3]:new Date().getFullYear(),m,d:+d1[2]})}const d2=text.match(new RegExp(`(\\d{1,2})\\s+(${monthNames.join('|')})\\.?(?:\\s+(\\d{4}))?`,'i'));if(d2){const m=MONTHS[d2[2].toLowerCase()];if(m)datesFound.push({y:d2[3]?+d2[3]:new Date().getFullYear(),m,d:+d2[1]})}if(!d4){const d3=text.match(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\b/);if(d3){const y=d3[3]?(d3[3].length===2?2000+ +d3[3]:+d3[3]):new Date().getFullYear();datesFound.push({y,m:+d3[1],d:+d3[2]})}}if(datesFound.length>=1)result.depart=`${datesFound[0].y}-${String(datesFound[0].m).padStart(2,'0')}-${String(datesFound[0].d).padStart(2,'0')}`;if(datesFound.length>=2)result.return=`${datesFound[1].y}-${String(datesFound[1].m).padStart(2,'0')}-${String(datesFound[1].d).padStart(2,'0')}`;const arrow=text.match(/[A-Za-z\s,]+?\s*(?:→|->|—>)\s*([A-Za-z][A-Za-z\s,]+)/);const toM=text.match(/(?:To|Arrive|Destination|Arriving)\s*:?\s*([A-Za-z][A-Za-z\s,]+?)(?:\s*(?:\(|\n|$))/i);if(arrow){const city=arrow[1].trim().split(',')[0].trim();if(city.length>2)result.destCity=city}else if(toM){const city=toM[1].trim().split(',')[0].trim();if(city.length>2)result.destCity=city}const refs=text.match(/\b([A-Z0-9]{6})\b/g);if(refs){for(const r of refs){if(r!==result.flightNum?.replace(/\s/g,'')&&!AIRLINES[r]){result.bookingRef=r;break}}}return result}
 
 /* Drag & drop */

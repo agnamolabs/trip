@@ -1,0 +1,5 @@
+
+project_id = "ioogwysicqqiknjzczhe"
+
+[functions.scan-trip]
+verify_jwt = false
