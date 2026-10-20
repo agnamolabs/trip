@@ -194,6 +194,21 @@ input,textarea{-webkit-appearance:none;appearance:none}
 .loading-overlay .lo-sub{font-size:.76rem;color:var(--muted);margin-top:6px}
 .hidden{display:none!important}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Auth gate */
+.auth-gate{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
+.auth-card{background:var(--surface);border-radius:var(--r);padding:36px 28px;max-width:340px;width:100%;box-shadow:var(--shadow-lg);border:1px solid var(--line)}
+.auth-card .ac-brand{font-family:'Unbounded',sans-serif;font-weight:800;font-size:1.1rem;display:flex;align-items:baseline;gap:1px;margin-bottom:24px;justify-content:center}
+.auth-card .ac-brand .a{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.auth-card .ac-brand .dot{color:var(--teal)}
+.auth-card h2{font-size:1.3rem;margin-bottom:6px;text-align:center}
+.auth-card .ac-sub{font-size:.82rem;color:var(--muted);text-align:center;margin-bottom:24px}
+.auth-card .ac-inp{width:100%;padding:14px 16px;font-size:.95rem;font-weight:500;border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2);outline:none;transition:border-color .15s;text-align:center;letter-spacing:.1em}
+.auth-card .ac-inp:focus{border-color:var(--orange);background:var(--surface)}
+.auth-card .ac-btn{width:100%;margin-top:16px}
+.auth-card .ac-err{font-size:.8rem;color:var(--red);text-align:center;margin-top:12px;display:none}
+.auth-card .ac-err.show{display:block}
+.auth-card .ac-hint{font-size:.72rem;color:var(--muted);text-align:center;margin-top:16px}
 </style>
 </head>
 <body>
@@ -273,6 +288,22 @@ input,textarea{-webkit-appearance:none;appearance:none}
 <div class="loading-overlay" id="loadingOverlay"><div class="lo-box"><div class="spinner"></div><div class="lo-text" id="loText">Scanning…</div><div class="lo-sub" id="loSub">Reading flight details</div></div></div>
 
 <script>
+
+const AUTH_LUX='aloha808';const AUTH_KIAN='aloha619';const AUTH_KEY='agnamoTripAuth';
+function checkAuth(){return localStorage.getItem(AUTH_KEY)===AUTH_LUX||localStorage.getItem(AUTH_KEY)===AUTH_KIAN}
+function showAuthGate(){
+  const g=document.createElement('div');g.className='auth-gate';g.id='authGate';
+  g.innerHTML='<div class="auth-card"><div class="ac-brand"><span class="a">agnamo</span><span class="dot">.</span>&nbsp;trip</div><h2>Access code</h2><p class="ac-sub">Enter your code to continue</p><input class="ac-inp" type="password" id="authInp" placeholder="••••••••" maxlength="8" autocomplete="off"><div class="ac-err" id="authErr">Wrong code</div><button class="btn btn-fill ac-btn" onclick="tryAuth()">Enter</button><div class="ac-hint">San Diego · Honolulu</div></div>';
+  document.body.appendChild(g);
+  const i=document.getElementById('authInp');i.focus();
+  i.addEventListener('keydown',e=>{if(e.key==='Enter')tryAuth()});
+}
+function tryAuth(){
+  const v=document.getElementById('authInp').value.trim();
+  if(v===AUTH_LUX||v===AUTH_KIAN){localStorage.setItem(AUTH_KEY,v);document.getElementById('authGate').remove();initApp()}
+  else{document.getElementById('authErr').classList.add('show');document.getElementById('authInp').value='';document.getElementById('authInp').focus()}
+}
+
 const STORE='agnamoTripPack_v3';
 let S=load();let currentDest=null,destResults=[],destTimer=null;
 const SB_URL='https://ioogwysicqqiknjzczhe.supabase.co';const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlvb2d3eXNpY3FxaWtuanpjemhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NjAwNzYsImV4cCI6MjEwNjMzNjA3Nn0.N9l4iZ6taUziO3ceyXE7WGva4zmwXXDCu2I1ea4WLOI';
@@ -376,12 +407,12 @@ function renderSync(){document.getElementById('sbUrl').value=S.config.url||'';do
 async function syncConnect(){const url=document.getElementById('sbUrl').value.trim().replace(/\/$/,'');const key=document.getElementById('sbKey').value.trim();if(!url||!key){toast('Enter URL and key');return}S.config={url,key};save();showLoading('Syncing…','Loading trips from Supabase');try{const trips=await sbLoadTrips();hideLoading();const sbIds=new Set(trips.map(t=>t.id));S.trips=[...S.trips.filter(t=>!sbIds.has(t.id)),...trips];if(!S.activeId&&S.trips.length)S.activeId=S.trips[0].id;save();renderSync();renderTripsList();if(activeTrip())renderTripSummary();toast(`Synced ${trips.length} trips`)}catch{hideLoading();toast('Sync failed — check URL and key')}}
 
 /* Init */
-async function init(){
+async function initApp(){
   if(sbConfigured()){const trips=await sbLoadTrips().catch(()=>[]);if(trips&&trips.length){const sbIds=new Set(trips.map(t=>t.id));S.trips=[...S.trips.filter(t=>!sbIds.has(t.id)),...trips];if(!S.activeId&&S.trips.length)S.activeId=S.trips[0].id;save()}}
   if(S.activeId&&activeTrip()){const t=activeTrip();currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};destInput.value=`${t.city}, ${t.country}`;document.getElementById('departDate').value=t.depart||'';document.getElementById('returnDate').value=t.return||'';document.getElementById('airline').value=t.airline||'';document.getElementById('flightNum').value=t.flightNum||'';document.getElementById('flightTime').value=t.flightTime||'';document.getElementById('bookingRef').value=t.bookingRef||'';renderTripSummary()}
   renderTripsList();renderPack();renderCloset();renderStyle();renderSync();
 }
-init();
+if(checkAuth()){initApp()}else{showAuthGate()}
 </script>
 </body>
 </html>
