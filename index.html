@@ -280,9 +280,9 @@ input,textarea{-webkit-appearance:none;appearance:none}
 <div class="screen active" id="screen-trip">
   <div class="brand-row"><div class="brand"><span class="a">agnamo</span><span class="dot">.</span></div><span class="section-label" style="color:var(--orange)">trip</span></div>
   <div id="tripSetup">
-    <div class="trip-hero"><div class="eyebrow">Where to?</div><h1>Plan the<br>pack, not<br>the trip.</h1><p class="city">Search a city or scan a flight screenshot.</p></div>
+    <div class="trip-hero"><div class="eyebrow">Where to?</div><h1>Plan the<br>pack, not<br>the trip.</h1><p class="city">Search a city or airport, or scan a flight screenshot.</p></div>
     <div class="field-group">
-      <div><label class="lbl">Destination</label><input id="destInput" class="inp" type="text" placeholder="Search any city — Tokyo, Lisbon…" autocomplete="off" autocapitalize="words"><div id="destResults" class="dest-results"></div></div>
+      <div><label class="lbl">Destination</label><input id="destInput" class="inp" type="text" placeholder="City or airport code — SEA, DFW, Tokyo…" autocomplete="off" autocapitalize="words"><div id="destResults" class="dest-results"></div></div>
       <div class="field-row"><div><label class="lbl">Departure</label><input id="departDate" class="inp" type="date"></div><div><label class="lbl">Return</label><input id="returnDate" class="inp" type="date"></div></div>
       <div class="field-row"><div><label class="lbl">Airline</label><input id="airline" class="inp" type="text" placeholder="JAL, Delta…" autocapitalize="characters"></div><div><label class="lbl">Flight #</label><input id="flightNum" class="inp" type="text" placeholder="JL 005" autocapitalize="characters"></div></div>
       <div class="field-row"><div><label class="lbl">Departure Time</label><input id="flightTime" class="inp" type="text" placeholder="14:30"></div><div><label class="lbl">Booking Ref</label><input id="bookingRef" class="inp" type="text" placeholder="ABC123" autocapitalize="characters"></div></div>
@@ -328,6 +328,10 @@ input,textarea{-webkit-appearance:none;appearance:none}
 <div class="screen" id="screen-sync">
   <div class="brand-row"><div class="brand"><span class="a">agnamo</span><span class="dot">.</span></div><span class="section-label" style="color:var(--teal)">sync</span></div>
   <div class="sync-card">
+    <div id="userBadge" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface-2);border-radius:var(--r-sm);margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--teal)"></span><span style="font-size:.82rem;font-weight:600" id="syncUserName">—</span></div>
+      <button class="btn btn-ghost" style="padding:6px 14px;font-size:.74rem" onclick="logoutUser()">Switch user</button>
+    </div>
     <div class="field-group" style="margin-top:0">
       <div><label class="lbl">Supabase URL</label><input id="sbUrl" class="inp" type="text" placeholder="https://xxxxx.supabase.co" autocapitalize="none" spellcheck="false"></div>
       <div><label class="lbl">Anon Key</label><input id="sbKey" class="inp" type="password" placeholder="eyJhbGci…" autocapitalize="none" spellcheck="false"></div>
@@ -339,7 +343,7 @@ input,textarea{-webkit-appearance:none;appearance:none}
   <div style="font-size:.78rem;color:var(--muted);padding:0 4px;line-height:1.6">
     <p style="margin-bottom:8px"><strong style="color:var(--ink-2)">Setup:</strong></p>
     <ol style="padding-left:20px;margin-bottom:12px"><li>Run <code style="background:var(--surface-2);padding:2px 6px;border-radius:4px;font-size:.72rem">schema.sql</code> in Supabase SQL Editor</li><li>Paste your Project URL + anon key above</li><li>Tap Connect & Sync</li></ol>
-    <p>Trip details sync to Supabase. Photos stay on your device.</p>
+    <p>Trips sync to Supabase — shared across all users (Vrinda, Gabe, Lux). Photos stay on your device.</p>
     <p style="margin-top:12px">Send a flight screenshot to the bot on Telegram and it'll create a trip here automatically.</p>
   </div>
 </div>
@@ -350,27 +354,35 @@ input,textarea{-webkit-appearance:none;appearance:none}
 
 <script>
 
-const AUTH_LUX='hawaii-27';const AUTH_KIAN='hawaii';const AUTH_KEY='agnamoTripAuth';
-function checkAuth(){return localStorage.getItem(AUTH_KEY)===AUTH_LUX||localStorage.getItem(AUTH_KEY)===AUTH_KIAN}
+const AUTH_USERS={'Vrinda':'hawaii-27','Gabe':'hawaii-27','Lux':'hawaii-27','Kian':'hawaii'};const AUTH_KEY='agnamoTripAuth';const AUTH_USER_KEY='agnamoTripUser';
+function checkAuth(){const u=localStorage.getItem(AUTH_USER_KEY);return u&&AUTH_USERS[u]&&localStorage.getItem(AUTH_KEY)===AUTH_USERS[u]}
+function currentUser(){return localStorage.getItem(AUTH_USER_KEY)||null}
 function showAuthGate(){
   const g=document.createElement('div');g.className='auth-gate';g.id='authGate';
-  g.innerHTML='<div class="auth-card"><div class="ac-brand"><span class="a">agnamo</span><span class="dot">.</span>&nbsp;trip</div><h2>Access code</h2><p class="ac-sub">Enter your code to continue</p><input class="ac-inp" type="password" id="authInp" placeholder="••••••••" maxlength="8" autocomplete="off"><div class="ac-err" id="authErr">Wrong code</div><button class="btn btn-fill ac-btn" onclick="tryAuth()">Enter</button><div class="ac-hint">San Diego · Honolulu</div></div>';
+  g.innerHTML='<div class="auth-card"><div class="ac-brand"><span class="a">agnamo</span><span class="dot">.</span>&nbsp;trip</div><h2>Plan together</h2><p class="ac-sub">Enter your name and access code</p><input class="ac-inp" type="text" id="authUser" placeholder="Your name" maxlength="20" autocomplete="off" style="margin-bottom:10px;letter-spacing:0"><input class="ac-inp" type="password" id="authInp" placeholder="Access code" maxlength="12" autocomplete="off"><div class="ac-err" id="authErr">Wrong name or code</div><button class="btn btn-fill ac-btn" onclick="tryAuth()">Enter</button><div class="ac-hint">Vrinda · Gabe · Lux</div></div>';
   document.body.appendChild(g);
-  const i=document.getElementById('authInp');i.focus();
-  i.addEventListener('keydown',e=>{if(e.key==='Enter')tryAuth()});
+  const u=document.getElementById('authUser');u.focus();
+  u.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('authInp').focus()});
+  document.getElementById('authInp').addEventListener('keydown',e=>{if(e.key==='Enter')tryAuth()});
 }
 function tryAuth(){
-  const v=document.getElementById('authInp').value.trim();
-  if(v===AUTH_LUX||v===AUTH_KIAN){localStorage.setItem(AUTH_KEY,v);document.getElementById('authGate').remove();initApp()}
+  const raw=document.getElementById('authUser').value.trim();
+  const code=document.getElementById('authInp').value.trim();
+  const name=raw.charAt(0).toUpperCase()+raw.slice(1).toLowerCase();
+  if(AUTH_USERS[name]&&code===AUTH_USERS[name]){localStorage.setItem(AUTH_KEY,code);localStorage.setItem(AUTH_USER_KEY,name);document.getElementById('authGate').remove();initApp()}
   else{document.getElementById('authErr').classList.add('show');document.getElementById('authInp').value='';document.getElementById('authInp').focus()}
 }
+function logoutUser(){localStorage.removeItem(AUTH_KEY);localStorage.removeItem(AUTH_USER_KEY);location.reload()}
 
 const STORE='agnamoTripPack_v3';
 let S=load();let currentDest=null,destResults=[],destTimer=null;
 const SB_URL='https://ioogwysicqqiknjzczhe.supabase.co';const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlvb2d3eXNpY3FxaWtuanpjemhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NjAwNzYsImV4cCI6MjEwNjMzNjA3Nn0.N9l4iZ6taUziO3ceyXE7WGva4zmwXXDCu2I1ea4WLOI';
-function load(){try{const s=JSON.parse(localStorage.getItem(STORE));if(s&&s.trips)return s}catch{}return{config:{url:SB_URL,key:SB_KEY},trips:[],activeId:null}}
+function load(){try{const s=JSON.parse(localStorage.getItem(STORE));if(s&&s.trips)return s}catch{}return{config:{url:SB_URL,key:SB_KEY},trips:[],activeId:null,localChecklist:{}}}
 function save(){localStorage.setItem(STORE,JSON.stringify(S))}
 function activeTrip(){return S.trips.find(t=>t.id===S.activeId)||null}
+function activeItems(){const t=activeTrip();if(t)return t.items;if(!S.localChecklist)S.localChecklist={};return S.localChecklist}
+function activeCloset(){const t=activeTrip();if(t)return t.closet||(t.closet=[]);if(!S.localCloset)S.localCloset=[];return S.localCloset}
+function activeStyle(){const t=activeTrip();if(t)return t.style||(t.style=[]);if(!S.localStyle)S.localStyle=[];return S.localStyle}
 function uuid(){return crypto.randomUUID?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(36).slice(2)}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2400)}
 function showLoading(text,sub){const o=document.getElementById('loadingOverlay');document.getElementById('loText').textContent=text||'Loading…';document.getElementById('loSub').textContent=sub||'';o.classList.add('show')}
@@ -399,9 +411,23 @@ function goScreen(name){
 }
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>goScreen(t.dataset.screen)));
 
-/* Destination search */
+/* Airport codes database — type by code (SEA, DFW…) or city name */
+const AIRPORTS=[{c:'SEA',city:'Seattle',country:'United States',cc:'US',lat:47.45,lon:-122.31,tz:'America/Los_Angeles',n:'Seattle–Tacoma'},{c:'PDX',city:'Portland',country:'United States',cc:'US',lat:45.59,lon:-122.60,tz:'America/Los_Angeles',n:'Portland Intl'},{c:'SFO',city:'San Francisco',country:'United States',cc:'US',lat:37.62,lon:-122.38,tz:'America/Los_Angeles',n:'San Francisco Intl'},{c:'LAX',city:'Los Angeles',country:'United States',cc:'US',lat:33.94,lon:-118.41,tz:'America/Los_Angeles',n:'Los Angeles Intl'},{c:'SAN',city:'San Diego',country:'United States',cc:'US',lat:32.73,lon:-117.19,tz:'America/Los_Angeles',n:'San Diego Intl'},{c:'LAS',city:'Las Vegas',country:'United States',cc:'US',lat:36.08,lon:-115.15,tz:'America/Los_Angeles',n:'Harry Reid Intl'},{c:'DFW',city:'Dallas–Fort Worth',country:'United States',cc:'US',lat:32.90,lon:-97.04,tz:'America/Chicago',n:'Dallas/Fort Worth Intl'},{c:'AUS',city:'Austin',country:'United States',cc:'US',lat:30.20,lon:-97.67,tz:'America/Chicago',n:'Austin–Bergstrom'},{c:'IAH',city:'Houston',country:'United States',cc:'US',lat:29.98,lon:-95.34,tz:'America/Chicago',n:'George Bush Intercontinental'},{c:'ORD',city:'Chicago',country:'United States',cc:'US',lat:41.98,lon:-87.90,tz:'America/Chicago',n:'O’Hare Intl'},{c:'ATL',city:'Atlanta',country:'United States',cc:'US',lat:33.64,lon:-84.43,tz:'America/New_York',n:'Hartsfield–Jackson'},{c:'MIA',city:'Miami',country:'United States',cc:'US',lat:25.79,lon:-80.29,tz:'America/New_York',n:'Miami Intl'},{c:'JFK',city:'New York',country:'United States',cc:'US',lat:40.64,lon:-73.78,tz:'America/New_York',n:'John F. Kennedy Intl'},{c:'EWR',city:'Newark',country:'United States',cc:'US',lat:40.69,lon:-74.17,tz:'America/New_York',n:'Newark Liberty'},{c:'BOS',city:'Boston',country:'United States',cc:'US',lat:42.37,lon:-71.01,tz:'America/New_York',n:'Logan Intl'},{c:'IAD',city:'Washington',country:'United States',cc:'US',lat:38.95,lon:-77.45,tz:'America/New_York',n:'Dulles Intl'},{c:'DEN',city:'Denver',country:'United States',cc:'US',lat:39.86,lon:-104.67,tz:'America/Denver',n:'Denver Intl'},{c:'PHX',city:'Phoenix',country:'United States',cc:'US',lat:33.44,lon:-112.01,tz:'America/Phoenix',n:'Sky Harbor'},{c:'SLC',city:'Salt Lake City',country:'United States',cc:'US',lat:40.79,lon:-111.97,tz:'America/Denver',n:'Salt Lake City Intl'},{c:'MSP',city:'Minneapolis',country:'United States',cc:'US',lat:44.88,lon:-93.23,tz:'America/Chicago',n:'Minneapolis–St. Paul'},{c:'DTW',city:'Detroit',country:'United States',cc:'US',lat:42.21,lon:-83.35,tz:'America/Detroit',n:'Detroit Metro'},{c:'STL',city:'St. Louis',country:'United States',cc:'US',lat:38.75,lon:-90.37,tz:'America/Chicago',n:'St. Louis Lambert'},{c:'SEA',city:'Seattle',country:'United States',cc:'US',lat:47.45,lon:-122.31,tz:'America/Los_Angeles',n:'Seattle–Tacoma'},{c:'HNL',city:'Honolulu',country:'United States',cc:'US',lat:21.32,lon:-157.92,tz:'Pacific/Honolulu',n:'Daniel K. Inouye'},{c:'YYZ',city:'Toronto',country:'Canada',cc:'CA',lat:43.68,lon:-79.61,tz:'America/Toronto',n:'Toronto Pearson'},{c:'YVR',city:'Vancouver',country:'Canada',cc:'CA',lat:49.20,lon:-123.18,tz:'America/Vancouver',n:'Vancouver Intl'},{c:'YUL',city:'Montreal',country:'Canada',cc:'CA',lat:45.46,lon:-73.75,tz:'America/Montreal',n:'Montréal–Trudeau'},{c:'MEX',city:'Mexico City',country:'Mexico',cc:'MX',lat:19.44,lon:-99.07,tz:'America/Mexico_City',n:'Benito Juárez'},{c:'CUN',city:'Cancún',country:'Mexico',cc:'MX',lat:21.04,lon:-86.87,tz:'America/Cancun',n:'Cancún Intl'},{c:'LHR',city:'London',country:'United Kingdom',cc:'GB',lat:51.47,lon:-0.45,tz:'Europe/London',n:'Heathrow'},{c:'LGW',city:'London',country:'United Kingdom',cc:'GB',lat:51.15,lon:-0.18,tz:'Europe/London',n:'Gatwick'},{c:'CDG',city:'Paris',country:'France',cc:'FR',lat:49.00,lon:2.55,tz:'Europe/Paris',n:'Charles de Gaulle'},{c:'ORY',city:'Paris',country:'France',cc:'FR',lat:48.72,lon:2.36,tz:'Europe/Paris',n:'Orly'},{c:'AMS',city:'Amsterdam',country:'Netherlands',cc:'NL',lat:52.31,lon:4.76,tz:'Europe/Amsterdam',n:'Schiphol'},{c:'FRA',city:'Frankfurt',country:'Germany',cc:'DE',lat:50.04,lon:8.56,tz:'Europe/Berlin',n:'Frankfurt am Main'},{c:'MUC',city:'Munich',country:'Germany',cc:'DE',lat:48.35,lon:11.79,tz:'Europe/Berlin',n:'Munich Intl'},{c:'ZRH',city:'Zurich',country:'Switzerland',cc:'CH',lat:47.46,lon:8.56,tz:'Europe/Zurich',n:'Zurich Intl'},{c:'FCO',city:'Rome',country:'Italy',cc:'IT',lat:41.80,lon:12.25,tz:'Europe/Rome',n:'Leonardo da Vinci–Fiumicino'},{c:'MXP',city:'Milan',country:'Italy',cc:'IT',lat:45.63,lon:8.72,tz:'Europe/Rome',n:'Malpensa'},{c:'MAD',city:'Madrid',country:'Spain',cc:'ES',lat:40.47,lon:-3.56,tz:'Europe/Madrid',n:'Adolfo Suárez Madrid–Barajas'},{c:'BCN',city:'Barcelona',country:'Spain',cc:'ES',lat:41.30,lon:2.08,tz:'Europe/Madrid',n:'Barcelona–El Prat'},{c:'LIS',city:'Lisbon',country:'Portugal',cc:'PT',lat:38.78,lon:-9.13,tz:'Europe/Lisbon',n:'Humberto Delgado'},{c:'DUB',city:'Dublin',country:'Ireland',cc:'IE',lat:53.42,lon:-6.25,tz:'Europe/Dublin',n:'Dublin Intl'},{c:'CPH',city:'Copenhagen',country:'Denmark',cc:'DK',lat:55.62,lon:12.65,tz:'Europe/Copenhagen',n:'Copenhagen Intl'},{c:'ARN',city:'Stockholm',country:'Sweden',cc:'SE',lat:59.65,lon:17.92,tz:'Europe/Stockholm',n:'Arlanda'},{c:'OSL',city:'Oslo',country:'Norway',cc:'NO',lat:60.19,lon:11.08,tz:'Europe/Oslo',n:'Oslo Gardermoen'},{c:'VIE',city:'Vienna',country:'Austria',cc:'AT',lat:48.11,lon:16.56,tz:'Europe/Vienna',n:'Vienna Intl'},{c:'IST',city:'Istanbul',country:'Turkey',cc:'TR',lat:41.26,lon:28.73,tz:'Europe/Istanbul',n:'Istanbul Intl'},{c:'ATH',city:'Athens',country:'Greece',cc:'GR',lat:37.94,lon:23.90,tz:'Europe/Athens',n:'Athens Intl'},{c:'NRT',city:'Tokyo',country:'Japan',cc:'JP',lat:35.77,lon:140.39,tz:'Asia/Tokyo',n:'Narita Intl'},{c:'HND',city:'Tokyo',country:'Japan',cc:'JP',lat:35.55,lon:139.78,tz:'Asia/Tokyo',n:'Haneda'},{c:'KIX',city:'Osaka',country:'Japan',cc:'JP',lat:34.43,lon:135.24,tz:'Asia/Tokyo',n:'Kansai Intl'},{c:'ICN',city:'Seoul',country:'South Korea',cc:'KR',lat:37.46,lon:126.44,tz:'Asia/Seoul',n:'Incheon Intl'},{c:'PEK',city:'Beijing',country:'China',cc:'CN',lat:40.08,lon:116.58,tz:'Asia/Shanghai',n:'Beijing Capital'},{c:'PVG',city:'Shanghai',country:'China',cc:'CN',lat:31.14,lon:121.81,tz:'Asia/Shanghai',n:'Pudong Intl'},{c:'HKG',city:'Hong Kong',country:'Hong Kong',cc:'HK',lat:22.31,lon:113.91,tz:'Asia/Hong_Kong',n:'Hong Kong Intl'},{c:'TPE',city:'Taipei',country:'Taiwan',cc:'TW',lat:25.08,lon:121.23,tz:'Asia/Taipei',n:'Taoyuan Intl'},{c:'SIN',city:'Singapore',country:'Singapore',cc:'SG',lat:1.35,lon:103.99,tz:'Asia/Singapore',n:'Singapore Changi'},{c:'BKK',city:'Bangkok',country:'Thailand',cc:'TH',lat:13.69,lon:100.75,tz:'Asia/Bangkok',n:'Suvarnabhumi'},{c:'KUL',city:'Kuala Lumpur',country:'Malaysia',cc:'MY',lat:2.75,lon:101.71,tz:'Asia/Kuala_Lumpur',n:'Kuala Lumpur Intl'},{c:'CGK',city:'Jakarta',country:'Indonesia',cc:'ID',lat:-6.13,lon:106.66,tz:'Asia/Jakarta',n:'Soekarno–Hatta'},{c:'MNL',city:'Manila',country:'Philippines',cc:'PH',lat:14.51,lon:121.02,tz:'Asia/Manila',n:'Ninoy Aquino Intl'},{c:'DEL',city:'Delhi',country:'India',cc:'IN',lat:28.56,lon:77.10,tz:'Asia/Kolkata',n:'Indira Gandhi Intl'},{c:'BOM',city:'Mumbai',country:'India',cc:'IN',lat:19.09,lon:72.87,tz:'Asia/Kolkata',n:'Chhatrapati Shivaji'},{c:'BLR',city:'Bangalore',country:'India',cc:'IN',lat:13.20,lon:77.70,tz:'Asia/Kolkata',n:'Kempegowda Intl'},{c:'DXB',city:'Dubai',country:'UAE',cc:'AE',lat:25.25,lon:55.36,tz:'Asia/Dubai',n:'Dubai Intl'},{c:'DOH',city:'Doha',country:'Qatar',cc:'QA',lat:25.27,lon:51.61,tz:'Asia/Qatar',n:'Hamad Intl'},{c:'SYD',city:'Sydney',country:'Australia',cc:'AU',lat:-33.95,lon:151.18,tz:'Australia/Sydney',n:'Sydney Kingsford Smith'},{c:'MEL',city:'Melbourne',country:'Australia',cc:'AU',lat:-37.67,lon:144.84,tz:'Australia/Melbourne',n:'Melbourne Intl'},{c:'BNE',city:'Brisbane',country:'Australia',cc:'AU',lat:-27.39,lon:153.12,tz:'Australia/Brisbane',n:'Brisbane Intl'},{c:'PER',city:'Perth',country:'Australia',cc:'AU',lat:-31.94,lon:115.97,tz:'Australia/Perth',n:'Perth Intl'},{c:'AKL',city:'Auckland',country:'New Zealand',cc:'NZ',lat:-37.01,lon:174.79,tz:'Pacific/Auckland',n:'Auckland Intl'},{c:'GRU',city:'São Paulo',country:'Brazil',cc:'BR',lat:-23.43,lon:-46.47,tz:'America/Sao_Paulo',n:'Guarulhos Intl'},{c:'EZE',city:'Buenos Aires',country:'Argentina',cc:'AR',lat:-34.82,lon:-58.54,tz:'America/Argentina/Buenos_Aires',n:'Ezeiza Intl'},{c:'BOG',city:'Bogotá',country:'Colombia',cc:'CO',lat:4.70,lon:-74.14,tz:'America/Bogota',n:'El Dorado'},{c:'LIM',city:'Lima',country:'Peru',cc:'PE',lat:-12.02,lon:-77.11,tz:'America/Lima',n:'Jorge Chávez'},{c:'SCL',city:'Santiago',country:'Chile',cc:'CL',lat:-33.39,lon:-70.79,tz:'America/Santiago',n:'Arturo Merino Benítez'},{c:'JNB',city:'Johannesburg',country:'South Africa',cc:'ZA',lat:-26.14,lon:28.24,tz:'Africa/Johannesburg',n:'O. R. Tambo'},{c:'CPT',city:'Cape Town',country:'South Africa',cc:'ZA',lat:-33.97,lon:18.60,tz:'Africa/Johannesburg',n:'Cape Town Intl'},{c:'NBO',city:'Nairobi',country:'Kenya',cc:'KE',lat:-1.32,lon:36.93,tz:'Africa/Nairobi',n:'Jomo Kenyatta'},{c:'TLV',city:'Tel Aviv',country:'Israel',cc:'IL',lat:32.01,lon:34.89,tz:'Asia/Jerusalem',n:'Ben Gurion'},{c:'RUH',city:'Riyadh',country:'Saudi Arabia',cc:'SA',lat:24.96,lon:46.70,tz:'Asia/Riyadh',n:'King Khalid Intl'}];
+
+/* Destination search — typeahead by airport code or city */
 const destInput=document.getElementById('destInput'),destResultsEl=document.getElementById('destResults');
-destInput.addEventListener('input',()=>{clearTimeout(destTimer);const q=destInput.value.trim();if(q.length<2){destResultsEl.innerHTML='';destResults=[];return}destTimer=setTimeout(async()=>{try{const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=en&format=json`);const d=await r.json();destResults=d.results||[];destResultsEl.innerHTML=destResults.map((c,i)=>{const flag=c.country_code?String.fromCodePoint(...[...c.country_code.toUpperCase()].map(ch=>ch.charCodeAt(0)+0x1F1E5-65)):'📍';return `<div class="dest-result" onclick="pickDest(${i})"><span class="flag">${flag}</span><div class="info"><div class="name">${c.name}</div><div class="region">${c.admin1||''}${c.admin1?', ':''}${c.country}</div></div></div>`}).join('')}catch{}},350)});
+destInput.addEventListener('input',()=>{clearTimeout(destTimer);const q=destInput.value.trim();if(q.length<1){destResultsEl.innerHTML='';destResults=[];return}destTimer=setTimeout(async()=>{
+  const upperQ=q.toUpperCase();
+  let apMatches=[];
+  if(upperQ.length>=2){apMatches=AIRPORTS.filter(a=>a.c===upperQ||a.c.startsWith(upperQ)||(a.city.toUpperCase().includes(upperQ)&&upperQ.length>=3)).slice(0,5)}
+  let geoResults=[];
+  if(q.length>=2){try{const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=en&format=json`);const d=await r.json();geoResults=d.results||[]}catch{}}
+  destResults=[];
+  const seenCities=new Set();
+  apMatches.forEach(a=>{const key=a.city+a.cc;if(!seenCities.has(key)){seenCities.add(key);destResults.push({name:a.city,country:a.country,country_code:a.cc,latitude:a.lat,longitude:a.lon,timezone:a.tz,_airport:a.c,_airportName:a.n})}});
+  geoResults.forEach(c=>{const key=c.name+(c.country_code||'');if(!seenCities.has(key)){seenCities.add(key);destResults.push(c)}});
+  destResultsEl.innerHTML=destResults.map((c,i)=>{const flag=c.country_code?String.fromCodePoint(...[...c.country_code.toUpperCase()].map(ch=>ch.charCodeAt(0)+0x1F1E5-65)):'✈️';const apTag=c._airport?` <span class="auto-badge" style="background:#fef3c7;color:#92400e">${c._airport}</span>`:'<span class="auto-badge" style="background:#e0f2fe;color:#0369a1">✈️</span>';return `<div class="dest-result" onclick="pickDest(${i})"><span class="flag">${flag}</span><div class="info"><div class="name">${c.name}${c._airport?` <span class="auto-badge" style="background:#fef3c7;color:#92400e">${c._airport}</span>`:''}</div><div class="region">${c._airport?c._airportName+', ':''}${c.admin1||''}${c.admin1?', ':''}${c.country}</div></div></div>`}).join('');
+},200)});
 function pickDest(i){currentDest=destResults[i];destInput.value=`${currentDest.name}, ${currentDest.country}`;destResultsEl.innerHTML=''}
 
 /* Trip CRUD */
@@ -446,9 +472,10 @@ const TEMPLATES=[
   {id:'festival',name:'Festival',icon:'🎪',items:[['tech','Portable Charger',1],['gear','Fanny Pack',1],['gear','Earplugs',1],['gear','Reusable Cup',1],['apparel','Bandana',1],['health','Sunscreen',1],['health','Electrolytes',1]]}
 ];
 function renderPack(){
-  const el=document.getElementById('packList');const t=activeTrip();
-  if(!t){el.innerHTML='<div class="empty-state">Set up a trip first → Trip tab</div>';updateProgress();renderTemplates();return}
-  if(Object.keys(t.items).length===0){
+  const el=document.getElementById('packList');const t=activeTrip();const items=activeItems();
+  const noTrip=!t;
+  if(noTrip){const banner=el.previousElementSibling;if(banner&&banner.classList.contains('no-trip-banner')){}}
+  if(Object.keys(items).length===0){
     const seeds=[
       ['apparel','Tops / Tees',3,false],['apparel','Pants / Shorts',2,false],['apparel','Evening Fit',1,false],
       ['apparel','Outerwear / Jacket',1,false],['apparel','Sleepwear',1,false],['apparel','Underwear & Socks',5,true],
@@ -467,33 +494,34 @@ function renderPack(){
       ['gear','Day Bag',1,true],['gear','Sunglasses',1,false],['gear','Water Bottle',1,false],
       ['gear','Umbrella',1,false],['gear','Travel Pillow',1,false],['gear','Luggage Lock',1,false]
     ];
-    seeds.forEach(([cat,label,qty,essential])=>{t.items[`seed-${cat}-${label}`]={cat,label,checked:false,qty,essential:essential||false,auto:false}});
+    seeds.forEach(([cat,label,qty,essential])=>{items[`seed-${cat}-${label}`]={cat,label,checked:false,qty,essential:essential||false,auto:false}});
     save();
   }
   renderTemplates();
   const search=(document.getElementById('packSearch')?.value||'').trim().toLowerCase();
   let html='';
+  if(noTrip){html+=`<div style="background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:var(--muted);text-align:center">No trip set — this checklist saves locally. <a onclick="goScreen('trip')" style="color:var(--orange);font-weight:600;cursor:pointer">Set up a trip →</a></div>`}
   CATS.forEach(cat=>{
-    let items=Object.entries(t.items).filter(([k,v])=>v.cat===cat.id);
-    if(search)items=items.filter(([k,v])=>v.label.toLowerCase().includes(search));
-    if(!items.length)return;
-    const done=items.filter(([k,v])=>v.checked).length;
-    const allDone=items.length>0&&done===items.length;
-    html+=`<div class="cat-section${allDone?' open':''}" data-cat="${cat.id}"><div class="cat-head" onclick="this.parentElement.classList.toggle('open')"><div class="left"><span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.name}</span></div><div class="right"><span class="pill ${allDone?'done':''}">${done}/${items.length}</span><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div></div><div class="cat-body"><div class="pack-list">${items.map(([k,v])=>`<div class="pack-row ${v.checked?'checked':''}" data-key="${k}"><div class="check" onclick="toggleItem('${k}')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="p-label">${v.label}${v.essential?' <span class="essential-badge">essential</span>':''}${v.auto?' <span class="auto-badge">weather</span>':''}${v.fromTemplate?' <span class="auto-badge" style="background:#fef3c7;color:#92400e">'+v.fromTemplate+'</span>':''}</span><div class="qty-control"><button class="qty-btn" onclick="qtyItem('${k}',-1)">−</button><span class="qty-val">${v.qty||1}</span><button class="qty-btn" onclick="qtyItem('${k}',1)">+</button></div><button class="del-btn" onclick="delItem('${k}')">✕</button></div>`).join('')}<div class="add-item"><input class="ai-inp" id="add-${cat.id}" placeholder="Add ${cat.name.toLowerCase()} item…" onkeydown="if(event.key==='Enter')addItem('${cat.id}')"><button class="ai-btn" onclick="addItem('${cat.id}')">Add</button></div></div></div></div>`;
+    let catItems=Object.entries(items).filter(([k,v])=>v.cat===cat.id);
+    if(search)catItems=catItems.filter(([k,v])=>v.label.toLowerCase().includes(search));
+    if(!catItems.length)return;
+    const done=catItems.filter(([k,v])=>v.checked).length;
+    const allDone=catItems.length>0&&done===catItems.length;
+    html+=`<div class="cat-section${allDone?' open':''}" data-cat="${cat.id}"><div class="cat-head" onclick="this.parentElement.classList.toggle('open')"><div class="left"><span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.name}</span></div><div class="right"><span class="pill ${allDone?'done':''}">${done}/${catItems.length}</span><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div></div><div class="cat-body"><div class="pack-list">${catItems.map(([k,v])=>`<div class="pack-row ${v.checked?'checked':''}" data-key="${k}"><div class="check" onclick="toggleItem('${k}')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="p-label">${v.label}${v.essential?' <span class="essential-badge">essential</span>':''}${v.auto?' <span class="auto-badge">weather</span>':''}${v.fromTemplate?' <span class="auto-badge" style="background:#fef3c7;color:#92400e">'+v.fromTemplate+'</span>':''}</span><div class="qty-control"><button class="qty-btn" onclick="qtyItem('${k}',-1)">−</button><span class="qty-val">${v.qty||1}</span><button class="qty-btn" onclick="qtyItem('${k}',1)">+</button></div><button class="del-btn" onclick="delItem('${k}')">✕</button></div>`).join('')}<div class="add-item"><input class="ai-inp" id="add-${cat.id}" placeholder="Add ${cat.name.toLowerCase()} item…" onkeydown="if(event.key==='Enter')addItem('${cat.id}')"><button class="ai-btn" onclick="addItem('${cat.id}')">Add</button></div></div></div></div>`;
   });
   el.innerHTML=html;
   updateProgress();
   if(!search){const first=el.querySelector('.cat-section');if(first)first.classList.add('open')}
 }
 
-function toggleItem(k){const t=activeTrip();if(!t||!t.items[k])return;t.items[k].checked=!t.items[k].checked;save();sbSaveTrip(t);renderPack();if(allPacked())document.getElementById('modalBg').classList.add('show')}
-function qtyItem(k,dir){const t=activeTrip();if(!t||!t.items[k])return;t.items[k].qty=Math.max(1,(t.items[k].qty||1)+dir);save();sbSaveTrip(t);renderPack()}
-function delItem(k){const t=activeTrip();if(!t||!t.items[k])return;delete t.items[k];save();sbSaveTrip(t);renderPack()}
-function addItem(catId){const t=activeTrip();if(!t)return;const inp=document.getElementById(`add-${catId}`);const label=inp.value.trim();if(!label)return;t.items[`c-${Date.now()}`]={cat:catId,label,checked:false,qty:1,auto:false};inp.value='';save();sbSaveTrip(t);renderPack()}
-function allPacked(){const t=activeTrip();if(!t)return false;const ks=Object.keys(t.items);return ks.length>0&&ks.every(k=>t.items[k].checked)}
+function toggleItem(k){const items=activeItems();if(!items[k])return;items[k].checked=!items[k].checked;save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack();if(allPacked())document.getElementById('modalBg').classList.add('show')}
+function qtyItem(k,dir){const items=activeItems();if(!items[k])return;items[k].qty=Math.max(1,(items[k].qty||1)+dir);save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack()}
+function delItem(k){const items=activeItems();if(!items[k])return;delete items[k];save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack()}
+function addItem(catId){const items=activeItems();const inp=document.getElementById(`add-${catId}`);const label=inp.value.trim();if(!label)return;items[`c-${Date.now()}`]={cat:catId,label,checked:false,qty:1,auto:false};inp.value='';save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack()}
+function allPacked(){const items=activeItems();const ks=Object.keys(items);return ks.length>0&&ks.every(k=>items[k].checked)}
 function updateProgress(){
-  const t=activeTrip();const ks=t?Object.keys(t.items):[];
-  const total=ks.length,done=t?ks.filter(k=>t.items[k].checked).length:0;
+  const items=activeItems();const ks=Object.keys(items);
+  const total=ks.length,done=ks.filter(k=>items[k].checked).length;
   const pct=total?Math.round(done/total*100):0;
   document.getElementById('pPct').textContent=pct+'%';
   document.getElementById('pPct').style.color=pct===100?'var(--teal)':'var(--orange)';
@@ -505,18 +533,18 @@ function updateProgress(){
 }
 
 /* Closet */
-function handleClosetUpload(e){const t=activeTrip();if(!t){toast('Set up a trip first');return}const files=[...e.target.files];files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{t.closet.push({id:'c'+Date.now()+Math.random().toString(36).slice(2,6),src:ev.target.result,selected:false});save();renderCloset()};reader.readAsDataURL(file)});if(files.length)toast(`Added ${files.length} photo${files.length>1?'s':''}`)}
-function renderCloset(){const grid=document.getElementById('closetGrid');const t=activeTrip();if(!t){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">Set up a trip first → Trip tab</div>';return}if(!t.closet.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">No closet photos yet — upload above ↑</div>';return}grid.innerHTML=t.closet.map(c=>`<div class="photo-cell ${c.selected?'selected':''}" onclick="toggleCloset('${c.id}')"><img src="${c.src}" alt="closet"><div class="pc-badge"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><button class="pc-del" onclick="event.stopPropagation();delCloset('${c.id}')">✕</button></div>`).join('')}
-function toggleCloset(id){const t=activeTrip();if(!t)return;const c=t.closet.find(x=>x.id===id);if(!c)return;c.selected=!c.selected;save();renderCloset();toast(c.selected?'Added to trip':'Removed')}
-function delCloset(id){const t=activeTrip();if(!t)return;t.closet=t.closet.filter(x=>x.id!==id);save();renderCloset()}
+function handleClosetUpload(e){const closet=activeCloset();const files=[...e.target.files];files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{closet.push({id:'c'+Date.now()+Math.random().toString(36).slice(2,6),src:ev.target.result,selected:false});save();renderCloset()};reader.readAsDataURL(file)});if(files.length)toast(`Added ${files.length} photo${files.length>1?'s':''}`)}
+function renderCloset(){const grid=document.getElementById('closetGrid');const closet=activeCloset();if(!closet.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">No closet photos yet — upload above ↑</div>';return}grid.innerHTML=closet.map(c=>`<div class="photo-cell ${c.selected?'selected':''}" onclick="toggleCloset('${c.id}')"><img src="${c.src}" alt="closet"><div class="pc-badge"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><button class="pc-del" onclick="event.stopPropagation();delCloset('${c.id}')">✕</button></div>`).join('')}
+function toggleCloset(id){const closet=activeCloset();const c=closet.find(x=>x.id===id);if(!c)return;c.selected=!c.selected;save();renderCloset();toast(c.selected?'Added to trip':'Removed')}
+function delCloset(id){const closet=activeCloset();const t=activeTrip();if(t){t.closet=t.closet.filter(x=>x.id!==id)}else{S.localCloset=S.localCloset.filter(x=>x.id!==id)}save();renderCloset()}
 
 /* Style */
 const STYLE_TAGS=['Casual','Formal','Beach','Street','Athletic','Evening','Business'];let activeTag='Casual';
-function handleStyleUpload(e){const t=activeTrip();if(!t){toast('Set up a trip first');return}const files=[...e.target.files];files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{t.style.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,6),src:ev.target.result,tag:activeTag,note:''});save();renderStyle()};reader.readAsDataURL(file)});if(files.length)toast(`Added ${files.length} photo${files.length>1?'s':''}`)}
-function renderStyle(){document.getElementById('styleTags').innerHTML=STYLE_TAGS.map(t=>`<button class="stag ${t===activeTag?'active':''}" onclick="setTag('${t}')">${t}</button>`).join('');const grid=document.getElementById('styleGrid');const t=activeTrip();if(!t){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">Set up a trip first → Trip tab</div>';return}if(!t.style.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">No style photos yet — upload above ↑</div>';return}grid.innerHTML=t.style.map(s=>`<div class="style-card"><img src="${s.src}" alt="outfit"><div class="sc-body"><div class="sc-tag">${s.tag}</div><input class="sc-inp" placeholder="Note…" value="${s.note||''}" onchange="editStyleNote('${s.id}',this.value)"></div><div class="sc-foot"><button class="sc-del" onclick="delStyle('${s.id}')">Remove</button><span style="font-size:.65rem;color:var(--muted);">${s.tag}</span></div></div>`).join('')}
+function handleStyleUpload(e){const style=activeStyle();const files=[...e.target.files];files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{style.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,6),src:ev.target.result,tag:activeTag,note:''});save();renderStyle()};reader.readAsDataURL(file)});if(files.length)toast(`Added ${files.length} photo${files.length>1?'s':''}`)}
+function renderStyle(){document.getElementById('styleTags').innerHTML=STYLE_TAGS.map(t=>`<button class="stag ${t===activeTag?'active':''}" onclick="setTag('${t}')">${t}</button>`).join('');const grid=document.getElementById('styleGrid');const style=activeStyle();if(!style.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">No style photos yet — upload above ↑</div>';return}grid.innerHTML=style.map(s=>`<div class="style-card"><img src="${s.src}" alt="outfit"><div class="sc-body"><div class="sc-tag">${s.tag}</div><input class="sc-inp" placeholder="Note…" value="${s.note||''}" onchange="editStyleNote('${s.id}',this.value)"></div><div class="sc-foot"><button class="sc-del" onclick="delStyle('${s.id}')">Remove</button><span style="font-size:.65rem;color:var(--muted);">${s.tag}</span></div></div>`).join('')}
 function setTag(t){activeTag=t;renderStyle()}
-function editStyleNote(id,note){const tr=activeTrip();if(!tr)return;const s=tr.style.find(x=>x.id===id);if(s){s.note=note;save()}}
-function delStyle(id){const t=activeTrip();if(!t)return;t.style=t.style.filter(x=>x.id!==id);save();renderStyle()}
+function editStyleNote(id,note){const style=activeStyle();const s=style.find(x=>x.id===id);if(s){s.note=note;save()}}
+function delStyle(id){const style=activeStyle();const t=activeTrip();if(t){t.style=t.style.filter(x=>x.id!==id)}else{S.localStyle=S.localStyle.filter(x=>x.id!==id)}save();renderStyle()}
 
 
 /* Pack v2 — templates, filter, AI suggest */
@@ -538,12 +566,13 @@ function applyTemplate(id){
   else toast(`${tpl.name} items already in your list`);
 }
 async function aiSuggest(){
-  const t=activeTrip();if(!t){toast('Set up a trip first');return}
+  const t=activeTrip();const items=activeItems();
+  if(!t&&!Object.keys(items).length){toast('Add some items first');return}
   const btn=document.getElementById('aiSuggestBtn');
   if(btn){btn.classList.add('loading');btn.textContent='✨ AI is thinking…'}
   showLoading('AI Suggest','Generating smart packing list');
   try{
-    const body={destination:`${t.city}, ${t.country}`,departDate:t.depart,returnDate:t.return,weather:t.weather};
+    const body={destination:t?`${t.city}, ${t.country}`:'General trip',departDate:t?.depart,returnDate:t?.return,weather:t?.weather};
     const fnUrl='/api/suggest-packing';
     const r=await fetch(fnUrl,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
     if(!r.ok){const err=await r.text();throw new Error('AI suggest failed: '+err)}
@@ -556,11 +585,11 @@ async function aiSuggest(){
           cat.items.forEach(item=>{
             const k=`ai-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
             const catId=CATS.find(c=>c.name.toLowerCase()===cat.name?.toLowerCase()?.replace(' & beauty','')?.replace(' & meds',''))?.id||cat.id||'gear';
-            if(!t.items[k]){t.items[k]={cat:catId,label:item.label,checked:false,qty:item.qty||1,essential:item.essential||false,auto:false,fromTemplate:'AI'};added++}
+            if(!items[k]){items[k]={cat:catId,label:item.label,checked:false,qty:item.qty||1,essential:item.essential||false,auto:false,fromTemplate:'AI'};added++}
           });
         }
       });
-      save();sbSaveTrip(t);renderPack();
+      save();if(t)sbSaveTrip(t);renderPack();
       toast(`AI added ${added} smart suggestions`);
     }else{toast('AI suggestion format unexpected')}
   }catch(err){
@@ -624,7 +653,7 @@ function setupDnD(uid,fid){const el=document.getElementById(uid);if(!el)return;e
 setupDnD('closetUpload','closetFile');setupDnD('styleUpload','styleFile');
 
 /* Sync */
-function renderSync(){document.getElementById('sbUrl').value=S.config.url||'';document.getElementById('sbKey').value=S.config.key||'';const st=document.getElementById('syncStatus');if(sbConfigured()){st.className='sync-status connected';document.getElementById('syncStatusText').textContent='Connected — '+S.trips.length+' trips';document.getElementById('syncTripsCount').textContent=S.trips.length+' trips synced'}else{st.className='sync-status disconnected';document.getElementById('syncStatusText').textContent='Not connected';document.getElementById('syncTripsCount').textContent=''}}
+function renderSync(){document.getElementById('sbUrl').value=S.config.url||'';document.getElementById('sbKey').value=S.config.key||'';const un=document.getElementById('syncUserName');if(un){un.textContent=currentUser()||'—'}const st=document.getElementById('syncStatus');if(sbConfigured()){st.className='sync-status connected';document.getElementById('syncStatusText').textContent='Connected — '+S.trips.length+' trips';document.getElementById('syncTripsCount').textContent=S.trips.length+' trips synced'}else{st.className='sync-status disconnected';document.getElementById('syncStatusText').textContent='Not connected';document.getElementById('syncTripsCount').textContent=''}}
 async function syncConnect(){const url=document.getElementById('sbUrl').value.trim().replace(/\/$/,'');const key=document.getElementById('sbKey').value.trim();if(!url||!key){toast('Enter URL and key');return}S.config={url,key};save();showLoading('Syncing…','Loading trips from Supabase');try{const trips=await sbLoadTrips();hideLoading();const sbIds=new Set(trips.map(t=>t.id));S.trips=[...S.trips.filter(t=>!sbIds.has(t.id)),...trips];if(!S.activeId&&S.trips.length)S.activeId=S.trips[0].id;save();renderSync();renderTripsList();if(activeTrip())renderTripSummary();toast(`Synced ${trips.length} trips`)}catch{hideLoading();toast('Sync failed — check URL and key')}}
 
 /* Init */
