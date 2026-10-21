@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#faf7f0;--surface:#fff;--surface-2:#f5f0e6;--ink:#1c1c1e;--ink-2:#3a3a3c;--muted:#9999a0;--line:#e8e2d5;--line-soft:#f0ebe0;--orange:#ff4d00;--orange-hi:#ff6b2c;--pink:#ff3d7f;--teal:#0d9488;--teal-soft:#ccfbf1;--red:#ef4444;--green:#22c55e;--grad:linear-gradient(135deg,#ff3d7f,#ff4d00);--grad-teal:linear-gradient(135deg,#0d9488,#0891b2);--r:16px;--r-sm:10px;--r-xs:6px;--shadow-sm:0 1px 3px rgba(28,28,30,.06);--shadow:0 2px 12px rgba(28,28,30,.06);--shadow-lg:0 8px 30px rgba(28,28,30,.12);--safe:env(safe-area-inset-bottom,0px);--tab-h:56px}
+:root{--bg:#faf7f0;--surface:#fff;--surface-2:#f5f0e6;--ink:#1c1c1e;--ink-2:#3a3a3c;--muted:#9999a0;--line:#e8e2d5;--line-soft:#f0ebe0;--orange:#ff4d00;--orange-hi:#ff6b2c;--pink:#ff3d7f;--teal:#0d9488;--teal-soft:#ccfbf1;--red:#ef4444;--green:#22c55e;--grad:linear-gradient(135deg,#ff3d7f,#ff4d00);--grad-teal:linear-gradient(135deg,#0d9488,#0891b2);--r:16px;--r-sm:10px;--r-xs:6px;--shadow-sm:0 1px 4px rgba(28,28,30,.05);--shadow:0 2px 12px rgba(28,28,30,.06);--shadow-lg:0 8px 30px rgba(28,28,30,.12);--safe:env(safe-area-inset-bottom,0px);--tab-h:56px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
 body{font-family:'Space Grotesk',-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none;padding-bottom:calc(var(--tab-h) + var(--safe) + 8px)}
@@ -106,7 +106,7 @@ input,textarea{-webkit-appearance:none;appearance:none}
 .cat-head .pill{font-size:.66rem;font-weight:700;padding:3px 9px;border-radius:100px;background:var(--line-soft);color:var(--ink-2)}
 .cat-head .pill.done{background:var(--teal);color:#fff}
 .cat-body{max-height:0;overflow:hidden;transition:max-height .25s ease}
-.cat-section.open .cat-body{max-height:2000px}
+.cat-section.open .cat-body{max-height:3000px}
 .pack-list{padding:6px 0 0}
 .pack-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line-soft);transition:opacity .15s}
 .pack-row:last-child{border-bottom:none}
@@ -126,6 +126,12 @@ input,textarea{-webkit-appearance:none;appearance:none}
 .pack-row .del-btn{width:24px;height:24px;color:var(--muted);font-size:.8rem;opacity:0;transition:opacity .12s}
 .pack-row:active .del-btn{opacity:.6}
 .pack-row .del-btn:active{opacity:1;color:var(--red)}
+/* Packed counter */
+.pack-counter{display:flex;align-items:center;gap:4px;background:var(--surface-2);border-radius:100px;padding:2px 6px}
+.pack-counter .pc-btn{width:24px;height:24px;border-radius:50%;border:none;background:var(--surface);border:1px solid var(--line);font-size:.8rem;font-weight:700;color:var(--ink-2);display:grid;place-items:center;cursor:pointer}
+.pack-counter .pc-btn:active{border-color:var(--orange);color:var(--orange)}
+.pack-counter .pc-val{font-size:.82rem;font-weight:700;min-width:30px;text-align:center;font-variant-numeric:tabular-nums}
+.pack-counter .pc-sep{color:var(--muted);font-size:.7rem}
 .add-item{display:flex;gap:8px;padding:12px 16px 16px}
 .add-item .ai-inp{flex:1;padding:9px 12px;font-size:.82rem;border:1px solid var(--line);border-radius:var(--r-xs);background:var(--surface-2);outline:none}
 .add-item .ai-inp:focus{border-color:var(--orange)}
@@ -193,45 +199,6 @@ input,textarea{-webkit-appearance:none;appearance:none}
 .loading-overlay .lo-text{font-size:.9rem;font-weight:600;color:var(--ink)}
 .loading-overlay .lo-sub{font-size:.76rem;color:var(--muted);margin-top:6px}
 .hidden{display:none!important}
-
-/* Responsive — all screen sizes */
-@media(max-width:640px){
-  .field-row{grid-template-columns:1fr}
-  .style-grid{grid-template-columns:1fr 1fr}
-  .photo-grid{grid-template-columns:repeat(3,1fr)}
-  .w-day{flex:0 0 70px}
-  .trip-hero{padding:24px 20px}
-  .trip-hero h1{font-size:clamp(1.4rem,8vw,2rem)}
-  .progress-card{padding:16px 18px}
-  .cat-head{padding:12px 14px}
-  .pack-row{padding:10px 12px;gap:10px;min-height:48px}
-  .btn{padding:12px 20px;font-size:.82rem}
-  .scan-btn{padding:12px 14px}
-  .upload-zone{padding:28px 16px}
-  .sync-card{padding:20px}
-}
-@media(max-width:380px){
-  .field-row{grid-template-columns:1fr}
-  .style-grid{grid-template-columns:1fr}
-  .photo-grid{grid-template-columns:repeat(2,1fr)}
-  .w-day{flex:0 0 64px;padding:10px 8px}
-  .tab{font-size:.58rem}
-  .tab svg{width:20px;height:20px}
-  .brand{font-size:1rem}
-}
-@media(min-width:641px){
-  .screen{max-width:580px}
-}
-/* Prevent iOS input zoom */
-.inp,.lbl{font-size:max(.92rem,16px)}
-.inp{font-size:max(.92rem,16px)}
-/* Safe area for notch phones */
-.screen{padding-top:max(20px,env(safe-area-inset-top,20px))}
-
-
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-
-/* Auth gate */
 .auth-gate{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
 .auth-card{background:var(--surface);border-radius:var(--r);padding:36px 28px;max-width:340px;width:100%;box-shadow:var(--shadow-lg);border:1px solid var(--line)}
 .auth-card .ac-brand{font-family:'Unbounded',sans-serif;font-weight:800;font-size:1.1rem;display:flex;align-items:baseline;gap:1px;margin-bottom:24px;justify-content:center}
@@ -245,8 +212,6 @@ input,textarea{-webkit-appearance:none;appearance:none}
 .auth-card .ac-err{font-size:.8rem;color:var(--red);text-align:center;margin-top:12px;display:none}
 .auth-card .ac-err.show{display:block}
 .auth-card .ac-hint{font-size:.72rem;color:var(--muted);text-align:center;margin-top:16px}
-
-/* ─── Pack v2 improvements ─── */
 .pack-stats{display:flex;gap:10px;margin-bottom:16px}
 .pack-stat{flex:1;text-align:center;padding:14px 8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm)}
 .pack-stat .ps-num{font-family:'Unbounded',sans-serif;font-weight:800;font-size:1.5rem;line-height:1}
@@ -265,15 +230,111 @@ input,textarea{-webkit-appearance:none;appearance:none}
 .ai-suggest-btn.loading{opacity:.6;pointer-events:none}
 .essential-badge{font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 6px;border-radius:100px;background:#fef3c7;color:#92400e;white-space:nowrap}
 .cat-icon{font-size:1.05rem;line-height:1}
-
+/* === New: Chat, Events, Calendar, Recs, Flights, Desktop === */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - var(--tab-h) - var(--safe) - 120px);min-height:300px}
+.chat-msgs{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 2px 14px;display:flex;flex-direction:column;gap:10px}
+.msg{display:flex;max-width:84%}
+.msg .bubble{padding:11px 15px;border-radius:16px;font-size:.92rem;line-height:1.4;word-wrap:break-word;white-space:pre-wrap}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg.user .bubble{background:var(--grad);color:#fff;border-bottom-right-radius:6px;box-shadow:0 2px 12px rgba(255,77,0,.18)}
+.msg.assistant{align-self:flex-start}
+.msg.assistant .bubble{background:var(--surface);border:1px solid var(--line);color:var(--ink);border-bottom-left-radius:6px;box-shadow:var(--shadow-sm)}
+.chat-input-bar{display:flex;gap:8px;align-items:flex-end;padding:10px 0 6px;border-top:1px solid var(--line);background:var(--bg);position:sticky;bottom:0}
+.chat-input-bar textarea{flex:1;resize:none;min-height:44px;max-height:120px;padding:12px 14px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:.95rem;line-height:1.4;outline:none}
+.chat-input-bar textarea:focus{border-color:var(--orange)}
+.chat-input-bar .send-btn{width:44px;height:44px;flex:none;border-radius:50%;background:var(--grad);color:#fff;display:grid;place-items:center;font-size:1.1rem;cursor:pointer}
+.chat-input-bar .send-btn:active{transform:scale(.92)}
+.event-card{display:flex;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--shadow-sm)}
+.event-card .ev-date{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--surface-2);border-radius:var(--r-sm);padding:8px 6px;min-width:60px}
+.event-card .ev-date .ev-d{font-family:'Unbounded';font-weight:800;font-size:1.3rem;line-height:1}
+.event-card .ev-date .ev-m{font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:2px;font-weight:600}
+.event-card .ev-body{flex:1;min-width:0}
+.event-card .ev-body .ev-title{font-size:.95rem;font-weight:700;margin-bottom:2px}
+.event-card .ev-body .ev-desc{font-size:.82rem;color:var(--ink-2);margin:4px 0}
+.event-card .ev-body .ev-cite{font-size:.72rem;color:var(--muted)}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-head .cal-title{font-family:'Unbounded';font-weight:700;font-size:1rem}
+.cal-nav-btn{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;font-size:1.1rem;font-weight:600;background:var(--surface);border:1px solid var(--line);color:var(--ink-2);cursor:pointer}
+.cal-nav-btn:active{background:var(--surface-2)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dow{text-align:center;font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:4px 0}
+.cal-day{position:relative;aspect-ratio:1;display:grid;place-items:center;border-radius:8px;font-size:.85rem;font-weight:500;color:var(--ink-2);background:var(--surface);border:1px solid var(--line)}
+.cal-day.empty{background:transparent;border-color:transparent}
+.cal-day.today{font-weight:800;color:var(--orange);border-color:var(--orange)}
+.cal-day.trip-day{background:var(--orange);color:#fff;border-color:var(--orange);font-weight:700}
+.cal-day.has-event::after{content:'';position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--teal)}
+.cal-day.trip-day.has-event::after{background:#fff}
+.reco-card{display:flex;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--shadow-sm)}
+.reco-card .reco-icon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--grad);color:#fff;font-size:1.1rem;flex-shrink:0}
+.reco-card .reco-body{flex:1;min-width:0}
+.reco-card .reco-body .reco-title{font-size:.9rem;font-weight:700}
+.reco-card .reco-body .reco-desc{font-size:.8rem;color:var(--muted);margin-top:2px}
+.reco-card .reco-body .reco-dur{font-size:.7rem;font-weight:600;color:var(--teal);margin-top:4px}
+.flight-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--shadow-sm)}
+.flight-card .fl-route{display:flex;align-items:center;gap:10px;font-family:'Unbounded';font-weight:700;font-size:1rem}
+.flight-card .fl-route .fl-arrow{color:var(--orange)}
+.flight-card .fl-meta{display:flex;justify-content:space-between;gap:10px;font-size:.8rem;color:var(--muted);margin-top:8px}
+.flight-card .fl-meta .fl-num{font-weight:600;color:var(--ink-2)}
+.flight-card .fl-times{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:10px}
+.flight-card .fl-times .fl-t{font-family:'Unbounded';font-weight:700;font-size:1rem}
+.flight-card .fl-times .fl-dur{flex:1;text-align:center;font-size:.72rem;color:var(--muted)}
+.flight-card .fl-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;border-top:1px dashed var(--line);padding-top:10px}
+.flight-card .fl-price{font-family:'Unbounded';font-weight:700;font-size:1rem}
+.plan-section{margin-bottom:24px}
+.plan-section .ps-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.plan-section .ps-head .ps-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.user-search-wrap{margin-bottom:16px}
+.user-search-wrap .us-inp{width:100%;padding:12px 16px;font-size:.9rem;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);outline:none}
+.user-search-wrap .us-inp:focus{border-color:var(--orange)}
+.shared-trip{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;box-shadow:var(--shadow-sm);cursor:pointer}
+.shared-trip:active{border-color:var(--orange)}
+.shared-trip .st-avatar{width:36px;height:36px;border-radius:50%;background:var(--grad);color:#fff;display:grid;place-items:center;font-family:'Unbounded';font-weight:800;font-size:.9rem;flex-shrink:0}
+.shared-trip .st-info{flex:1;min-width:0}
+.shared-trip .st-info .st-city{font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shared-trip .st-info .st-meta{font-size:.72rem;color:var(--muted);margin-top:2px}
+/* Desktop */
+@media(min-width:769px){
+  .screen{max-width:900px}
+  .plan-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .chat-wrap{height:calc(100vh - var(--tab-h) - var(--safe) - 140px)}
+}
+@media(max-width:640px){
+  .field-row{grid-template-columns:1fr}
+  .style-grid{grid-template-columns:1fr 1fr}
+  .photo-grid{grid-template-columns:repeat(3,1fr)}
+  .w-day{flex:0 0 70px}
+  .trip-hero{padding:24px 20px}
+  .trip-hero h1{font-size:clamp(1.4rem,8vw,2rem)}
+  .progress-card{padding:16px 18px}
+  .cat-head{padding:12px 14px}
+  .pack-row{padding:10px 12px;gap:10px;min-height:48px}
+  .btn{padding:12px 20px;font-size:.82rem}
+  .scan-btn{padding:12px 14px}
+  .upload-zone{padding:28px 16px}
+  .sync-card{padding:20px}
+  .plan-cols{grid-template-columns:1fr}
+}
+@media(max-width:380px){
+  .field-row{grid-template-columns:1fr}
+  .style-grid{grid-template-columns:1fr}
+  .photo-grid{grid-template-columns:repeat(2,1fr)}
+  .w-day{flex:0 0 64px;padding:10px 8px}
+  .tab{font-size:.58rem}
+  .tab svg{width:20px;height:20px}
+  .brand{font-size:1rem}
+}
+.inp,.lbl{font-size:max(.92rem,16px)}
+.inp{font-size:max(.92rem,16px)}
+.screen{padding-top:max(20px,env(safe-area-inset-top,20px))}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
 <nav class="tabbar">
   <button class="tab active" data-screen="trip"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3v-6h6v6h3a1 1 0 001-1V10"/></svg>Trip</button>
   <button class="tab" data-screen="pack"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Pack</button>
-  <button class="tab" data-screen="closet"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 12h16M12 4v16"/></svg>Closet</button>
-  <button class="tab" data-screen="style"><svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>Style</button>
+  <button class="tab" data-screen="plan"><svg viewBox="0 0 24 24"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>Plan</button>
+  <button class="tab" data-screen="chat"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Chat</button>
   <button class="tab" data-screen="sync"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-3-6.7M21 4v5h-5"/></svg>Sync</button>
 </nav>
 
@@ -295,7 +356,11 @@ input,textarea{-webkit-appearance:none;appearance:none}
     <div class="trip-info"><div class="row"><div><div class="dest-name" id="tsDest">—</div><div class="dates" id="tsDates"></div></div><a class="edit-link" onclick="editTrip()">Edit ↑</a></div><div class="flight" id="tsFlight"></div><div id="tsSource"></div></div>
     <div class="section-label" style="margin-bottom:14px">Weather at destination</div>
     <div id="weatherBlock"></div>
-    <div class="btn-row"><button class="btn btn-dark btn-block" onclick="goScreen('pack')">Start Packing →</button></div>
+    <div class="section-label" style="margin:20px 0 10px">Flight search</div>
+    <div class="field-row" style="margin-bottom:10px"><input id="fromInput" class="inp" type="text" placeholder="From (SEA)" autocapitalize="characters"><input id="toInput" class="inp" type="text" placeholder="To (DFW)" autocapitalize="characters"></div>
+    <button class="btn btn-ghost btn-block" onclick="searchFlights()" style="margin-bottom:12px">Search flights →</button>
+    <div id="flightResults"></div>
+    <div class="btn-row"><button class="btn btn-dark btn-block" onclick="goScreen('plan')">Plan itinerary →</button></div>
   </div>
   <div id="tripsList" class="trips-list hidden"><div class="list-label">My Trips</div><div id="tripsListContent"></div></div>
 </div>
@@ -308,6 +373,37 @@ input,textarea{-webkit-appearance:none;appearance:none}
   <div class="template-chips" id="templateChips"></div>
   <button class="ai-suggest-btn" id="aiSuggestBtn" onclick="aiSuggest()">✨ AI Suggest — smart packing for your trip</button>
   <div id="packList"></div>
+</div>
+
+<div class="screen" id="screen-plan">
+  <div class="brand-row"><div class="brand"><span class="a">agnamo</span><span class="dot">.</span></div><span class="section-label" style="color:var(--teal)">plan</span></div>
+  <div class="plan-cols">
+    <div class="plan-section">
+      <div class="ps-head"><span class="ps-title">Calendar</span></div>
+      <div id="calendarGrid"></div>
+    </div>
+    <div>
+      <div class="plan-section">
+        <div class="ps-head"><span class="ps-title">Local events</span><button class="btn btn-ghost" style="padding:6px 14px;font-size:.72rem" onclick="fetchEventsForTrip()">Find events</button></div>
+        <div id="eventsList"><div class="empty-state">No events yet. Tap "Find events" to discover what's happening.</div></div>
+      </div>
+      <div class="plan-section">
+        <div class="ps-head"><span class="ps-title">Recommendations</span><button class="btn btn-ghost" style="padding:6px 14px;font-size:.72rem" onclick="fetchRecsForTrip()">Get recs</button></div>
+        <div id="recsList"><div class="empty-state">No recommendations yet. Tap "Get recs" for activity ideas.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screen-chat">
+  <div class="brand-row"><div class="brand"><span class="a">agnamo</span><span class="dot">.</span></div><span class="section-label" style="color:var(--pink)">chat</span></div>
+  <div class="chat-wrap">
+    <div class="chat-msgs" id="chatMessages"><div class="empty-state" id="chatEmpty">Ask me anything about your trip — packing, weather, events, restaurants, itinerary…</div></div>
+    <div class="chat-input-bar">
+      <textarea id="chatInput" placeholder="Ask about your trip…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+      <button class="send-btn" onclick="sendChat()">➤</button>
+    </div>
+  </div>
 </div>
 
 <div class="screen" id="screen-closet">
@@ -340,20 +436,22 @@ input,textarea{-webkit-appearance:none;appearance:none}
     <div id="syncStatus" class="sync-status disconnected"><div class="dot"></div><span id="syncStatusText">Not connected</span></div>
     <div class="sync-trips-count" id="syncTripsCount"></div>
   </div>
-  <div style="font-size:.78rem;color:var(--muted);padding:0 4px;line-height:1.6">
-    <p style="margin-bottom:8px"><strong style="color:var(--ink-2)">Setup:</strong></p>
-    <ol style="padding-left:20px;margin-bottom:12px"><li>Run <code style="background:var(--surface-2);padding:2px 6px;border-radius:4px;font-size:.72rem">schema.sql</code> in Supabase SQL Editor</li><li>Paste your Project URL + anon key above</li><li>Tap Connect & Sync</li></ol>
+  <div style="font-size:.78rem;color:var(--muted);padding:0 4px;line-height:1.6;margin-bottom:20px">
     <p>Trips sync to Supabase — shared across all users (Vrinda, Gabe, Lux). Photos stay on your device.</p>
-    <p style="margin-top:12px">Send a flight screenshot to the bot on Telegram and it'll create a trip here automatically.</p>
+  </div>
+  <div class="sync-card">
+    <div class="ps-head" style="margin-bottom:12px"><span class="ps-title">Shared trips</span></div>
+    <div class="user-search-wrap"><input id="userSearchInput" class="inp us-inp" type="text" placeholder="Search by username (Vrinda, Gabe…)" onkeydown="if(event.key==='Enter')searchUserTrips()"></div>
+    <button class="btn btn-ghost btn-block" style="margin-bottom:12px" onclick="searchUserTrips()">Search trips →</button>
+    <div id="userTripsList"></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 <div class="modal-bg" id="modalBg"><div class="modal"><div class="m-icon">✈️</div><h2>Packed.</h2><p>You're ready to move. Safe travels.</p><button class="btn btn-fill btn-block" onclick="document.getElementById('modalBg').classList.remove('show')">Done</button></div></div>
-<div class="loading-overlay" id="loadingOverlay"><div class="lo-box"><div class="spinner"></div><div class="lo-text" id="loText">Scanning…</div><div class="lo-sub" id="loSub">Reading flight details</div></div></div>
+<div class="loading-overlay" id="loadingOverlay"><div class="lo-box"><div class="spinner"></div><div class="lo-text" id="loText">Loading…</div><div class="lo-sub" id="loSub"></div></div></div>
 
 <script>
-
 const AUTH_USERS={'Vrinda':'hawaii-27','Gabe':'hawaii-27','Lux':'hawaii-27','Kian':'hawaii'};const AUTH_KEY='agnamoTripAuth';const AUTH_USER_KEY='agnamoTripUser';
 function checkAuth(){const u=localStorage.getItem(AUTH_USER_KEY);if(u&&AUTH_USERS[u]&&localStorage.getItem(AUTH_KEY)===AUTH_USERS[u])return true;const code=localStorage.getItem(AUTH_KEY);if(code){for(const[name,c]of Object.entries(AUTH_USERS)){if(c===code){localStorage.setItem(AUTH_USER_KEY,name);return true}}}return false}
 function currentUser(){return localStorage.getItem(AUTH_USER_KEY)||null}
@@ -374,13 +472,13 @@ function tryAuth(){
 }
 function logoutUser(){localStorage.removeItem(AUTH_KEY);localStorage.removeItem(AUTH_USER_KEY);location.reload()}
 
-const STORE='agnamoTripPack_v3';
-const SB_URL='https://ioogwysicqqiknjzczhe.supabase.co';const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlvb2d3eXNpY3FxaWtuanpjemhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NjAwNzYsImV4cCI6MjEwNjMzNjA3Nn0.N9l4iZ6taUziO3ceyXE7WGva4zmwXXDCu2I1ea4WLOI';
+const STORE='agnamoTripPack_v4';
+const SB_URL='https://ioogwysicqqiknjzczhe.supabase.co';const SB_KEY='eyJhbG...3OTA';
 let S=load();let currentDest=null,destResults=[],destTimer=null;
 function load(){try{const s=JSON.parse(localStorage.getItem(STORE));if(s&&s.trips)return s}catch{}return{config:{url:SB_URL,key:SB_KEY},trips:[],activeId:null,localChecklist:{},localCloset:[],localStyle:[]}}
 function save(){localStorage.setItem(STORE,JSON.stringify(S))}
 function activeTrip(){return S.trips.find(t=>t.id===S.activeId)||null}
-function activeItems(){const t=activeTrip();if(t)return t.items;if(!S.localChecklist)S.localChecklist={};return S.localChecklist}
+function activeItems(){const t=activeTrip();if(t){if(!t.items)t.items={};return t.items}if(!S.localChecklist)S.localChecklist={};return S.localChecklist}
 function activeCloset(){const t=activeTrip();if(t)return t.closet||(t.closet=[]);if(!S.localCloset)S.localCloset=[];return S.localCloset}
 function activeStyle(){const t=activeTrip();if(t)return t.style||(t.style=[]);if(!S.localStyle)S.localStyle=[];return S.localStyle}
 function uuid(){return crypto.randomUUID?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(36).slice(2)}
@@ -388,35 +486,45 @@ function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t
 function showLoading(text,sub){const o=document.getElementById('loadingOverlay');document.getElementById('loText').textContent=text||'Loading…';document.getElementById('loSub').textContent=sub||'';o.classList.add('show')}
 function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
 
+/* Perplexity API */
+async function pplxChat(messages,systemPrompt){
+  try{
+    const payload={model:'sonar',messages:[]};
+    if(systemPrompt)payload.messages.push({role:'system',content:systemPrompt});
+    messages.forEach(m=>payload.messages.push({role:m.role,content:m.content}));
+    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!r.ok)return null;
+    const d=await r.json();return d.choices?.[0]?.message?.content?.trim()||null
+  }catch{return null}
+}
+
 /* Supabase */
 function sbConfigured(){return S.config.url&&S.config.key}
-async function sbFetch(path,opts={}){
-  if(!sbConfigured())return null;
-  try{return await fetch(`${S.config.url}/rest/v1/${path}`,{...opts,headers:{'apikey':S.config.key,'Authorization':`Bearer ${S.config.key}`,'Content-Type':'application/json',...opts.headers}})}catch{return null}
-}
-function tripToRow(t){return{id:t.id,city:t.city,country:t.country,cc:t.cc,lat:t.lat,lon:t.lon,tz:t.tz,depart:t.depart,return_date:t.return,airline:t.airline,flight_num:t.flightNum,flight_time:t.flightTime,booking_ref:t.bookingRef,items:t.items,closet:t.closet,style:t.style,weather:t.weather,source:t.source,raw_ocr:t.rawOcr}}
-function rowToTrip(r){return{id:r.id,city:r.city,country:r.country,cc:r.cc,lat:r.lat,lon:r.lon,tz:r.tz,depart:r.depart,return:r.return_date,airline:r.airline,flightNum:r.flight_num,flightTime:r.flight_time,bookingRef:r.booking_ref,items:r.items||{},closet:r.closet||[],style:r.style||[],weather:r.weather,source:r.source,rawOcr:r.raw_ocr}}
+async function sbFetch(path,opts={}){if(!sbConfigured())return null;try{return await fetch(`${S.config.url}/rest/v1/${path}`,{...opts,headers:{'apikey':S.config.key,'Authorization':`Bearer ${S.config.key}`,'Content-Type':'application/json',...opts.headers}})}catch{return null}}
+function tripToRow(t){return{id:t.id,city:t.city,country:t.country,cc:t.cc,lat:t.lat,lon:t.lon,tz:t.tz,depart:t.depart,return_date:t.return,airline:t.airline,flight_num:t.flightNum,flight_time:t.flightTime,booking_ref:t.bookingRef,items:t.items,closet:t.closet,style:t.style,weather:t.weather,events:t.events,recommendations:t.recommendations,chat_history:t.chatHistory,source:t.source,raw_ocr:t.rawOcr,created_by:currentUser()}}
+function rowToTrip(r){return{id:r.id,city:r.city,country:r.country,cc:r.cc,lat:r.lat,lon:r.lon,tz:r.tz,depart:r.depart,return:r.return_date,airline:r.airline,flightNum:r.flight_num,flightTime:r.flight_time,bookingRef:r.booking_ref,items:r.items||{},closet:r.closet||[],style:r.style||[],weather:r.weather,events:r.events,recommendations:r.recommendations,chatHistory:r.chat_history,source:r.source,rawOcr:r.raw_ocr,createdBy:r.created_by}}
 async function sbLoadTrips(){const r=await sbFetch('trips?order=created_at.desc');if(!r||!r.ok)return[];return(await r.json()).map(rowToTrip)}
 async function sbSaveTrip(t){if(!sbConfigured())return;await sbFetch('trips',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates'},body:JSON.stringify(tripToRow(t))})}
 async function sbDeleteTrip(id){if(!sbConfigured())return;await sbFetch(`trips?id=eq.${id}`,{method:'DELETE'})}
 
-/* Screen nav */
+/* Screen nav — 5 tabs */
 function goScreen(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+name).classList.add('active');
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelector(`.tab[data-screen="${name}"]`).classList.add('active');
+  const tab=document.querySelector(`.tab[data-screen="${name}"]`);if(tab)tab.classList.add('active');
   window.scrollTo(0,0);
-  if(name==='trip')renderTripsList();if(name==='pack')renderPack();if(name==='closet')renderCloset();if(name==='style')renderStyle();if(name==='sync')renderSync();
+  if(name==='trip')renderTripsList();if(name==='pack')renderPack();if(name==='plan'){renderCalendar();renderEvents();renderRecs()}if(name==='chat')renderChat();if(name==='closet')renderCloset();if(name==='style')renderStyle();if(name==='sync')renderSync();
 }
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>goScreen(t.dataset.screen)));
 
-/* Airport codes database — type by code (SEA, DFW…) or city name */
-const AIRPORTS=[{c:'SEA',city:'Seattle',country:'United States',cc:'US',lat:47.45,lon:-122.31,tz:'America/Los_Angeles',n:'Seattle–Tacoma'},{c:'PDX',city:'Portland',country:'United States',cc:'US',lat:45.59,lon:-122.60,tz:'America/Los_Angeles',n:'Portland Intl'},{c:'SFO',city:'San Francisco',country:'United States',cc:'US',lat:37.62,lon:-122.38,tz:'America/Los_Angeles',n:'San Francisco Intl'},{c:'LAX',city:'Los Angeles',country:'United States',cc:'US',lat:33.94,lon:-118.41,tz:'America/Los_Angeles',n:'Los Angeles Intl'},{c:'SAN',city:'San Diego',country:'United States',cc:'US',lat:32.73,lon:-117.19,tz:'America/Los_Angeles',n:'San Diego Intl'},{c:'LAS',city:'Las Vegas',country:'United States',cc:'US',lat:36.08,lon:-115.15,tz:'America/Los_Angeles',n:'Harry Reid Intl'},{c:'DFW',city:'Dallas–Fort Worth',country:'United States',cc:'US',lat:32.90,lon:-97.04,tz:'America/Chicago',n:'Dallas/Fort Worth Intl'},{c:'AUS',city:'Austin',country:'United States',cc:'US',lat:30.20,lon:-97.67,tz:'America/Chicago',n:'Austin–Bergstrom'},{c:'IAH',city:'Houston',country:'United States',cc:'US',lat:29.98,lon:-95.34,tz:'America/Chicago',n:'George Bush Intercontinental'},{c:'ORD',city:'Chicago',country:'United States',cc:'US',lat:41.98,lon:-87.90,tz:'America/Chicago',n:'O’Hare Intl'},{c:'ATL',city:'Atlanta',country:'United States',cc:'US',lat:33.64,lon:-84.43,tz:'America/New_York',n:'Hartsfield–Jackson'},{c:'MIA',city:'Miami',country:'United States',cc:'US',lat:25.79,lon:-80.29,tz:'America/New_York',n:'Miami Intl'},{c:'JFK',city:'New York',country:'United States',cc:'US',lat:40.64,lon:-73.78,tz:'America/New_York',n:'John F. Kennedy Intl'},{c:'EWR',city:'Newark',country:'United States',cc:'US',lat:40.69,lon:-74.17,tz:'America/New_York',n:'Newark Liberty'},{c:'BOS',city:'Boston',country:'United States',cc:'US',lat:42.37,lon:-71.01,tz:'America/New_York',n:'Logan Intl'},{c:'IAD',city:'Washington',country:'United States',cc:'US',lat:38.95,lon:-77.45,tz:'America/New_York',n:'Dulles Intl'},{c:'DEN',city:'Denver',country:'United States',cc:'US',lat:39.86,lon:-104.67,tz:'America/Denver',n:'Denver Intl'},{c:'PHX',city:'Phoenix',country:'United States',cc:'US',lat:33.44,lon:-112.01,tz:'America/Phoenix',n:'Sky Harbor'},{c:'SLC',city:'Salt Lake City',country:'United States',cc:'US',lat:40.79,lon:-111.97,tz:'America/Denver',n:'Salt Lake City Intl'},{c:'MSP',city:'Minneapolis',country:'United States',cc:'US',lat:44.88,lon:-93.23,tz:'America/Chicago',n:'Minneapolis–St. Paul'},{c:'DTW',city:'Detroit',country:'United States',cc:'US',lat:42.21,lon:-83.35,tz:'America/Detroit',n:'Detroit Metro'},{c:'STL',city:'St. Louis',country:'United States',cc:'US',lat:38.75,lon:-90.37,tz:'America/Chicago',n:'St. Louis Lambert'},{c:'HNL',city:'Honolulu',country:'United States',cc:'US',lat:21.32,lon:-157.92,tz:'Pacific/Honolulu',n:'Daniel K. Inouye'},{c:'YYZ',city:'Toronto',country:'Canada',cc:'CA',lat:43.68,lon:-79.61,tz:'America/Toronto',n:'Toronto Pearson'},{c:'YVR',city:'Vancouver',country:'Canada',cc:'CA',lat:49.20,lon:-123.18,tz:'America/Vancouver',n:'Vancouver Intl'},{c:'YUL',city:'Montreal',country:'Canada',cc:'CA',lat:45.46,lon:-73.75,tz:'America/Montreal',n:'Montréal–Trudeau'},{c:'MEX',city:'Mexico City',country:'Mexico',cc:'MX',lat:19.44,lon:-99.07,tz:'America/Mexico_City',n:'Benito Juárez'},{c:'CUN',city:'Cancún',country:'Mexico',cc:'MX',lat:21.04,lon:-86.87,tz:'America/Cancun',n:'Cancún Intl'},{c:'LHR',city:'London',country:'United Kingdom',cc:'GB',lat:51.47,lon:-0.45,tz:'Europe/London',n:'Heathrow'},{c:'LGW',city:'London',country:'United Kingdom',cc:'GB',lat:51.15,lon:-0.18,tz:'Europe/London',n:'Gatwick'},{c:'CDG',city:'Paris',country:'France',cc:'FR',lat:49.00,lon:2.55,tz:'Europe/Paris',n:'Charles de Gaulle'},{c:'ORY',city:'Paris',country:'France',cc:'FR',lat:48.72,lon:2.36,tz:'Europe/Paris',n:'Orly'},{c:'AMS',city:'Amsterdam',country:'Netherlands',cc:'NL',lat:52.31,lon:4.76,tz:'Europe/Amsterdam',n:'Schiphol'},{c:'FRA',city:'Frankfurt',country:'Germany',cc:'DE',lat:50.04,lon:8.56,tz:'Europe/Berlin',n:'Frankfurt am Main'},{c:'MUC',city:'Munich',country:'Germany',cc:'DE',lat:48.35,lon:11.79,tz:'Europe/Berlin',n:'Munich Intl'},{c:'ZRH',city:'Zurich',country:'Switzerland',cc:'CH',lat:47.46,lon:8.56,tz:'Europe/Zurich',n:'Zurich Intl'},{c:'FCO',city:'Rome',country:'Italy',cc:'IT',lat:41.80,lon:12.25,tz:'Europe/Rome',n:'Leonardo da Vinci–Fiumicino'},{c:'MXP',city:'Milan',country:'Italy',cc:'IT',lat:45.63,lon:8.72,tz:'Europe/Rome',n:'Malpensa'},{c:'MAD',city:'Madrid',country:'Spain',cc:'ES',lat:40.47,lon:-3.56,tz:'Europe/Madrid',n:'Adolfo Suárez Madrid–Barajas'},{c:'BCN',city:'Barcelona',country:'Spain',cc:'ES',lat:41.30,lon:2.08,tz:'Europe/Madrid',n:'Barcelona–El Prat'},{c:'LIS',city:'Lisbon',country:'Portugal',cc:'PT',lat:38.78,lon:-9.13,tz:'Europe/Lisbon',n:'Humberto Delgado'},{c:'DUB',city:'Dublin',country:'Ireland',cc:'IE',lat:53.42,lon:-6.25,tz:'Europe/Dublin',n:'Dublin Intl'},{c:'CPH',city:'Copenhagen',country:'Denmark',cc:'DK',lat:55.62,lon:12.65,tz:'Europe/Copenhagen',n:'Copenhagen Intl'},{c:'ARN',city:'Stockholm',country:'Sweden',cc:'SE',lat:59.65,lon:17.92,tz:'Europe/Stockholm',n:'Arlanda'},{c:'OSL',city:'Oslo',country:'Norway',cc:'NO',lat:60.19,lon:11.08,tz:'Europe/Oslo',n:'Oslo Gardermoen'},{c:'VIE',city:'Vienna',country:'Austria',cc:'AT',lat:48.11,lon:16.56,tz:'Europe/Vienna',n:'Vienna Intl'},{c:'IST',city:'Istanbul',country:'Turkey',cc:'TR',lat:41.26,lon:28.73,tz:'Europe/Istanbul',n:'Istanbul Intl'},{c:'ATH',city:'Athens',country:'Greece',cc:'GR',lat:37.94,lon:23.90,tz:'Europe/Athens',n:'Athens Intl'},{c:'NRT',city:'Tokyo',country:'Japan',cc:'JP',lat:35.77,lon:140.39,tz:'Asia/Tokyo',n:'Narita Intl'},{c:'HND',city:'Tokyo',country:'Japan',cc:'JP',lat:35.55,lon:139.78,tz:'Asia/Tokyo',n:'Haneda'},{c:'KIX',city:'Osaka',country:'Japan',cc:'JP',lat:34.43,lon:135.24,tz:'Asia/Tokyo',n:'Kansai Intl'},{c:'ICN',city:'Seoul',country:'South Korea',cc:'KR',lat:37.46,lon:126.44,tz:'Asia/Seoul',n:'Incheon Intl'},{c:'PEK',city:'Beijing',country:'China',cc:'CN',lat:40.08,lon:116.58,tz:'Asia/Shanghai',n:'Beijing Capital'},{c:'PVG',city:'Shanghai',country:'China',cc:'CN',lat:31.14,lon:121.81,tz:'Asia/Shanghai',n:'Pudong Intl'},{c:'HKG',city:'Hong Kong',country:'Hong Kong',cc:'HK',lat:22.31,lon:113.91,tz:'Asia/Hong_Kong',n:'Hong Kong Intl'},{c:'TPE',city:'Taipei',country:'Taiwan',cc:'TW',lat:25.08,lon:121.23,tz:'Asia/Taipei',n:'Taoyuan Intl'},{c:'SIN',city:'Singapore',country:'Singapore',cc:'SG',lat:1.35,lon:103.99,tz:'Asia/Singapore',n:'Singapore Changi'},{c:'BKK',city:'Bangkok',country:'Thailand',cc:'TH',lat:13.69,lon:100.75,tz:'Asia/Bangkok',n:'Suvarnabhumi'},{c:'KUL',city:'Kuala Lumpur',country:'Malaysia',cc:'MY',lat:2.75,lon:101.71,tz:'Asia/Kuala_Lumpur',n:'Kuala Lumpur Intl'},{c:'CGK',city:'Jakarta',country:'Indonesia',cc:'ID',lat:-6.13,lon:106.66,tz:'Asia/Jakarta',n:'Soekarno–Hatta'},{c:'MNL',city:'Manila',country:'Philippines',cc:'PH',lat:14.51,lon:121.02,tz:'Asia/Manila',n:'Ninoy Aquino Intl'},{c:'DEL',city:'Delhi',country:'India',cc:'IN',lat:28.56,lon:77.10,tz:'Asia/Kolkata',n:'Indira Gandhi Intl'},{c:'BOM',city:'Mumbai',country:'India',cc:'IN',lat:19.09,lon:72.87,tz:'Asia/Kolkata',n:'Chhatrapati Shivaji'},{c:'BLR',city:'Bangalore',country:'India',cc:'IN',lat:13.20,lon:77.70,tz:'Asia/Kolkata',n:'Kempegowda Intl'},{c:'DXB',city:'Dubai',country:'UAE',cc:'AE',lat:25.25,lon:55.36,tz:'Asia/Dubai',n:'Dubai Intl'},{c:'DOH',city:'Doha',country:'Qatar',cc:'QA',lat:25.27,lon:51.61,tz:'Asia/Qatar',n:'Hamad Intl'},{c:'SYD',city:'Sydney',country:'Australia',cc:'AU',lat:-33.95,lon:151.18,tz:'Australia/Sydney',n:'Sydney Kingsford Smith'},{c:'MEL',city:'Melbourne',country:'Australia',cc:'AU',lat:-37.67,lon:144.84,tz:'Australia/Melbourne',n:'Melbourne Intl'},{c:'BNE',city:'Brisbane',country:'Australia',cc:'AU',lat:-27.39,lon:153.12,tz:'Australia/Brisbane',n:'Brisbane Intl'},{c:'PER',city:'Perth',country:'Australia',cc:'AU',lat:-31.94,lon:115.97,tz:'Australia/Perth',n:'Perth Intl'},{c:'AKL',city:'Auckland',country:'New Zealand',cc:'NZ',lat:-37.01,lon:174.79,tz:'Pacific/Auckland',n:'Auckland Intl'},{c:'GRU',city:'São Paulo',country:'Brazil',cc:'BR',lat:-23.43,lon:-46.47,tz:'America/Sao_Paulo',n:'Guarulhos Intl'},{c:'EZE',city:'Buenos Aires',country:'Argentina',cc:'AR',lat:-34.82,lon:-58.54,tz:'America/Argentina/Buenos_Aires',n:'Ezeiza Intl'},{c:'BOG',city:'Bogotá',country:'Colombia',cc:'CO',lat:4.70,lon:-74.14,tz:'America/Bogota',n:'El Dorado'},{c:'LIM',city:'Lima',country:'Peru',cc:'PE',lat:-12.02,lon:-77.11,tz:'America/Lima',n:'Jorge Chávez'},{c:'SCL',city:'Santiago',country:'Chile',cc:'CL',lat:-33.39,lon:-70.79,tz:'America/Santiago',n:'Arturo Merino Benítez'},{c:'JNB',city:'Johannesburg',country:'South Africa',cc:'ZA',lat:-26.14,lon:28.24,tz:'Africa/Johannesburg',n:'O. R. Tambo'},{c:'CPT',city:'Cape Town',country:'South Africa',cc:'ZA',lat:-33.97,lon:18.60,tz:'Africa/Johannesburg',n:'Cape Town Intl'},{c:'NBO',city:'Nairobi',country:'Kenya',cc:'KE',lat:-1.32,lon:36.93,tz:'Africa/Nairobi',n:'Jomo Kenyatta'},{c:'TLV',city:'Tel Aviv',country:'Israel',cc:'IL',lat:32.01,lon:34.89,tz:'Asia/Jerusalem',n:'Ben Gurion'},{c:'RUH',city:'Riyadh',country:'Saudi Arabia',cc:'SA',lat:24.96,lon:46.70,tz:'Asia/Riyadh',n:'King Khalid Intl'}];
+/* Airport DB */
+const AIRPORTS=[{c:'SEA',city:'Seattle',country:'United States',cc:'US',lat:47.45,lon:-122.31,tz:'America/Los_Angeles',n:'Seattle–Tacoma'},{c:'PDX',city:'Portland',country:'United States',cc:'US',lat:45.59,lon:-122.60,tz:'America/Los_Angeles',n:'Portland Intl'},{c:'SFO',city:'San Francisco',country:'United States',cc:'US',lat:37.62,lon:-122.38,tz:'America/Los_Angeles',n:'San Francisco Intl'},{c:'LAX',city:'Los Angeles',country:'United States',cc:'US',lat:33.94,lon:-118.41,tz:'America/Los_Angeles',n:'Los Angeles Intl'},{c:'SAN',city:'San Diego',country:'United States',cc:'US',lat:32.73,lon:-117.19,tz:'America/Los_Angeles',n:'San Diego Intl'},{c:'LAS',city:'Las Vegas',country:'United States',cc:'US',lat:36.08,lon:-115.15,tz:'America/Los_Angeles',n:'Harry Reid Intl'},{c:'DFW',city:'Dallas–Fort Worth',country:'United States',cc:'US',lat:32.90,lon:-97.04,tz:'America/Chicago',n:'Dallas/Fort Worth Intl'},{c:'AUS',city:'Austin',country:'United States',cc:'US',lat:30.20,lon:-97.67,tz:'America/Chicago',n:'Austin–Bergstrom'},{c:'IAH',city:'Houston',country:'United States',cc:'US',lat:29.98,lon:-95.34,tz:'America/Chicago',n:'George Bush Intercontinental'},{c:'ORD',city:'Chicago',country:'United States',cc:'US',lat:41.98,lon:-87.90,tz:'America/Chicago',n:"O'Hare Intl"},{c:'ATL',city:'Atlanta',country:'United States',cc:'US',lat:33.64,lon:-84.43,tz:'America/New_York',n:'Hartsfield–Jackson'},{c:'MIA',city:'Miami',country:'United States',cc:'US',lat:25.79,lon:-80.29,tz:'America/New_York',n:'Miami Intl'},{c:'JFK',city:'New York',country:'United States',cc:'US',lat:40.64,lon:-73.78,tz:'America/New_York',n:'John F. Kennedy Intl'},{c:'EWR',city:'Newark',country:'United States',cc:'US',lat:40.69,lon:-74.17,tz:'America/New_York',n:'Newark Liberty'},{c:'BOS',city:'Boston',country:'United States',cc:'US',lat:42.37,lon:-71.01,tz:'America/New_York',n:'Logan Intl'},{c:'IAD',city:'Washington',country:'United States',cc:'US',lat:38.95,lon:-77.45,tz:'America/New_York',n:'Dulles Intl'},{c:'DEN',city:'Denver',country:'United States',cc:'US',lat:39.86,lon:-104.67,tz:'America/Denver',n:'Denver Intl'},{c:'PHX',city:'Phoenix',country:'United States',cc:'US',lat:33.44,lon:-112.01,tz:'America/Phoenix',n:'Sky Harbor'},{c:'SLC',city:'Salt Lake City',country:'United States',cc:'US',lat:40.79,lon:-111.97,tz:'America/Denver',n:'Salt Lake City Intl'},{c:'MSP',city:'Minneapolis',country:'United States',cc:'US',lat:44.88,lon:-93.23,tz:'America/Chicago',n:'Minneapolis–St. Paul'},{c:'HNL',city:'Honolulu',country:'United States',cc:'US',lat:21.32,lon:-157.92,tz:'Pacific/Honolulu',n:'Daniel K. Inouye'},{c:'YYZ',city:'Toronto',country:'Canada',cc:'CA',lat:43.68,lon:-79.61,tz:'America/Toronto',n:'Toronto Pearson'},{c:'YVR',city:'Vancouver',country:'Canada',cc:'CA',lat:49.20,lon:-123.18,tz:'America/Vancouver',n:'Vancouver Intl'},{c:'MEX',city:'Mexico City',country:'Mexico',cc:'MX',lat:19.44,lon:-99.07,tz:'America/Mexico_City',n:'Benito Juárez'},{c:'CUN',city:'Cancún',country:'Mexico',cc:'MX',lat:21.04,lon:-86.87,tz:'America/Cancun',n:'Cancún Intl'},{c:'LHR',city:'London',country:'United Kingdom',cc:'GB',lat:51.47,lon:-0.45,tz:'Europe/London',n:'Heathrow'},{c:'CDG',city:'Paris',country:'France',cc:'FR',lat:49.00,lon:2.55,tz:'Europe/Paris',n:'Charles de Gaulle'},{c:'AMS',city:'Amsterdam',country:'Netherlands',cc:'NL',lat:52.31,lon:4.76,tz:'Europe/Amsterdam',n:'Schiphol'},{c:'FRA',city:'Frankfurt',country:'Germany',cc:'DE',lat:50.04,lon:8.56,tz:'Europe/Berlin',n:'Frankfurt am Main'},{c:'FCO',city:'Rome',country:'Italy',cc:'IT',lat:41.80,lon:12.25,tz:'Europe/Rome',n:'Leonardo da Vinci'},{c:'MAD',city:'Madrid',country:'Spain',cc:'ES',lat:40.47,lon:-3.56,tz:'Europe/Madrid',n:'Madrid Barajas'},{c:'BCN',city:'Barcelona',country:'Spain',cc:'ES',lat:41.30,lon:2.08,tz:'Europe/Madrid',n:'Barcelona–El Prat'},{c:'LIS',city:'Lisbon',country:'Portugal',cc:'PT',lat:38.78,lon:-9.13,tz:'Europe/Lisbon',n:'Humberto Delgado'},{c:'DUB',city:'Dublin',country:'Ireland',cc:'IE',lat:53.42,lon:-6.25,tz:'Europe/Dublin',n:'Dublin Intl'},{c:'NRT',city:'Tokyo',country:'Japan',cc:'JP',lat:35.77,lon:140.39,tz:'Asia/Tokyo',n:'Narita Intl'},{c:'HND',city:'Tokyo',country:'Japan',cc:'JP',lat:35.55,lon:139.78,tz:'Asia/Tokyo',n:'Haneda'},{c:'KIX',city:'Osaka',country:'Japan',cc:'JP',lat:34.43,lon:135.24,tz:'Asia/Tokyo',n:'Kansai Intl'},{c:'ICN',city:'Seoul',country:'South Korea',cc:'KR',lat:37.46,lon:126.44,tz:'Asia/Seoul',n:'Incheon Intl'},{c:'SIN',city:'Singapore',country:'Singapore',cc:'SG',lat:1.35,lon:103.99,tz:'Asia/Singapore',n:'Singapore Changi'},{c:'BKK',city:'Bangkok',country:'Thailand',cc:'TH',lat:13.69,lon:100.75,tz:'Asia/Bangkok',n:'Suvarnabhumi'},{c:'DXB',city:'Dubai',country:'UAE',cc:'AE',lat:25.25,lon:55.36,tz:'Asia/Dubai',n:'Dubai Intl'},{c:'SYD',city:'Sydney',country:'Australia',cc:'AU',lat:-33.95,lon:151.18,tz:'Australia/Sydney',n:'Sydney Kingsford Smith'},{c:'MEL',city:'Melbourne',country:'Australia',cc:'AU',lat:-37.67,lon:144.84,tz:'Australia/Melbourne',n:'Melbourne Intl'},{c:'AKL',city:'Auckland',country:'New Zealand',cc:'NZ',lat:-37.01,lon:174.79,tz:'Pacific/Auckland',n:'Auckland Intl'},{c:'GRU',city:'São Paulo',country:'Brazil',cc:'BR',lat:-23.43,lon:-46.47,tz:'America/Sao_Paulo',n:'Guarulhos Intl'},{c:'EZE',city:'Buenos Aires',country:'Argentina',cc:'AR',lat:-34.82,lon:-58.54,tz:'America/Argentina/Buenos_Aires',n:'Ezeiza Intl'},{c:'DEL',city:'Delhi',country:'India',cc:'IN',lat:28.56,lon:77.10,tz:'Asia/Kolkata',n:'Indira Gandhi Intl'},{c:'BOM',city:'Mumbai',country:'India',cc:'IN',lat:19.09,lon:72.87,tz:'Asia/Kolkata',n:'Chhatrapati Shivaji'},{c:'JNB',city:'Johannesburg',country:'South Africa',cc:'ZA',lat:-26.14,lon:28.24,tz:'Africa/Johannesburg',n:'O. R. Tambo'},{c:'TLV',city:'Tel Aviv',country:'Israel',cc:'IL',lat:32.01,lon:34.89,tz:'Asia/Jerusalem',n:'Ben Gurion'}];
 
 /* Destination search — typeahead by airport code or city */
 const destInput=document.getElementById('destInput'),destResultsEl=document.getElementById('destResults');
-let searchSeq=0;destInput.addEventListener('input',()=>{clearTimeout(destTimer);const q=destInput.value.trim();if(q.length<1){destResultsEl.innerHTML='';destResults=[];return}const mySeq=++searchSeq;destTimer=setTimeout(async()=>{
+let searchSeq=0;
+destInput.addEventListener('input',()=>{clearTimeout(destTimer);const q=destInput.value.trim();if(q.length<1){destResultsEl.innerHTML='';destResults=[];return}const mySeq=++searchSeq;destTimer=setTimeout(async()=>{
   if(mySeq!==searchSeq)return;
   const upperQ=q.toUpperCase();
   let apMatches=[];
@@ -435,67 +543,36 @@ function pickDest(i){currentDest=destResults[i];destInput.value=`${currentDest.n
 /* Trip CRUD */
 function saveTrip(){
   if(!currentDest){toast('Search and pick a destination');destInput.focus();return}
-  const data={id:activeTrip()?.id||uuid(),city:currentDest.name,country:currentDest.country,cc:currentDest.country_code,lat:currentDest.latitude,lon:currentDest.longitude,tz:currentDest.timezone,depart:document.getElementById('departDate').value||null,return:document.getElementById('returnDate').value||null,airline:document.getElementById('airline').value||'',flightNum:document.getElementById('flightNum').value||'',flightTime:document.getElementById('flightTime').value||'',bookingRef:document.getElementById('bookingRef').value||'',items:activeTrip()?.items||{},closet:activeTrip()?.closet||[],style:activeTrip()?.style||[],weather:activeTrip()?.weather||null,source:activeTrip()?.source||'manual',rawOcr:activeTrip()?.rawOcr||null};
+  const data={id:activeTrip()?.id||uuid(),city:currentDest.name,country:currentDest.country,cc:currentDest.country_code,lat:currentDest.latitude,lon:currentDest.longitude,tz:currentDest.timezone,depart:document.getElementById('departDate').value||null,return:document.getElementById('returnDate').value||null,airline:document.getElementById('airline').value||'',flightNum:document.getElementById('flightNum').value||'',flightTime:document.getElementById('flightTime').value||'',bookingRef:document.getElementById('bookingRef').value||'',items:activeTrip()?.items||{},closet:activeTrip()?.closet||[],style:activeTrip()?.style||[],weather:activeTrip()?.weather||null,events:activeTrip()?.events||null,recommendations:activeTrip()?.recommendations||null,chatHistory:activeTrip()?.chatHistory||[],source:activeTrip()?.source||'manual',rawOcr:activeTrip()?.rawOcr||null,createdBy:currentUser()};
   if(!S.activeId||!activeTrip()){S.trips.push(data);S.activeId=data.id}else Object.assign(activeTrip(),data);
   save();sbSaveTrip(data);renderTripSummary();renderTripsList();autoSuggest();toast('Trip saved');
   if(!activeTrip().weather)fetchWeather();
 }
 function editTrip(){document.getElementById('tripSetup').classList.remove('hidden');document.getElementById('tripSummary').classList.add('hidden');const t=activeTrip();if(!t)return;currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};destInput.value=`${t.city}, ${t.country}`;document.getElementById('departDate').value=t.depart||'';document.getElementById('returnDate').value=t.return||'';document.getElementById('airline').value=t.airline||'';document.getElementById('flightNum').value=t.flightNum||'';document.getElementById('flightTime').value=t.flightTime||'';document.getElementById('bookingRef').value=t.bookingRef||''}
 function renderTripSummary(){const t=activeTrip();if(!t)return;document.getElementById('tripSetup').classList.add('hidden');document.getElementById('tripSummary').classList.remove('hidden');document.getElementById('tsDest').textContent=`${t.city}, ${t.country}`;const dates=[];if(t.depart)dates.push(fmtDate(t.depart));if(t.return)dates.push(fmtDate(t.return));document.getElementById('tsDates').textContent=dates.join(' — ');const flight=[];if(t.airline)flight.push(`<div class="item">Airline<strong>${t.airline}${t.flightNum?' '+t.flightNum:''}</strong></div>`);if(t.flightTime)flight.push(`<div class="item">Departure<strong>${t.flightTime}</strong></div>`);if(t.bookingRef)flight.push(`<div class="item">Booking Ref<strong>${t.bookingRef}</strong></div>`);document.getElementById('tsFlight').innerHTML=flight.join('')||'';document.getElementById('tsSource').innerHTML=t.source&&t.source!=='manual'?`<div class="source-badge">${t.source}</div>`:''}
-function renderTripsList(){const el=document.getElementById('tripsList');if(!S.trips.length){el.classList.add('hidden');return}el.classList.remove('hidden');document.getElementById('tripsListContent').innerHTML=S.trips.map(t=>{const dates=[];if(t.depart)dates.push(fmtDate(t.depart));if(t.return)dates.push(fmtDate(t.return));const src=t.source&&t.source!=='manual'?`<span class="tc-source">${t.source}</span>`:'';return `<div class="trip-card ${t.id===S.activeId?'active':''}" onclick="selectTrip('${t.id}')"><div class="tc-main"><div class="tc-city">${t.city}, ${t.country}</div><div class="tc-dates">${dates.join(' — ')||'No dates'}</div>${src}</div><button class="tc-del" onclick="event.stopPropagation();deleteTrip('${t.id}')">✕</button></div>`}).join('')}
+function renderTripsList(){const el=document.getElementById('tripsList');if(!S.trips.length){el.classList.add('hidden');return}el.classList.remove('hidden');document.getElementById('tripsListContent').innerHTML=S.trips.map(t=>{const dates=[];if(t.depart)dates.push(fmtDate(t.depart));if(t.return)dates.push(fmtDate(t.return));const src=t.source&&t.source!=='manual'?`<span class="tc-source">${t.source}</span>`:'';const by=t.createdBy?` · ${t.createdBy}`:'';return `<div class="trip-card ${t.id===S.activeId?'active':''}" onclick="selectTrip('${t.id}')"><div class="tc-main"><div class="tc-city">${t.city}, ${t.country}</div><div class="tc-dates">${dates.join(' — ')||'No dates'}${by}</div>${src}</div><button class="tc-del" onclick="event.stopPropagation();deleteTrip('${t.id}')">✕</button></div>`}).join('')}
 function selectTrip(id){S.activeId=id;save();const t=activeTrip();if(t){currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};destInput.value=`${t.city}, ${t.country}`;document.getElementById('departDate').value=t.depart||'';document.getElementById('returnDate').value=t.return||'';document.getElementById('airline').value=t.airline||'';document.getElementById('flightNum').value=t.flightNum||'';document.getElementById('flightTime').value=t.flightTime||'';document.getElementById('bookingRef').value=t.bookingRef||'';renderTripSummary();renderTripsList();renderPack()}}
 function deleteTrip(id){S.trips=S.trips.filter(t=>t.id!==id);if(S.activeId===id)S.activeId=S.trips[0]?.id||null;save();sbDeleteTrip(id);if(S.activeId)selectTrip(S.activeId);else{document.getElementById('tripSetup').classList.remove('hidden');document.getElementById('tripSummary').classList.add('hidden')}renderTripsList();renderPack();toast('Trip deleted')}
 function fmtDate(s){const d=new Date(s+'T00:00');return d.toLocaleDateString('en',{month:'short',day:'numeric'})}
 
-/* Weather */
-async function fetchWeather(){const t=activeTrip();if(!t)return;try{const lat=t.lat.toFixed(2),lon=t.lon.toFixed(2);const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max&timezone=${encodeURIComponent(t.tz||'auto')}&forecast_days=14`);t.weather=await r.json();save();sbSaveTrip(t);renderWeather();autoSuggest()}catch{toast('Weather fetch failed')}}
+/* Weather — 16 days */
+async function fetchWeather(){const t=activeTrip();if(!t)return;try{const lat=t.lat.toFixed(2),lon=t.lon.toFixed(2);const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max&timezone=${encodeURIComponent(t.tz||'auto')}&forecast_days=16`);t.weather=await r.json();save();sbSaveTrip(t);renderWeather();autoSuggest()}catch{toast('Weather fetch failed')}}
 const W_ICON={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',56:'🌧️',57:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',66:'🌨️',67:'🌨️',71:'❄️',73:'❄️',75:'❄️',77:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',85:'🌨️',86:'🌨️',95:'⛈️',96:'⛈️',99:'⛈️'};
 const W_LABEL={0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',56:'Freezing drizzle',57:'Heavy freezing drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',66:'Freezing rain',67:'Heavy freezing rain',71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow grains',80:'Light showers',81:'Showers',82:'Violent showers',85:'Snow showers',86:'Heavy snow showers',95:'Thunderstorm',96:'Thunderstorm + hail',99:'Severe thunderstorm'};
-function renderWeather(){const t=activeTrip();if(!t||!t.weather)return;const w=t.weather,cur=w.current,daily=w.daily;let days=daily.time,start=0,end=Math.min(7,days.length);if(t.depart){const di=days.indexOf(t.depart);if(di>=0){start=di;const ri=t.return?days.indexOf(t.return):-1;end=ri>=0?Math.min(ri+1,days.length):Math.min(di+7,days.length)}}let html=`<div class="weather-current"><div class="w-icon">${W_ICON[cur.weather_code]||'🌡️'}</div><div class="w-info"><div class="w-label">Current in ${t.city}</div><div class="w-cond">${W_LABEL[cur.weather_code]||'—'}</div><div class="w-extra">💧 ${cur.relative_humidity_2m}% · 💨 ${Math.round(cur.wind_speed_10m)} km/h</div></div><div class="w-temp">${Math.round(cur.temperature_2m)}°</div></div><div class="weather-scroll">`;for(let i=start;i<end;i++){const d=new Date(days[i]);const lbl=d.toLocaleDateString('en',{weekday:'short',day:'numeric'});const hi=Math.round(daily.temperature_2m_max[i]);const lo=Math.round(daily.temperature_2m_min[i]);const prec=daily.precipitation_probability_max?.[i]??0;html+=`<div class="w-day"><div class="d-label">${lbl}</div><div class="d-icon">${W_ICON[daily.weather_code[i]]||'🌡️'}</div><div class="d-hi">${hi}°</div><div class="d-lo">${lo}°</div>${prec>25?`<div class="d-precip">💧${prec}%</div>`:''}</div>`}html+='</div>';document.getElementById('weatherBlock').innerHTML=html}
+function renderWeather(){const t=activeTrip();if(!t||!t.weather)return;const w=t.weather,cur=w.current,daily=w.daily;let days=daily.time,start=0,end=Math.min(16,days.length);if(t.depart){const di=days.indexOf(t.depart);if(di>=0){start=di;const ri=t.return?days.indexOf(t.return):-1;end=ri>=0?Math.min(ri+1,days.length):Math.min(di+16,days.length)}else{end=16}}let html=`<div class="weather-current"><div class="w-icon">${W_ICON[cur.weather_code]||'🌡️'}</div><div class="w-info"><div class="w-label">Current in ${t.city}</div><div class="w-cond">${W_LABEL[cur.weather_code]||'—'}</div><div class="w-extra">💧 ${cur.relative_humidity_2m}% · 💨 ${Math.round(cur.wind_speed_10m)} km/h</div></div><div class="w-temp">${Math.round(cur.temperature_2m)}°</div></div><div class="weather-scroll">`;for(let i=start;i<end&&i<days.length;i++){const d=new Date(days[i]+'T00:00');const lbl=d.toLocaleDateString('en',{weekday:'short',day:'numeric'});const hi=Math.round(daily.temperature_2m_max[i]);const lo=Math.round(daily.temperature_2m_min[i]);const prec=daily.precipitation_probability_max?.[i]??0;html+=`<div class="w-day"><div class="d-label">${lbl}</div><div class="d-icon">${W_ICON[daily.weather_code[i]]||'🌡️'}</div><div class="d-hi">${hi}°</div><div class="d-lo">${lo}°</div>${prec>20?`<div class="d-precip">💧${prec}%</div>`:''}</div>`}html+='</div>';document.getElementById('weatherBlock').innerHTML=html}
 
 /* Auto-suggest */
-function autoSuggest(){const t=activeTrip();if(!t)return;const w=t.weather;let maxT=22,minT=15,rain=false,snow=false,uvHi=false;if(w?.daily){const d=w.daily;const depIdx=t.depart?Math.max(0,d.time.indexOf(t.depart)):0;const n=Math.min(7,d.time.length-depIdx);for(let i=depIdx;i<depIdx+n&&i<d.time.length;i++){maxT=Math.max(maxT,d.temperature_2m_max[i]);minT=Math.min(minT,d.temperature_2m_min[i]);if((d.precipitation_probability_max?.[i]??0)>30)rain=true;if(d.weather_code[i]>=71&&d.weather_code[i]<=77)snow=true;if((d.uv_index_max?.[i]??0)>6)uvHi=true}}const add=(label,cat,key)=>{const k=`auto-${key}`;if(!t.items[k])t.items[k]={cat,label,checked:false,qty:1,auto:true}};if(maxT>=28){add('Sunscreen','grooming','sunscreen');add('Hat / Cap','apparel','hat')}if(minT<=5){add('Heavy jacket','apparel','heavy-jacket');add('Thermal base layer','apparel','thermal');add('Gloves','apparel','gloves')}if(minT<=-5){add('Scarf','apparel','scarf');add('Warm beanie','apparel','beanie')}if(rain){add('Rain jacket','gear','rain-jacket');add('Umbrella','gear','umbrella')}if(snow){add('Snow boots','gear','snow-boots')}if(uvHi){add('Sunglasses','gear','sunglasses')}if(maxT<=18&&minT>=6){add('Light layer','apparel','light-layer')}save();renderPack()}
+function autoSuggest(){const t=activeTrip();if(!t)return;const w=t.weather;let maxT=22,minT=15,rain=false,snow=false,uvHi=false;if(w?.daily){const d=w.daily;const depIdx=t.depart?Math.max(0,d.time.indexOf(t.depart)):0;const n=Math.min(16,d.time.length-depIdx);for(let i=depIdx;i<depIdx+n&&i<d.time.length;i++){maxT=Math.max(maxT,d.temperature_2m_max[i]);minT=Math.min(minT,d.temperature_2m_min[i]);if((d.precipitation_probability_max?.[i]??0)>30)rain=true;if(d.weather_code[i]>=71&&d.weather_code[i]<=77)snow=true;if((d.uv_index_max?.[i]??0)>6)uvHi=true}}const add=(label,cat,key)=>{const k=`auto-${key}`;if(!t.items[k])t.items[k]={cat,label,checked:false,qty:1,packed:0,auto:true}};if(maxT>=28){add('Sunscreen','grooming','sunscreen');add('Hat / Cap','apparel','hat')}if(minT<=5){add('Heavy jacket','apparel','heavy-jacket');add('Thermal base layer','apparel','thermal');add('Gloves','apparel','gloves')}if(minT<=-5){add('Scarf','apparel','scarf');add('Warm beanie','apparel','beanie')}if(rain){add('Rain jacket','gear','rain-jacket');add('Umbrella','gear','umbrella')}if(snow){add('Snow boots','gear','snow-boots')}if(uvHi){add('Sunglasses','gear','sunglasses')}if(maxT<=18&&minT>=6){add('Light layer','apparel','light-layer')}save();renderPack()}
 
-/* Packing */
-const CATS=[
-  {id:'apparel',name:'Apparel',icon:'👕'},
-  {id:'grooming',name:'Grooming',icon:'🧴'},
-  {id:'beauty',name:'Face & Beauty',icon:'💄'},
-  {id:'tech',name:'Tech',icon:'🔌'},
-  {id:'health',name:'Health & Meds',icon:'💊'},
-  {id:'docs',name:'Travel Docs',icon:'📄'},
-  {id:'gear',name:'Gear',icon:'🎒'}
-];
-const TEMPLATES=[
-  {id:'beach',name:'Beach',icon:'🏖️',items:[['apparel','Swimwear',1],['apparel','Sun Hat',1],['apparel','Flip Flops',1],['grooming','Sunscreen',2],['grooming','After Sun Lotion',1],['gear','Beach Bag',1],['gear','Sunglasses',1]]},
-  {id:'business',name:'Business',icon:'💼',items:[['apparel','Suit / Blazer',1],['apparel','Dress Shirts',3],['gear','Dress Shoes',1],['tech','Laptop + Charger',1],['docs','Business Cards',1],['docs','Meeting Agenda',1]]},
-  {id:'weekend',name:'Weekend',icon:'⚡',items:[['apparel','Tops / Tees',2],['apparel','Pants / Shorts',1],['grooming','Toothbrush & Paste',1],['tech','Phone + Cable',1],['tech','Power Bank',1]]},
-  {id:'adventure',name:'Adventure',icon:'🥾',items:[['apparel','Hiking Boots',1],['apparel','Moisture-Wick Tops',2],['apparel','Trail Pants',1],['gear','Day Bag',1],['gear','Water Bottle',1],['health','First Aid Kit',1],['health','Bug Repellent',1]]},
-  {id:'festival',name:'Festival',icon:'🎪',items:[['tech','Portable Charger',1],['gear','Fanny Pack',1],['gear','Earplugs',1],['gear','Reusable Cup',1],['apparel','Bandana',1],['health','Sunscreen',1],['health','Electrolytes',1]]}
-];
+/* Packing — with packed counter */
+const CATS=[{id:'apparel',name:'Apparel',icon:'👕'},{id:'grooming',name:'Grooming',icon:'🧴'},{id:'beauty',name:'Face & Beauty',icon:'💄'},{id:'tech',name:'Tech',icon:'🔌'},{id:'health',name:'Health & Meds',icon:'💊'},{id:'docs',name:'Travel Docs',icon:'📄'},{id:'gear',name:'Gear',icon:'🎒'}];
+const TEMPLATES=[{id:'beach',name:'Beach',icon:'🏖️',items:[['apparel','Swimwear',1],['apparel','Sun Hat',1],['apparel','Flip Flops',1],['grooming','Sunscreen',2],['grooming','After Sun Lotion',1],['gear','Beach Bag',1],['gear','Sunglasses',1]]},{id:'business',name:'Business',icon:'💼',items:[['apparel','Suit / Blazer',1],['apparel','Dress Shirts',3],['gear','Dress Shoes',1],['tech','Laptop + Charger',1],['docs','Business Cards',1],['docs','Meeting Agenda',1]]},{id:'weekend',name:'Weekend',icon:'⚡',items:[['apparel','Tops / Tees',2],['apparel','Pants / Shorts',1],['grooming','Toothbrush & Paste',1],['tech','Phone + Cable',1],['tech','Power Bank',1]]},{id:'adventure',name:'Adventure',icon:'🥾',items:[['apparel','Hiking Boots',1],['apparel','Moisture-Wick Tops',2],['apparel','Trail Pants',1],['gear','Day Bag',1],['gear','Water Bottle',1],['health','First Aid Kit',1],['health','Bug Repellent',1]]},{id:'festival',name:'Festival',icon:'🎪',items:[['tech','Portable Charger',1],['gear','Fanny Pack',1],['gear','Earplugs',1],['gear','Reusable Cup',1],['apparel','Bandana',1],['health','Sunscreen',1],['health','Electrolytes',1]]}];
 function renderPack(){
   const el=document.getElementById('packList');const t=activeTrip();const items=activeItems();
   const noTrip=!t;
   if(Object.keys(items).length===0){
-    const seeds=[
-      ['apparel','Tops / Tees',3,false],['apparel','Pants / Shorts',2,false],['apparel','Evening Fit',1,false],
-      ['apparel','Outerwear / Jacket',1,false],['apparel','Sleepwear',1,false],['apparel','Underwear & Socks',5,true],
-      ['apparel','Swimwear',1,false],['apparel','Accessories',1,false],
-      ['grooming','Skincare',1,true],['grooming','Deodorant',1,true],['grooming','Hair Products',1,false],
-      ['grooming','Toothbrush & Paste',1,true],['grooming','Shower Kit',1,false],['grooming','Shaving Kit',1,false],
-      ['beauty','Foundation',1,false],['beauty','Concealer',1,false],['beauty','Blush / Bronzer',1,false],
-      ['beauty','Eyeliner / Mascara',1,false],['beauty','Lip Color',1,false],['beauty','Brushes & Tools',1,false],
-      ['beauty','Makeup Remover',1,false],['beauty','Setting Spray',1,false],
-      ['tech','Phone + Cable',1,true],['tech','Power Bank',1,false],['tech','Laptop + Charger',1,false],
-      ['tech','Earbuds / Headphones',1,false],['tech','Travel Adapter',1,false],
-      ['health','First Aid Kit',1,false],['health','Prescription Meds',1,true],['health','Pain Reliever',1,false],
-      ['health','Vitamins',1,false],['health','Sunscreen',1,false],['health','Bug Repellent',1,false],
-      ['docs','Passport / ID',1,true],['docs','Boarding Pass / Tickets',1,true],['docs','Hotel Reservations',1,false],
-      ['docs','Travel Insurance',1,false],['docs','Emergency Contacts',1,false],
-      ['gear','Day Bag',1,true],['gear','Sunglasses',1,false],['gear','Water Bottle',1,false],
-      ['gear','Umbrella',1,false],['gear','Travel Pillow',1,false],['gear','Luggage Lock',1,false]
-    ];
-    seeds.forEach(([cat,label,qty,essential])=>{items[`seed-${cat}-${label}`]={cat,label,checked:false,qty,essential:essential||false,auto:false}});
+    const seeds=[['apparel','Tops / Tees',3,false],['apparel','Pants / Shorts',2,false],['apparel','Evening Fit',1,false],['apparel','Outerwear / Jacket',1,false],['apparel','Sleepwear',1,false],['apparel','Underwear & Socks',5,true],['apparel','Swimwear',1,false],['apparel','Accessories',1,false],['grooming','Skincare',1,true],['grooming','Deodorant',1,true],['grooming','Hair Products',1,false],['grooming','Toothbrush & Paste',1,true],['grooming','Shower Kit',1,false],['grooming','Shaving Kit',1,false],['beauty','Foundation',1,false],['beauty','Concealer',1,false],['beauty','Blush / Bronzer',1,false],['beauty','Eyeliner / Mascara',1,false],['beauty','Lip Color',1,false],['beauty','Brushes & Tools',1,false],['beauty','Makeup Remover',1,false],['beauty','Setting Spray',1,false],['tech','Phone + Cable',1,true],['tech','Power Bank',1,false],['tech','Laptop + Charger',1,false],['tech','Earbuds / Headphones',1,false],['tech','Travel Adapter',1,false],['health','First Aid Kit',1,false],['health','Prescription Meds',1,true],['health','Pain Reliever',1,false],['health','Vitamins',1,false],['health','Sunscreen',1,false],['health','Bug Repellent',1,false],['docs','Passport / ID',1,true],['docs','Boarding Pass / Tickets',1,true],['docs','Hotel Reservations',1,false],['docs','Travel Insurance',1,false],['docs','Emergency Contacts',1,false],['gear','Day Bag',1,true],['gear','Sunglasses',1,false],['gear','Water Bottle',1,false],['gear','Umbrella',1,false],['gear','Travel Pillow',1,false],['gear','Luggage Lock',1,false]];
+    seeds.forEach(([cat,label,qty,essential])=>{items[`seed-${cat}-${label}`]={cat,label,checked:false,qty,packed:0,essential:essential||false,auto:false}});
     save();
   }
   renderTemplates();
@@ -508,17 +585,17 @@ function renderPack(){
     if(!catItems.length)return;
     const done=catItems.filter(([k,v])=>v.checked).length;
     const allDone=catItems.length>0&&done===catItems.length;
-    html+=`<div class="cat-section${allDone?' open':''}" data-cat="${cat.id}"><div class="cat-head" onclick="this.parentElement.classList.toggle('open')"><div class="left"><span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.name}</span></div><div class="right"><span class="pill ${allDone?'done':''}">${done}/${catItems.length}</span><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div></div><div class="cat-body"><div class="pack-list">${catItems.map(([k,v])=>`<div class="pack-row ${v.checked?'checked':''}" data-key="${k}"><div class="check" onclick="toggleItem('${k}')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="p-label">${v.label}${v.essential?' <span class="essential-badge">essential</span>':''}${v.auto?' <span class="auto-badge">weather</span>':''}${v.fromTemplate?' <span class="auto-badge" style="background:#fef3c7;color:#92400e">'+v.fromTemplate+'</span>':''}</span><div class="qty-control"><button class="qty-btn" onclick="qtyItem('${k}',-1)">−</button><span class="qty-val">${v.qty||1}</span><button class="qty-btn" onclick="qtyItem('${k}',1)">+</button></div><button class="del-btn" onclick="delItem('${k}')">✕</button></div>`).join('')}<div class="add-item"><input class="ai-inp" id="add-${cat.id}" placeholder="Add ${cat.name.toLowerCase()} item…" onkeydown="if(event.key==='Enter')addItem('${cat.id}')"><button class="ai-btn" onclick="addItem('${cat.id}')">Add</button></div></div></div></div>`;
+    html+=`<div class="cat-section${allDone?' open':''}" data-cat="${cat.id}"><div class="cat-head" onclick="this.parentElement.classList.toggle('open')"><div class="left"><span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.name}</span></div><div class="right"><span class="pill ${allDone?'done':''}">${done}/${catItems.length}</span><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div></div><div class="cat-body"><div class="pack-list">${catItems.map(([k,v])=>{const packed=v.packed||0;const total=v.qty||1;const isDone=packed>=total;return `<div class="pack-row ${isDone?'checked':''}" data-key="${k}"><div class="check" onclick="toggleItem('${k}')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="p-label">${v.label}${v.essential?' <span class="essential-badge">essential</span>':''}${v.auto?' <span class="auto-badge">weather</span>':''}${v.fromTemplate?' <span class="auto-badge" style="background:#fef3c7;color:#92400e">'+v.fromTemplate+'</span>':''}</span><div class="pack-counter"><button class="pc-btn" onclick="packedQty('${k}',-1)">−</button><span class="pc-val">${packed}<span class="pc-sep">/</span>${total}</span><button class="pc-btn" onclick="packedQty('${k}',1)">+</button></div><div class="qty-control"><button class="qty-btn" onclick="qtyItem('${k}',-1)">−</button><span class="qty-val">${total}</span><button class="qty-btn" onclick="qtyItem('${k}',1)">+</button></div><button class="del-btn" onclick="delItem('${k}')">✕</button></div>`}).join('')}<div class="add-item"><input class="ai-inp" id="add-${cat.id}" placeholder="Add ${cat.name.toLowerCase()} item…" onkeydown="if(event.key==='Enter')addItem('${cat.id}')"><button class="ai-btn" onclick="addItem('${cat.id}')">Add</button></div></div></div></div>`;
   });
   el.innerHTML=html;
   updateProgress();
   if(!search){const first=el.querySelector('.cat-section');if(first)first.classList.add('open')}
 }
-
-function toggleItem(k){const items=activeItems();if(!items[k])return;items[k].checked=!items[k].checked;save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack();if(allPacked())document.getElementById('modalBg').classList.add('show')}
-function qtyItem(k,dir){const items=activeItems();if(!items[k])return;items[k].qty=Math.max(1,(items[k].qty||1)+dir);save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack()}
+function toggleItem(k){const items=activeItems();if(!items[k])return;const total=items[k].qty||1;const packed=items[k].packed||0;if(packed<total){items[k].packed=total}else{items[k].packed=0}items[k].checked=items[k].packed>=(items[k].qty||1);save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack();if(allPacked())document.getElementById('modalBg').classList.add('show')}
+function packedQty(k,dir){const items=activeItems();if(!items[k])return;const total=items[k].qty||1;items[k].packed=Math.max(0,Math.min(total,(items[k].packed||0)+dir));items[k].checked=items[k].packed>=total;save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack();if(allPacked())document.getElementById('modalBg').classList.add('show')}
+function qtyItem(k,dir){const items=activeItems();if(!items[k])return;items[k].qty=Math.max(1,(items[k].qty||1)+dir);if((items[k].packed||0)>items[k].qty)items[k].packed=items[k].qty;items[k].checked=items[k].packed>=items[k].qty;save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack()}
 function delItem(k){const items=activeItems();if(!items[k])return;delete items[k];save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack()}
-function addItem(catId){const items=activeItems();const inp=document.getElementById(`add-${catId}`);const label=inp.value.trim();if(!label)return;items[`c-${Date.now()}`]={cat:catId,label,checked:false,qty:1,auto:false};inp.value='';save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack()}
+function addItem(catId){const items=activeItems();const inp=document.getElementById(`add-${catId}`);const label=inp.value.trim();if(!label)return;items[`c-${Date.now()}`]={cat:catId,label,checked:false,qty:1,packed:0,auto:false};inp.value='';save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack()}
 function allPacked(){const items=activeItems();const ks=Object.keys(items);return ks.length>0&&ks.every(k=>items[k].checked)}
 function updateProgress(){
   const items=activeItems();const ks=Object.keys(items);
@@ -532,6 +609,33 @@ function updateProgress(){
   const psT=document.getElementById('psTotal'),psP=document.getElementById('psPacked'),psL=document.getElementById('psLeft');
   if(psT){psT.textContent=total;psP.textContent=done;psL.textContent=total-done}
 }
+function renderTemplates(){const el=document.getElementById('templateChips');if(!el)return;el.innerHTML=TEMPLATES.map(t=>`<button class="t-chip" onclick="applyTemplate('${t.id}')"><span class="t-icon">${t.icon}</span>${t.name}</button>`).join('')}
+function filterPack(){renderPack()}
+function applyTemplate(id){const t=activeTrip();const items=activeItems();const tpl=TEMPLATES.find(x=>x.id===id);if(!tpl)return;let added=0;tpl.items.forEach(([cat,label,qty])=>{const k=`tpl-${id}-${cat}-${label}`;if(!items[k]){items[k]={cat,label,checked:false,qty,packed:0,essential:false,auto:false,fromTemplate:tpl.name};added++}});save();if(t)sbSaveTrip(t);renderPack();if(added)toast(`Added ${added} items from ${tpl.name} template`);else toast(`${tpl.name} items already in your list`)}
+async function aiSuggest(){const t=activeTrip();const items=activeItems();if(!t&&!Object.keys(items).length){toast('Add some items first');return}const btn=document.getElementById('aiSuggestBtn');if(btn){btn.classList.add('loading');btn.textContent='✨ AI is thinking…'}showLoading('AI Suggest','Generating smart packing list');try{const body={destination:t?`${t.city}, ${t.country}`:'General trip',departDate:t?.depart,returnDate:t?.return,weather:t?.weather};const r=await fetch('/api/suggest-packing',{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok){const err=await r.text();throw new Error('AI suggest failed: '+err)}const result=await r.json();hideLoading();if(result.categories&&Array.isArray(result.categories)){let added=0;result.categories.forEach(cat=>{if(cat.items&&Array.isArray(cat.items)){cat.items.forEach(item=>{const k=`ai-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;const catId=CATS.find(c=>c.name.toLowerCase().replace(' & beauty','').replace(' & meds','')===cat.name?.toLowerCase()?.replace(' & beauty','')?.replace(' & meds',''))?.id||cat.id||'gear';if(!items[k]){items[k]={cat:catId,label:item.label,checked:false,qty:item.qty||1,packed:0,essential:item.essential||false,auto:false,fromTemplate:'AI'};added++}})}});save();if(t)sbSaveTrip(t);renderPack();toast(`AI added ${added} smart suggestions`)}else{toast('AI suggestion format unexpected')}}catch(err){hideLoading();autoSuggest();toast('AI suggest unavailable — used weather-based suggestions instead')}if(btn){btn.classList.remove('loading');btn.textContent='✨ AI Suggest — smart packing for your trip'}}
+
+/* Events */
+async function fetchEventsForTrip(){const t=activeTrip();if(!t){toast('Set up a trip first');return}showLoading('Finding events','Searching for local events');try{const text=await pplxChat([{role:'user',content:`What are 5-8 events happening in ${t.city}, ${t.country} in the next 2 weeks? List each as: EVENT NAME | DATE (YYYY-MM-DD) | BRIEF DESCRIPTION. Only real upcoming events.`}],'You are a travel events assistant. Return only the event list, one per line, in NAME | DATE | DESCRIPTION format. No preamble.');if(!text){toast('Could not fetch events — try again');return}t.events=text;save();sbSaveTrip(t);renderEvents();toast('Events loaded')}catch(e){toast('Events fetch failed')}finally{hideLoading()}}
+function renderEvents(){const el=document.getElementById('eventsList');if(!el)return;const t=activeTrip();const raw=t&&t.events?String(t.events):'';if(!raw.trim()){el.innerHTML='<div class="empty-state">No events yet. Tap "Find events" to discover what\'s happening.</div>';return}const lines=raw.split(/\r?\n/).map(s=>s.trim()).filter(s=>s.length>0&&!/^(#|\*|-{2,})/.test(s));let html='';let count=0;lines.forEach(line=>{const parts=line.split('|').map(s=>s.trim());if(parts.length<2)return;const name=parts[0];const date=parts[1];const desc=parts.slice(2).join(' — ').trim();const dm=date.match(/(\d{4})-(\d{2})-(\d{2})/);let badge='📅';if(dm){const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const mi=parseInt(dm[2])-1;if(mi>=0&&mi<12)badge=`<div class="ev-d">${parseInt(dm[3])}</div><div class="ev-m">${mn[mi]}</div>`}else{badge=`<div class="ev-d">📅</div><div class="ev-m">${date.slice(0,6)}</div>`}html+=`<div class="event-card"><div class="ev-date">${badge}</div><div class="ev-body"><div class="ev-title">${name}</div><div class="ev-desc">${desc||''}</div><div class="ev-cite">${date}</div></div></div>`;count++});el.innerHTML=count?html:'<div class="empty-state">No events parsed.</div>'}
+
+/* Recommendations */
+async function fetchRecsForTrip(){const t=activeTrip();if(!t){toast('Set up a trip first');return}showLoading('Getting recs','Finding activities for your trip');try{const wx=t.weather?` Weather: ${t.weather.current?.temperature_2m}°C, ${W_LABEL[t.weather.current?.weather_code]||'mixed'}.`:'';const text=await pplxChat([{role:'user',content:`Give me 5 activity recommendations for a trip to ${t.city}, ${t.country}.${wx} List each as: ACTIVITY | WHY RECOMMENDED | DURATION. Be specific and practical.`}],'You are a travel recommendation assistant. Return exactly 5 recommendations, one per line, in NAME | REASON | DURATION format. No preamble.');if(!text){toast('Could not fetch recommendations — try again');return}t.recommendations=text;save();sbSaveTrip(t);renderRecs();toast('Recommendations loaded')}catch(e){toast('Recs fetch failed')}finally{hideLoading()}}
+function renderRecs(){const el=document.getElementById('recsList');if(!el)return;const t=activeTrip();const raw=t&&t.recommendations?String(t.recommendations):'';if(!raw.trim()){el.innerHTML='<div class="empty-state">No recommendations yet. Tap "Get recs" for activity ideas.</div>';return}const lines=raw.split(/\r?\n/).map(s=>s.trim()).filter(s=>s.length>0&&!/^(#|\*|-{2,})/.test(s));const icons=['🎯','🍽️','🥾','🏛️','🌊','🎨','🚲','🎿','🛍️','🍷'];let html='';let count=0;lines.forEach((line,i)=>{const parts=line.split('|').map(s=>s.trim());if(parts.length<2)return;const name=parts[0];const reason=parts[1];const dur=parts[2]||'';html+=`<div class="reco-card"><div class="reco-icon">${icons[i%icons.length]}</div><div class="reco-body"><div class="reco-title">${name}</div><div class="reco-desc">${reason}</div>${dur?`<div class="reco-dur">⏱ ${dur}</div>`:''}</div></div>`;count++});el.innerHTML=count?html:'<div class="empty-state">No recs parsed.</div>'}
+
+/* Calendar */
+let calMonth=new Date().getMonth(),calYear=new Date().getFullYear();
+function renderCalendar(){const el=document.getElementById('calendarGrid');if(!el)return;const mn=['January','February','March','April','May','June','July','August','September','October','November','December'];const dn=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];let html=`<div class="cal-head"><button class="cal-nav-btn" onclick="calNav(-1)">◀</button><div class="cal-title">${mn[calMonth]} ${calYear}</div><button class="cal-nav-btn" onclick="calNav(1)">▶</button></div><div class="cal-grid">`;dn.forEach(d=>html+=`<div class="cal-dow">${d}</div>`);const firstDay=new Date(calYear,calMonth,1).getDay();const daysInMonth=new Date(calYear,calMonth+1,0).getDate();for(let i=0;i<firstDay;i++)html+='<div class="cal-day empty"></div>';const t=activeTrip();const tripStart=t&&t.depart?new Date(t.depart+'T00:00'):null;const tripEnd=t&&t.return?new Date(t.return+'T00:00'):null;const todayStr=new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0');const eventDates={};if(t&&t.events){String(t.events).split(/\r?\n/).forEach(ln=>{const m=ln.match(/(\d{4})-(\d{2})-(\d{2})/);if(m)eventDates[m[1]+'-'+m[2]+'-'+m[3]]=true})}for(let d=1;d<=daysInMonth;d++){const ds=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');const dt=new Date(calYear,calMonth,d);let cls='cal-day';if(ds===todayStr)cls+=' today';if(tripStart&&tripEnd&&dt>=tripStart&&dt<=tripEnd)cls+=' trip-day';else if(tripStart&&ds===t.depart)cls+=' trip-day';else if(tripEnd&&ds===t.return)cls+=' trip-day';if(eventDates[ds])cls+=' has-event';html+=`<div class="${cls.trim()}">${d}</div>`}html+='</div>';el.innerHTML=html}
+function calNav(dir){calMonth+=dir;if(calMonth<0){calMonth=11;calYear--}if(calMonth>11){calMonth=0;calYear++}renderCalendar()}
+
+/* Chat */
+function renderChat(){const box=document.getElementById('chatMessages');if(!box)return;const t=activeTrip();if(!t){box.innerHTML='<div class="empty-state">Set up a trip first, then ask me anything about it.</div>';return}if(!Array.isArray(t.chatHistory))t.chatHistory=[];if(!t.chatHistory.length){box.innerHTML='<div class="empty-state" id="chatEmpty">Ask me anything about your trip — packing, weather, events, restaurants, itinerary…</div>';return}box.innerHTML=t.chatHistory.map(m=>`<div class="msg ${m.role==='user'?'user':'assistant'}"><div class="bubble">${m.content.replace(/</g,'&lt;')}</div></div>`).join('');box.scrollTop=box.scrollHeight}
+async function sendChat(){const inp=document.getElementById('chatInput');const box=document.getElementById('chatMessages');if(!inp||!box)return;const text=inp.value.trim();if(!text)return;const t=activeTrip();if(!t){toast('Set up a trip first');return}if(!Array.isArray(t.chatHistory))t.chatHistory=[];const empty=box.querySelector('#chatEmpty');if(empty)empty.remove();t.chatHistory.push({role:'user',content:text});box.insertAdjacentHTML('beforeend',`<div class="msg user"><div class="bubble">${text.replace(/</g,'&lt;')}</div></div>`);inp.value='';box.scrollTop=box.scrollHeight;save();const typing=box.querySelector('.typing-bubble');if(typing)typing.remove();box.insertAdjacentHTML('beforeend','<div class="msg assistant"><div class="bubble typing-bubble">Thinking…</div></div>');box.scrollTop=box.scrollHeight;let sys='You are a helpful trip planning assistant. Keep responses concise and practical. The user is planning a trip';if(t.city)sys+=` to ${t.city}, ${t.country}`;if(t.depart)sys+=` departing ${t.depart}`;if(t.return)sys+=` returning ${t.return}`;if(t.weather){const wx=t.weather;sys+=`. Current weather: ${Math.round(wx.current?.temperature_2m)}°C, ${W_LABEL[wx.current?.weather_code]||'mixed'}`}sys+='.';try{const reply=await pplxChat(t.chatHistory.slice(-12),sys);const tb=box.querySelector('.typing-bubble');if(tb)tb.parentElement.remove();if(!reply){toast('AI could not respond');return}t.chatHistory.push({role:'assistant',content:reply});box.insertAdjacentHTML('beforeend',`<div class="msg assistant"><div class="bubble">${reply.replace(/</g,'&lt;')}</div></div>`);box.scrollTop=box.scrollHeight;save();sbSaveTrip(t)}catch(e){const tb=box.querySelector('.typing-bubble');if(tb)tb.parentElement.remove();toast('Chat error')}}
+
+/* Flight search */
+async function searchFlights(){const fromEl=document.getElementById('fromInput'),toEl=document.getElementById('toInput');const resEl=document.getElementById('flightResults');if(!fromEl||!toEl){toast('Flight search inputs not found');return}const from=fromEl.value.trim().toUpperCase();const to=toEl.value.trim().toUpperCase();if(!from||!to){toast('Enter origin and destination airport codes');return}const t=activeTrip();const depDate=t&&t.depart?t.depart:'soon';if(resEl)resEl.innerHTML='<div class="empty-state">Searching flights…</div>';try{const text=await pplxChat([{role:'user',content:`Find 3-5 real commercial flights from ${from} to ${to} on ${depDate}. List each as: FLIGHT NUMBER | AIRLINE | DEPARTURE TIME | ARRIVAL TIME | DURATION | APPROX PRICE USD. Only real airlines and realistic times.`}],'You are a flight search assistant. Return 3-5 flight options in the exact format requested. No preamble.');if(!text){if(resEl)resEl.innerHTML='<div class="empty-state">Could not retrieve flights. Try again.</div>';return}const lines=text.split(/\r?\n/).map(s=>s.trim()).filter(s=>s.length>0&&!/^(#|\*|-{2,})/.test(s));let html='';let count=0;lines.forEach(line=>{const parts=line.split('|').map(s=>s.trim());if(parts.length<3)return;const num=parts[0];const airline=parts[1];const depT=parts[2];const arrT=parts[3]||'';const dur=parts[4]||'';const price=parts[5]||'';html+=`<div class="flight-card"><div class="fl-route"><span>${from}</span><span class="fl-arrow">→</span><span>${to}</span></div><div class="fl-meta"><span class="fl-num">${num}</span><span>${airline}</span></div><div class="fl-times">${depT?`<span class="fl-t">${depT}</span>`:''}<span class="fl-dur">${dur}</span>${arrT?`<span class="fl-t">${arrT}</span>`:''}</div>${price?`<div class="fl-footer"><span class="fl-price">${price}</span><button class="btn btn-ghost" style="padding:4px 12px;font-size:.72rem" onclick="toast('Flight noted')">Select</button></div>`:''}</div>`;count++});resEl.innerHTML=count?html:'<div class="empty-state">No flights parsed.</div>'}catch(e){if(resEl)resEl.innerHTML='<div class="empty-state">Flight search error.</div>';toast('Flight search failed')}}
+
+/* Shared trips */
+async function searchUserTrips(){const inp=document.getElementById('userSearchInput');const list=document.getElementById('userTripsList');if(!list)return;const username=inp?inp.value.trim():'';if(!sbConfigured()){toast('Connect Supabase first');return}list.innerHTML='<div class="empty-state">Searching…</div>';try{const trips=await sbLoadTrips();let filtered=trips;if(username){filtered=trips.filter(t=>{const cb=(t.createdBy||t.created_by||'').toLowerCase();return cb.includes(username.toLowerCase())})}if(!filtered.length){list.innerHTML='<div class="empty-state">No trips found for this user.</div>';return}list.innerHTML=filtered.map(t=>{const initials=(t.city||'?')[0];const dates=[];if(t.depart)dates.push(fmtDate(t.depart));if(t.return)dates.push(fmtDate(t.return));return `<div class="shared-trip" onclick="selectTrip('${t.id}')"><div class="st-avatar">${initials}</div><div class="st-info"><div class="st-city">${t.city||'Unknown'}, ${t.country||''}</div><div class="st-meta">${dates.join(' — ')||'No dates'}${t.createdBy?' · '+t.createdBy:''}</div></div></div>`}).join('')}catch(e){list.innerHTML='<div class="empty-state">Search failed — check Supabase connection.</div>'}}
 
 /* Closet */
 function handleClosetUpload(e){const closet=activeCloset();const files=[...e.target.files];files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{closet.push({id:'c'+Date.now()+Math.random().toString(36).slice(2,6),src:ev.target.result,selected:false});save();renderCloset()};reader.readAsDataURL(file)});if(files.length)toast(`Added ${files.length} photo${files.length>1?'s':''}`)}
@@ -542,112 +646,10 @@ function delCloset(id){const closet=activeCloset();const t=activeTrip();if(t){t.
 /* Style */
 const STYLE_TAGS=['Casual','Formal','Beach','Street','Athletic','Evening','Business'];let activeTag='Casual';
 function handleStyleUpload(e){const style=activeStyle();const files=[...e.target.files];files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{style.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,6),src:ev.target.result,tag:activeTag,note:''});save();renderStyle()};reader.readAsDataURL(file)});if(files.length)toast(`Added ${files.length} photo${files.length>1?'s':''}`)}
-function renderStyle(){document.getElementById('styleTags').innerHTML=STYLE_TAGS.map(t=>`<button class="stag ${t===activeTag?'active':''}" onclick="setTag('${t}')">${t}</button>`).join('');const grid=document.getElementById('styleGrid');const style=activeStyle();if(!style.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">No style photos yet — upload above ↑</div>';return}grid.innerHTML=style.map(s=>`<div class="style-card"><img src="${s.src}" alt="outfit"><div class="sc-body"><div class="sc-tag">${s.tag}</div><input class="sc-inp" placeholder="Note…" value="${s.note||''}" onchange="editStyleNote('${s.id}',this.value)"></div><div class="sc-foot"><button class="sc-del" onclick="delStyle('${s.id}')">Remove</button><span style="font-size:.65rem;color:var(--muted);">${s.tag}</span></div></div>`).join('')}
+function renderStyle(){const tagsEl=document.getElementById('styleTags');if(tagsEl)tagsEl.innerHTML=STYLE_TAGS.map(t=>`<button class="stag ${t===activeTag?'active':''}" onclick="setTag('${t}')">${t}</button>`).join('');const grid=document.getElementById('styleGrid');const style=activeStyle();if(!style.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">No style photos yet — upload above ↑</div>';return}grid.innerHTML=style.map(s=>`<div class="style-card"><img src="${s.src}" alt="outfit"><div class="sc-body"><div class="sc-tag">${s.tag}</div><input class="sc-inp" placeholder="Note…" value="${s.note||''}" onchange="editStyleNote('${s.id}',this.value)"></div><div class="sc-foot"><button class="sc-del" onclick="delStyle('${s.id}')">Remove</button><span style="font-size:.65rem;color:var(--muted);">${s.tag}</span></div></div>`).join('')}
 function setTag(t){activeTag=t;renderStyle()}
 function editStyleNote(id,note){const style=activeStyle();const s=style.find(x=>x.id===id);if(s){s.note=note;save()}}
 function delStyle(id){const style=activeStyle();const t=activeTrip();if(t){t.style=t.style.filter(x=>x.id!==id)}else{S.localStyle=S.localStyle.filter(x=>x.id!==id)}save();renderStyle()}
-
-
-/* Pack v2 — templates, filter, AI suggest */
-function renderTemplates(){
-  const el=document.getElementById('templateChips');if(!el)return;
-  el.innerHTML=TEMPLATES.map(t=>`<button class="t-chip" onclick="applyTemplate('${t.id}')"><span class="t-icon">${t.icon}</span>${t.name}</button>`).join('');
-}
-function filterPack(){renderPack()}
-function applyTemplate(id){
-  const t=activeTrip();const items=activeItems();
-  const tpl=TEMPLATES.find(x=>x.id===id);if(!tpl)return;
-  let added=0;
-  tpl.items.forEach(([cat,label,qty])=>{
-    const k=`tpl-${id}-${cat}-${label}`;
-    if(!items[k]){items[k]={cat,label,checked:false,qty,essential:false,auto:false,fromTemplate:tpl.name};added++}
-  });
-  save();if(t)sbSaveTrip(t);renderPack();
-  if(added)toast(`Added ${added} items from ${tpl.name} template`);
-  else toast(`${tpl.name} items already in your list`);
-}
-async function aiSuggest(){
-  const t=activeTrip();const items=activeItems();
-  if(!t&&!Object.keys(items).length){toast('Add some items first');return}
-  const btn=document.getElementById('aiSuggestBtn');
-  if(btn){btn.classList.add('loading');btn.textContent='✨ AI is thinking…'}
-  showLoading('AI Suggest','Generating smart packing list');
-  try{
-    const body={destination:t?`${t.city}, ${t.country}`:'General trip',departDate:t?.depart,returnDate:t?.return,weather:t?.weather};
-    const fnUrl='/api/suggest-packing';
-    const r=await fetch(fnUrl,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!r.ok){const err=await r.text();throw new Error('AI suggest failed: '+err)}
-    const result=await r.json();
-    hideLoading();
-    if(result.categories&&Array.isArray(result.categories)){
-      let added=0;
-      result.categories.forEach(cat=>{
-        if(cat.items&&Array.isArray(cat.items)){
-          cat.items.forEach(item=>{
-            const k=`ai-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
-            const catId=CATS.find(c=>c.name.toLowerCase().replace(' & beauty','').replace(' & meds','')===cat.name?.toLowerCase()?.replace(' & beauty','')?.replace(' & meds',''))?.id||cat.id||'gear';
-            if(!items[k]){items[k]={cat:catId,label:item.label,checked:false,qty:item.qty||1,essential:item.essential||false,auto:false,fromTemplate:'AI'};added++}
-          });
-        }
-      });
-      save();if(t)sbSaveTrip(t);renderPack();
-      toast(`AI added ${added} smart suggestions`);
-    }else{toast('AI suggestion format unexpected')}
-  }catch(err){
-    hideLoading();
-    // Fallback: use local auto-suggest
-    autoSuggest();
-    toast('AI suggest unavailable — used weather-based suggestions instead');
-  }
-  if(btn){btn.classList.remove('loading');btn.textContent='✨ AI Suggest — smart packing for your trip'}
-}
-
-
-/* Screenshot OCR */
-const AIRLINES={'JL':'JAL','NH':'ANA','AA':'American Airlines','UA':'United Airlines','DL':'Delta','WN':'Southwest','BA':'British Airways','AF':'Air France','LH':'Lufthansa','KL':'KLM','EK':'Emirates','QR':'Qatar Airways','SQ':'Singapore Airlines','CX':'Cathay Pacific','AC':'Air Canada','QF':'Qantas','NZ':'Air New Zealand','VS':'Virgin Atlantic','FI':'Icelandair','SK':'SAS','IB':'Iberia','AZ':'ITA Airways','KE':'Korean Air','OZ':'Asiana Airlines','CA':'Air China','MU':'China Eastern','CZ':'China Southern','TG':'Thai Airways','MH':'Malaysia Airlines','PR':'Philippine Airlines','5J':'Cebu Pacific','FJ':'Fiji Airways','HA':'Hawaiian Airlines','B6':'JetBlue','NK':'Spirit','AS':'Alaska Airlines','WS':'WestJet'};
-const MONTHS={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12,january:1,february:2,march:3,april:4,june:6,july:7,august:8,september:9,october:10,november:11,december:12};
-function loadTesseract(){return new Promise((resolve,reject)=>{if(window.Tesseract)return resolve();const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=()=>resolve();s.onerror=()=>reject(new Error('Failed to load OCR'));document.head.appendChild(s)})}
-async function handleScanScreenshot(e){const file=e.target.files?.[0];if(!file)return;showLoading('Scanning…','AI reading your screenshot');
-try{
-const reader=new FileReader();
-const base64=await new Promise((res,rej)=>{reader.onload=()=>res(reader.result);reader.onerror=rej;reader.readAsDataURL(file)});
-const fnUrl='/api/scan-trip';
-showLoading('Analyzing…','AI vision parsing flight details');
-const r=await fetch(fnUrl,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({image:base64})});
-if(!r.ok){const err=await r.text();throw new Error('Scan failed: '+err)}
-const result=await r.json();
-if(result.error)throw new Error(result.error);
-hideLoading();
-if(result.trip){
-const t=result.trip;
-currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};
-destInput.value=`${t.city}, ${t.country}`;
-document.getElementById('departDate').value=t.depart||'';
-document.getElementById('returnDate').value=t.return||'';
-document.getElementById('airline').value=t.airline||'';
-document.getElementById('flightNum').value=t.flightNum||'';
-document.getElementById('flightTime').value=t.flightTime||'';
-document.getElementById('bookingRef').value=t.bookingRef||'';
-const newTrip={id:t.id,city:t.city,country:t.country,cc:t.cc,lat:t.lat,lon:t.lon,tz:t.tz,depart:t.depart,return:t.return,airline:t.airline,flightNum:t.flightNum,flightTime:t.flightTime,bookingRef:t.bookingRef,items:t.items,closet:[],style:t.style||[],weather:t.weather,source:'screenshot',rawOcr:null};
-S.trips.push(newTrip);S.activeId=t.id;save();
-renderTripSummary();renderTripsList();renderPack();
-toast('Trip scanned & saved — packing list ready');
-}else if(result.parsed){
-const p=result.parsed;
-if(p.airline)document.getElementById('airline').value=p.airline;
-if(p.flightNumber)document.getElementById('flightNum').value=p.flightNumber;
-if(p.departureTime)document.getElementById('flightTime').value=p.departureTime;
-if(p.departureDate)document.getElementById('departDate').value=p.departureDate;
-if(p.returnDate)document.getElementById('returnDate').value=p.returnDate;
-if(p.bookingRef)document.getElementById('bookingRef').value=p.bookingRef;
-if(p.destinationCity){
-try{const gr=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(p.destinationCity)}&count=1&language=en&format=json`);const gd=await gr.json();if(gd.results&&gd.results[0]){currentDest=gd.results[0];destInput.value=`${currentDest.name}, ${currentDest.country}`}}catch{}
-}
-toast('Scanned — review & save');
-}
-}catch(err){hideLoading();toast('Scan failed — try again or fill in manually');console.error('Scan error:',err)}
-e.target.value=''}
-function parseFlightText(text){const result={airline:'',flightNum:'',flightTime:'',depart:'',return:'',bookingRef:'',destCity:''};const fn=text.match(/\b([A-Z0-9]{2})\s*(\d{1,4})\b/);if(fn&&AIRLINES[fn[1]]){result.airline=AIRLINES[fn[1]];result.flightNum=`${fn[1]} ${fn[2]}`}else if(fn)result.flightNum=`${fn[1]} ${fn[2]}`;if(!result.airline){for(const[name,code]of Object.entries(AIRLINES)){if(text.toLowerCase().includes(name.toLowerCase())){result.airline=name;if(!result.flightNum&&code)result.flightNum=code+' ';break}}}const tm=text.match(/\b(\d{1,2}):(\d{2})\s*(AM|PM)?\b/i);if(tm){let h=parseInt(tm[1]);const m=tm[2],ap=tm[3];if(ap&&ap.toUpperCase()==='PM'&&h<12)h+=12;if(ap&&ap.toUpperCase()==='AM'&&h===12)h=0;result.flightTime=`${String(h).padStart(2,'0')}:${m}`}const monthNames=Object.keys(MONTHS);const datesFound=[];const d4=text.match(/\b(\d{4})-(\d{1,2})-(\d{1,2})\b/);if(d4)datesFound.push({y:+d4[1],m:+d4[2],d:+d4[3]});const d1=text.match(new RegExp(`(${monthNames.join('|')})\\.?\\s+(\\d{1,2})(?:,?\\s*(\\d{4}))?`,'i'));if(d1){const m=MONTHS[d1[1].toLowerCase()];if(m)datesFound.push({y:d1[3]?+d1[3]:new Date().getFullYear(),m,d:+d1[2]})}const d2=text.match(new RegExp(`(\\d{1,2})\\s+(${monthNames.join('|')})\\.?(?:\\s+(\\d{4}))?`,'i'));if(d2){const m=MONTHS[d2[2].toLowerCase()];if(m)datesFound.push({y:d2[3]?+d2[3]:new Date().getFullYear(),m,d:+d2[1]})}if(!d4){const d3=text.match(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\b/);if(d3){const y=d3[3]?(d3[3].length===2?2000+ +d3[3]:+d3[3]):new Date().getFullYear();datesFound.push({y,m:+d3[1],d:+d3[2]})}}if(datesFound.length>=1)result.depart=`${datesFound[0].y}-${String(datesFound[0].m).padStart(2,'0')}-${String(datesFound[0].d).padStart(2,'0')}`;if(datesFound.length>=2)result.return=`${datesFound[1].y}-${String(datesFound[1].m).padStart(2,'0')}-${String(datesFound[1].d).padStart(2,'0')}`;const arrow=text.match(/[A-Za-z\s,]+?\s*(?:→|->|—>)\s*([A-Za-z][A-Za-z\s,]+)/);const toM=text.match(/(?:To|Arrive|Destination|Arriving)\s*:?\s*([A-Za-z][A-Za-z\s,]+?)(?:\s*(?:\(|\n|$))/i);if(arrow){const city=arrow[1].trim().split(',')[0].trim();if(city.length>2)result.destCity=city}else if(toM){const city=toM[1].trim().split(',')[0].trim();if(city.length>2)result.destCity=city}const refs=text.match(/\b([A-Z0-9]{6})\b/g);if(refs){for(const r of refs){if(r!==result.flightNum?.replace(/\s/g,'')&&!AIRLINES[r]){result.bookingRef=r;break}}}return result}
 
 /* Drag & drop */
 function setupDnD(uid,fid){const el=document.getElementById(uid);if(!el)return;el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag')});el.addEventListener('dragleave',()=>el.classList.remove('drag'));el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drag');const inp=document.getElementById(fid);inp.files=e.dataTransfer.files;inp.dispatchEvent(new Event('change'))})}
@@ -657,11 +659,15 @@ setupDnD('closetUpload','closetFile');setupDnD('styleUpload','styleFile');
 function renderSync(){document.getElementById('sbUrl').value=S.config.url||'';document.getElementById('sbKey').value=S.config.key||'';const un=document.getElementById('syncUserName');if(un){un.textContent=currentUser()||'—'}const st=document.getElementById('syncStatus');if(sbConfigured()){st.className='sync-status connected';document.getElementById('syncStatusText').textContent='Connected — '+S.trips.length+' trips';document.getElementById('syncTripsCount').textContent=S.trips.length+' trips synced'}else{st.className='sync-status disconnected';document.getElementById('syncStatusText').textContent='Not connected';document.getElementById('syncTripsCount').textContent=''}}
 async function syncConnect(){const url=document.getElementById('sbUrl').value.trim().replace(/\/$/,'');const key=document.getElementById('sbKey').value.trim();if(!url||!key){toast('Enter URL and key');return}S.config={url,key};save();showLoading('Syncing…','Loading trips from Supabase');try{const trips=await sbLoadTrips();hideLoading();const sbIds=new Set(trips.map(t=>t.id));S.trips=[...S.trips.filter(t=>!sbIds.has(t.id)),...trips];if(!S.activeId&&S.trips.length)S.activeId=S.trips[0].id;save();renderSync();renderTripsList();if(activeTrip())renderTripSummary();toast(`Synced ${trips.length} trips`)}catch{hideLoading();toast('Sync failed — check URL and key')}}
 
+/* Screenshot OCR */
+const AIRLINES={'JL':'JAL','NH':'ANA','AA':'American Airlines','UA':'United Airlines','DL':'Delta','WN':'Southwest','BA':'British Airways','AF':'Air France','LH':'Lufthansa','KL':'KLM','EK':'Emirates','QR':'Qatar Airways','SQ':'Singapore Airlines','CX':'Cathay Pacific','AC':'Air Canada','QF':'Qantas','NZ':'Air New Zealand','VS':'Virgin Atlantic','FI':'Icelandair','SK':'SAS','IB':'Iberia','AZ':'ITA Airways','KE':'Korean Air','OZ':'Asiana Airlines','CA':'Air China','MU':'China Eastern','CZ':'China Southern','TG':'Thai Airways','MH':'Malaysia Airlines','PR':'Philippine Airlines','5J':'Cebu Pacific','FJ':'Fiji Airways','HA':'Hawaiian Airlines','B6':'JetBlue','NK':'Spirit','AS':'Alaska Airlines','WS':'WestJet'};
+async function handleScanScreenshot(e){const file=e.target.files?.[0];if(!file)return;showLoading('Scanning…','AI reading your screenshot');try{const reader=new FileReader();const base64=await new Promise((res,rej)=>{reader.onload=()=>res(reader.result);reader.onerror=rej;reader.readAsDataURL(file)});const fnUrl='/api/scan-trip';showLoading('Analyzing…','AI vision parsing flight details');const r=await fetch(fnUrl,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({image:base64})});if(!r.ok){const err=await r.text();throw new Error('Scan failed: '+err)}const result=await r.json();if(result.error)throw new Error(result.error);hideLoading();if(result.trip){const t=result.trip;currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};destInput.value=`${t.city}, ${t.country}`;document.getElementById('departDate').value=t.depart||'';document.getElementById('returnDate').value=t.return||'';document.getElementById('airline').value=t.airline||'';document.getElementById('flightNum').value=t.flightNum||'';document.getElementById('flightTime').value=t.flightTime||'';document.getElementById('bookingRef').value=t.bookingRef||'';const newTrip={id:t.id,city:t.city,country:t.country,cc:t.cc,lat:t.lat,lon:t.lon,tz:t.tz,depart:t.depart,return:t.return,airline:t.airline,flightNum:t.flightNum,flightTime:t.flightTime,bookingRef:t.bookingRef,items:t.items,closet:[],style:t.style||[],weather:t.weather,events:null,recommendations:null,chatHistory:[],source:'screenshot',rawOcr:null,createdBy:currentUser()};S.trips.push(newTrip);S.activeId=t.id;save();renderTripSummary();renderTripsList();renderPack();toast('Trip scanned & saved — packing list ready')}}catch(err){hideLoading();toast('Scan failed — try again or fill in manually');console.error('Scan error:',err)}e.target.value=''}
+
 /* Init */
 async function initApp(){
   if(sbConfigured()){const trips=await sbLoadTrips().catch(()=>[]);if(trips&&trips.length){const sbIds=new Set(trips.map(t=>t.id));S.trips=[...S.trips.filter(t=>!sbIds.has(t.id)),...trips];if(!S.activeId&&S.trips.length)S.activeId=S.trips[0].id;save()}}
   if(S.activeId&&activeTrip()){const t=activeTrip();currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};destInput.value=`${t.city}, ${t.country}`;document.getElementById('departDate').value=t.depart||'';document.getElementById('returnDate').value=t.return||'';document.getElementById('airline').value=t.airline||'';document.getElementById('flightNum').value=t.flightNum||'';document.getElementById('flightTime').value=t.flightTime||'';document.getElementById('bookingRef').value=t.bookingRef||'';renderTripSummary()}
-  renderTripsList();renderPack();renderCloset();renderStyle();renderSync();
+  renderTripsList();renderPack();renderCloset();renderStyle();renderSync();renderCalendar();
 }
 if(checkAuth()){initApp()}else{showAuthGate()}
 </script>
