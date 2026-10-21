@@ -355,9 +355,9 @@ input,textarea{-webkit-appearance:none;appearance:none}
 .weather-current{
   background:var(--grad);
   border-radius:var(--r-lg);
-  padding:26px;
+  padding:14px 20px;
   margin-bottom:16px;
-  display:flex;align-items:center;gap:18px;
+  display:flex;align-items:center;gap:16px;
   position:relative;overflow:hidden;
   box-shadow:var(--shadow-glow);
 }
@@ -366,16 +366,17 @@ input,textarea{-webkit-appearance:none;appearance:none}
   width:110px;height:110px;border-radius:50%;
   background:rgba(255,255,255,.1);
 }
-.weather-current .w-icon{font-size:2.8rem;line-height:1;z-index:1;filter:drop-shadow(0 2px 8px rgba(0,0,0,.1))}
+.weather-current .w-icon{font-size:1.7rem;line-height:1;z-index:1;filter:drop-shadow(0 2px 8px rgba(0,0,0,.1))}
 .weather-current .w-info{flex:1;z-index:1}
 .weather-current .w-label{
   font-size:.64rem;text-transform:uppercase;letter-spacing:.1em;
   color:rgba(255,255,255,.65);font-weight:700;
 }
-.weather-current .w-cond{font-size:1.1rem;font-weight:700;color:#fff;margin-top:4px;letter-spacing:-.01em}
-.weather-current .w-extra{font-size:.76rem;color:rgba(255,255,255,.6);margin-top:5px;font-weight:500}
+.weather-current .w-cond{font-size:.96rem;font-weight:700;color:#fff;margin-top:2px;letter-spacing:-.01em}
+.weather-current .w-extra{font-size:.72rem;color:rgba(255,255,255,.6);margin-top:3px;font-weight:500}
+.weather-current .w-extra svg{width:.85rem;height:.85rem;vertical-align:-1px}
 .weather-current .w-temp{
-  font-family:var(--font-display);font-weight:800;font-size:2.4rem;
+  font-family:var(--font-display);font-weight:800;font-size:1.8rem;
   color:#fff;z-index:1;letter-spacing:-.04em;line-height:1;
 }
 .weather-scroll{
@@ -502,6 +503,10 @@ input,textarea{-webkit-appearance:none;appearance:none}
   font-variant-numeric:tabular-nums;letter-spacing:-.01em;
 }
 .pack-counter .pc-sep{color:var(--muted);font-size:.68rem;font-weight:600}
+.pc-others{display:flex;flex-wrap:wrap;gap:4px;margin-left:6px;align-items:center}
+.pc-other{font-size:.64rem;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:100px;padding:2px 8px;white-space:nowrap}
+.pc-other b{font-weight:700;color:var(--ink-2)}
+.share-chip{display:inline-block;background:var(--teal-soft);color:var(--teal);border-radius:100px;padding:3px 10px;font-weight:600;font-size:.74rem;margin:2px}
 
 /* ===== ADD ITEM ===== */
 .add-item{display:flex;gap:10px;padding:14px 18px 18px}
@@ -1260,7 +1265,6 @@ input,textarea{-webkit-appearance:none;appearance:none}
 }
 
 /* ===== INPUT SIZING ===== */
-.inp,.lbl{font-size:max(.92rem,16px)}
 .inp{font-size:max(.92rem,16px)}
 .screen{padding-top:max(20px,env(safe-area-inset-top,20px))}
 
@@ -1520,6 +1524,185 @@ input,textarea{-webkit-appearance:none;appearance:none}
   transform:translateY(-3px);
   box-shadow:0 8px 28px rgba(23,23,28,.08),0 2px 8px rgba(255,77,0,.06);
 }
+
+/* ===== SHARED USERS BAR ===== */
+.shared-users{
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px;
+  padding:14px 18px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  box-shadow:var(--shadow-sm);
+  margin-bottom:16px;
+}
+.shared-users .shared-label{
+  font-size:.64rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em;
+  color:var(--muted);margin-right:4px;
+}
+.shared-user-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:5px 12px 5px 5px;
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  border-radius:100px;
+  font-size:.78rem;font-weight:600;color:var(--ink-2);
+  letter-spacing:-.01em;
+  transition:all .18s var(--ease);
+}
+.shared-user-chip:hover{border-color:var(--orange);box-shadow:0 2px 8px rgba(255,77,0,.08)}
+.shared-user-chip .chip-avatar{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--grad);
+  color:#fff;font-size:.6rem;font-weight:800;
+  display:grid;place-items:center;
+  flex-shrink:0;letter-spacing:0;
+}
+.shared-user-chip.is-owner .chip-avatar{background:var(--ink)}
+.shared-user-chip .chip-name{
+  max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.shared-user-chip .chip-remove{
+  width:16px;height:16px;color:var(--muted);
+  margin-left:2px;cursor:pointer;flex-shrink:0;
+  display:grid;place-items:center;
+  transition:color .15s;
+}
+.shared-user-chip .chip-remove:hover{color:var(--red)}
+.shared-user-chip .chip-remove svg{
+  width:10px;height:10px;fill:none;stroke:currentColor;
+  stroke-width:2.5;stroke-linecap:round;
+}
+
+/* ===== PACK USER COLUMNS ===== */
+.pack-user-cols{
+  display:flex;gap:1px;
+  background:var(--line-soft);
+  border-radius:var(--r-xs);
+  overflow:hidden;
+  margin-left:8px;flex-shrink:0;
+}
+.pack-user-col{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:6px 10px;
+  background:var(--surface);
+  min-width:50px;
+  cursor:pointer;
+  transition:background .18s var(--ease);
+}
+.pack-user-col:hover{background:var(--surface-2)}
+.pack-user-col .uc-name{
+  font-size:.56rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.04em;
+  color:var(--muted);
+  max-width:56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.pack-user-col .uc-count{
+  font-size:.8rem;font-weight:700;color:var(--ink);
+  font-variant-numeric:tabular-nums;line-height:1.1;
+}
+.pack-user-col.packed .uc-count{color:var(--teal)}
+.pack-user-col.all-packed{background:rgba(34,197,94,.07)}
+.pack-user-col.all-packed .uc-count{color:var(--green)}
+.pack-user-col .uc-bar{
+  height:2px;width:100%;margin-top:3px;
+  background:var(--line-soft);border-radius:100px;overflow:hidden;
+}
+.pack-user-col .uc-bar .uc-fill{
+  height:100%;width:0;background:var(--grad);
+  border-radius:100px;transition:width .3s var(--ease);
+}
+.pack-user-col.packed .uc-bar .uc-fill{width:100%}
+
+/* ===== SHARE BUTTON ===== */
+.share-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 16px;
+  background:var(--grad);
+  color:#fff;
+  border-radius:100px;
+  font-size:.78rem;font-weight:700;letter-spacing:-.01em;
+  box-shadow:var(--shadow-glow);
+  transition:transform .18s var(--ease),box-shadow .18s var(--ease);
+  -webkit-user-select:none;user-select:none;
+}
+.share-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,77,0,.22)}
+.share-btn:active{transform:scale(.96)}
+.share-btn svg{
+  width:16px;height:16px;fill:none;stroke:currentColor;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;
+}
+.share-btn.ghost{
+  background:var(--surface);color:var(--orange);
+  border:1px solid var(--line);box-shadow:var(--shadow-sm);
+}
+.share-btn.ghost:hover{
+  border-color:var(--orange);background:rgba(255,77,0,.04);
+  box-shadow:0 4px 14px rgba(255,77,0,.1);
+}
+
+/* ===== SHARE DIALOG ===== */
+.share-dialog{
+  position:fixed;inset:0;z-index:200;
+  display:none;align-items:center;justify-content:center;
+  padding:24px;
+  background:rgba(23,23,28,.45);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+}
+.share-dialog.open{
+  display:flex;
+  animation:pageLoadIn .25s var(--ease-out) both;
+}
+.share-dialog .share-card{
+  width:100%;max-width:440px;
+  background:var(--surface);
+  border-radius:var(--r-lg);
+  box-shadow:var(--shadow-lg);
+  padding:28px 26px 24px;
+  display:flex;flex-direction:column;gap:16px;
+}
+.share-dialog .share-title{
+  font-family:var(--font-display);font-weight:700;font-size:1.05rem;
+  letter-spacing:-.02em;color:var(--ink);
+}
+.share-dialog .share-sub{
+  font-size:.8rem;color:var(--muted);margin-top:-8px;line-height:1.45;
+}
+.share-dialog .share-field{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface-2);
+  border:1.5px solid var(--line);
+  border-radius:var(--r-sm);
+  padding:4px 4px 4px 14px;
+  transition:border-color .18s var(--ease),box-shadow .18s var(--ease);
+}
+.share-dialog .share-field:focus-within{
+  border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,77,0,.1);
+}
+.share-dialog .share-field svg{
+  width:18px;height:18px;color:var(--muted);flex-shrink:0;
+  fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+.share-dialog .share-field .share-input{
+  flex:1;border:none;background:transparent;outline:none;
+  font-size:.92rem;font-weight:500;padding:12px 0;min-width:0;
+  color:var(--ink);
+}
+.share-dialog .share-field .share-input::placeholder{color:var(--muted)}
+.share-dialog .share-field .share-go{
+  padding:8px 18px;background:var(--grad);color:#fff;
+  border-radius:100px;font-size:.82rem;font-weight:700;
+  flex-shrink:0;transition:transform .15s var(--ease);
+}
+.share-dialog .share-field .share-go:active{transform:scale(.94)}
+.share-dialog .share-actions{display:flex;gap:10px;margin-top:4px}
+.share-dialog .share-actions .btn-ghost{flex:1;justify-content:center}
+.share-dialog .share-roster{
+  display:flex;flex-wrap:wrap;gap:8px;
+  padding-top:12px;border-top:1px solid var(--line-soft);margin-top:4px;
+}
+.share-dialog .share-roster .shared-user-chip{font-size:.74rem}
 </style>
 </head>
 <body>
@@ -1595,7 +1778,7 @@ input,textarea{-webkit-appearance:none;appearance:none}
     <div class="chat-msgs" id="chatMessages"><div class="empty-state" id="chatEmpty">Ask me anything about your trip — packing, weather, events, restaurants, itinerary…</div></div>
     <div class="chat-input-bar">
       <textarea id="chatInput" placeholder="Ask about your trip…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
-      <button class="send-btn" onclick="sendChat()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-7-7 16-2-7-7-2z"/></svg></button>
+      <button class="send-btn" aria-label="Send message" onclick="sendChat()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-7-7 16-2-7-7-2z"/></svg></button>
     </div>
   </div>
 </div>
@@ -1632,6 +1815,13 @@ input,textarea{-webkit-appearance:none;appearance:none}
   </div>
   <div style="font-size:.78rem;color:var(--muted);padding:0 4px;line-height:1.6;margin-bottom:20px">
     <p>Trips sync to Supabase — shared across all users (Vrinda, Gabe, Lux). Photos stay on your device.</p>
+  </div>
+  <div class="sync-card">
+    <div class="ps-head" style="margin-bottom:12px"><span class="ps-title">Share this trip</span></div>
+    <div class="field-group" style="margin-top:0;margin-bottom:12px"><div><label class="lbl">Share with username</label><input id="shareUserInput" class="inp" type="text" placeholder="Vrinda, Gabe, Lux..." autocapitalize="words"></div></div>
+    <button class="btn btn-fill btn-block" style="margin-bottom:8px" onclick="shareTrip()">Share trip</button>
+    <div id="shareTripStatus" style="font-size:.76rem;color:var(--muted);margin-bottom:8px"></div>
+    <div id="sharedWithList" style="font-size:.8rem;color:var(--ink-2)"></div>
   </div>
   <div class="sync-card">
     <div class="ps-head" style="margin-bottom:12px"><span class="ps-title">Shared trips</span></div>
@@ -1736,9 +1926,10 @@ async function runAgentFallback(messages,systemPrompt){
 
 /* Worker API */
 function sbConfigured(){return true}
-function tripToRow(t){return{id:t.id,city:t.city,country:t.country,cc:t.cc,lat:t.lat,lon:t.lon,tz:t.tz,depart:t.depart,return_date:t.return,airline:t.airline,flight_num:t.flightNum,flight_time:t.flightTime,booking_ref:t.bookingRef,items:t.items,closet:t.closet,style:t.style,weather:t.weather,events:t.events,recommendations:t.recommendations,chat_history:t.chatHistory,source:t.source,raw_ocr:t.rawOcr,created_by:currentUser()}}
-function rowToTrip(r){return{id:r.id,city:r.city,country:r.country,cc:r.cc,lat:r.lat,lon:r.lon,tz:r.tz,depart:r.depart,return:r.return_date,airline:r.airline,flightNum:r.flight_num,flightTime:r.flight_time,bookingRef:r.booking_ref,items:r.items||{},closet:r.closet||[],style:r.style||[],weather:r.weather,events:r.events,recommendations:r.recommendations,chatHistory:r.chat_history,source:r.source,rawOcr:r.raw_ocr,createdBy:r.created_by}}
+function tripToRow(t){return{id:t.id,city:t.city,country:t.country,cc:t.cc,lat:t.lat,lon:t.lon,tz:t.tz,depart:t.depart,return_date:t.return,airline:t.airline,flight_num:t.flightNum,flight_time:t.flightTime,booking_ref:t.bookingRef,items:t.items,closet:t.closet,style:t.style,weather:t.weather,events:t.events,recommendations:t.recommendations,chat_history:t.chatHistory,source:t.source,raw_ocr:t.rawOcr,shared_with:t.sharedWith||[],created_by:currentUser()}}
+function rowToTrip(r){return{id:r.id,city:r.city,country:r.country,cc:r.cc,lat:r.lat,lon:r.lon,tz:r.tz,depart:r.depart,return:r.return_date,airline:r.airline,flightNum:r.flight_num,flightTime:r.flight_time,bookingRef:r.booking_ref,items:r.items||{},closet:r.closet||[],style:r.style||[],weather:r.weather,events:r.events,recommendations:r.recommendations,chatHistory:r.chat_history,source:r.source,rawOcr:r.raw_ocr,sharedWith:r.shared_with||r.sharedWith||[],createdBy:r.created_by}}
 async function sbLoadTrips(){try{const r=await fetch('/api/trips');if(!r.ok)return[];return(await r.json()).map(rowToTrip)}catch{return[]}}
+async function sbLoadSharedTrips(){try{const u=currentUser()||'';const r=await fetch('/api/trips/shared?user='+encodeURIComponent(u));if(!r.ok)return[];return(await r.json()).map(rowToTrip)}catch{return[]}}
 async function sbSaveTrip(t){try{await fetch('/api/trips',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(tripToRow(t))})}catch{}}
 async function sbDeleteTrip(id){try{await fetch('/api/trips?id='+id,{method:'DELETE'})}catch{}}
 
@@ -1779,22 +1970,24 @@ function pickDest(i){currentDest=destResults[i];destInput.value=\`\${currentDest
 function saveTrip(){
   if(!currentDest){toast('Search and pick a destination');destInput.focus();return}
   const data={id:activeTrip()?.id||uuid(),city:currentDest.name,country:currentDest.country,cc:currentDest.country_code,lat:currentDest.latitude,lon:currentDest.longitude,tz:currentDest.timezone,depart:document.getElementById('departDate').value||null,return:document.getElementById('returnDate').value||null,airline:document.getElementById('airline').value||'',flightNum:document.getElementById('flightNum').value||'',flightTime:document.getElementById('flightTime').value||'',bookingRef:document.getElementById('bookingRef').value||'',items:activeTrip()?.items||{},closet:activeTrip()?.closet||[],style:activeTrip()?.style||[],weather:activeTrip()?.weather||null,events:activeTrip()?.events||null,recommendations:activeTrip()?.recommendations||null,chatHistory:activeTrip()?.chatHistory||[],source:activeTrip()?.source||'manual',rawOcr:activeTrip()?.rawOcr||null,createdBy:currentUser()};
+  const prevTrip=activeTrip();const destChanged=!!prevTrip&&(prevTrip.lat!==currentDest.latitude||prevTrip.lon!==currentDest.longitude);
   if(!S.activeId||!activeTrip()){S.trips.push(data);S.activeId=data.id}else Object.assign(activeTrip(),data);
+  if(destChanged&&activeTrip()){activeTrip().weather=null;activeTrip().events=null;activeTrip().recommendations=null;const wb=document.getElementById('weatherBlock');if(wb)wb.innerHTML=''}
   save();sbSaveTrip(data);renderTripSummary();renderTripsList();autoSuggest();toast('Trip saved');
   if(!activeTrip().weather)fetchWeather();
 }
 function editTrip(){document.getElementById('tripSetup').classList.remove('hidden');document.getElementById('tripSummary').classList.add('hidden');const t=activeTrip();if(!t)return;currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};destInput.value=\`\${t.city}, \${t.country}\`;document.getElementById('departDate').value=t.depart||'';document.getElementById('returnDate').value=t.return||'';document.getElementById('airline').value=t.airline||'';document.getElementById('flightNum').value=t.flightNum||'';document.getElementById('flightTime').value=t.flightTime||'';document.getElementById('bookingRef').value=t.bookingRef||''}
 function renderTripSummary(){const t=activeTrip();if(!t)return;document.getElementById('tripSetup').classList.add('hidden');document.getElementById('tripSummary').classList.remove('hidden');document.getElementById('tsDest').textContent=\`\${t.city}, \${t.country}\`;const dates=[];if(t.depart)dates.push(fmtDate(t.depart));if(t.return)dates.push(fmtDate(t.return));document.getElementById('tsDates').textContent=dates.join(' — ');const flight=[];if(t.airline)flight.push(\`<div class="item">Airline<strong>\${t.airline}\${t.flightNum?' '+t.flightNum:''}</strong></div>\`);if(t.flightTime)flight.push(\`<div class="item">Departure<strong>\${t.flightTime}</strong></div>\`);if(t.bookingRef)flight.push(\`<div class="item">Booking Ref<strong>\${t.bookingRef}</strong></div>\`);document.getElementById('tsFlight').innerHTML=flight.join('')||'';document.getElementById('tsSource').innerHTML=t.source&&t.source!=='manual'?\`<div class="source-badge">\${t.source}</div>\`:''}
 function renderTripsList(){const el=document.getElementById('tripsList');if(!S.trips.length){el.classList.add('hidden');return}el.classList.remove('hidden');document.getElementById('tripsListContent').innerHTML=S.trips.map(t=>{const dates=[];if(t.depart)dates.push(fmtDate(t.depart));if(t.return)dates.push(fmtDate(t.return));const src=t.source&&t.source!=='manual'?\`<span class="tc-source">\${t.source}</span>\`:'';const by=t.createdBy?\` · \${t.createdBy}\`:'';return \`<div class="trip-card \${t.id===S.activeId?'active':''}" onclick="selectTrip('\${t.id}')"><div class="tc-main"><div class="tc-city">\${t.city}, \${t.country}</div><div class="tc-dates">\${dates.join(' — ')||'No dates'}\${by}</div>\${src}</div><button class="tc-del" onclick="event.stopPropagation();deleteTrip('\${t.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>\`}).join('')}
-function selectTrip(id){S.activeId=id;save();const t=activeTrip();if(t){currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};destInput.value=\`\${t.city}, \${t.country}\`;document.getElementById('departDate').value=t.depart||'';document.getElementById('returnDate').value=t.return||'';document.getElementById('airline').value=t.airline||'';document.getElementById('flightNum').value=t.flightNum||'';document.getElementById('flightTime').value=t.flightTime||'';document.getElementById('bookingRef').value=t.bookingRef||'';renderTripSummary();renderTripsList();renderPack()}}
+function selectTrip(id){S.activeId=id;save();const t=activeTrip();if(t){currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};destInput.value=\`\${t.city}, \${t.country}\`;document.getElementById('departDate').value=t.depart||'';document.getElementById('returnDate').value=t.return||'';document.getElementById('airline').value=t.airline||'';document.getElementById('flightNum').value=t.flightNum||'';document.getElementById('flightTime').value=t.flightTime||'';document.getElementById('bookingRef').value=t.bookingRef||'';renderTripSummary();if(t.weather)renderWeather();else{const wb=document.getElementById('weatherBlock');if(wb)wb.innerHTML='';}renderTripsList();renderPack()}}
 function deleteTrip(id){S.trips=S.trips.filter(t=>t.id!==id);if(S.activeId===id)S.activeId=S.trips[0]?.id||null;save();sbDeleteTrip(id);if(S.activeId)selectTrip(S.activeId);else{document.getElementById('tripSetup').classList.remove('hidden');document.getElementById('tripSummary').classList.add('hidden')}renderTripsList();renderPack();toast('Trip deleted')}
 function fmtDate(s){const d=new Date(s+'T00:00');return d.toLocaleDateString('en',{month:'short',day:'numeric'})}
 
 /* Weather — 16 days */
-async function fetchWeather(){const t=activeTrip();if(!t)return;try{const lat=t.lat.toFixed(2),lon=t.lon.toFixed(2);const r=await fetch(\`https://api.open-meteo.com/v1/forecast?latitude=\${lat}&longitude=\${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max&timezone=\${encodeURIComponent(t.tz||'auto')}&forecast_days=16\`);t.weather=await r.json();save();sbSaveTrip(t);renderWeather();autoSuggest()}catch{toast('Weather fetch failed')}}
+async function fetchWeather(){const t=activeTrip();if(!t)return;try{const lat=t.lat.toFixed(2),lon=t.lon.toFixed(2);const r=await fetch(\`https://api.open-meteo.com/v1/forecast?latitude=\${lat}&longitude=\${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max&timezone=\${encodeURIComponent(t.tz||'auto')}&forecast_days=16\`);if(!r.ok)throw new Error('Weather API error');t.weather=await r.json();save();sbSaveTrip(t);renderWeather();autoSuggest()}catch{toast('Weather fetch failed')}}
 const W_ICON={0:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><circle cx=\\'12\\' cy=\\'12\\' r=\\'4.5\\'/><path d=\\'M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8\\'/></svg>',1:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><circle cx=\\'8\\' cy=\\'7\\' r=\\'3\\'/><path d=\\'M8 1.5v2M14.5 7h-2M8 12.5v2M3 7H1M11.2 3.8l1.4 1.4M3.4 11.2l1.4-1.4M3.8 3.4l1.4 1.4\\'/><path d=\\'M17 12a4 4 0 014 4 3 3 0 01-3 3H9a3 3 0 010-6 4 4 0 014-3 4 4 0 014 2z\\'/></svg>',2:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><circle cx=\\'7\\' cy=\\'7\\' r=\\'3\\'/><path d=\\'M7 1.5v2M13.5 7h-2M7 12.5v2M2 7H0M10.2 3.8l1.4 1.4M2.4 11.6l1.4-1.4M2.8 3.4l1.4 1.4\\'/><path d=\\'M18 12a4 4 0 014 4 3 3 0 01-3 3H10a3 3 0 010-6 4 4 0 014-3 4 4 0 014 2z\\'/></svg>',3:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 12a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014 2 4 4 0 014-1z\\'/></svg>',45:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\'><path d=\\'M3 8h18M3 12h18M3 16h18M3 20h12\\'/></svg>',48:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\'><path d=\\'M3 8h18M3 12h18M3 16h18M3 20h12\\'/></svg>',51:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><circle cx=\\'7\\' cy=\\'7\\' r=\\'3\\'/><path d=\\'M7 1.5v2M13.5 7h-2M7 12.5v2M2 7H0M10.2 3.8l1.4 1.4M2.4 11.6l1.4-1.4M2.8 3.4l1.4 1.4\\'/><path d=\\'M18 12a4 4 0 014 4 3 3 0 01-3 3H10a3 3 0 010-6 4 4 0 014-3 4 4 0 014 2z\\'/><path d=\\'M9 19v2M13 19v2M17 19v2\\'/></svg>',53:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><circle cx=\\'7\\' cy=\\'7\\' r=\\'3\\'/><path d=\\'M7 1.5v2M13.5 7h-2M7 12.5v2M2 7H0M10.2 3.8l1.4 1.4M2.4 11.6l1.4-1.4M2.8 3.4l1.4 1.4\\'/><path d=\\'M18 12a4 4 0 014 4 3 3 0 01-3 3H10a3 3 0 010-6 4 4 0 014-3 4 4 0 014 2z\\'/><path d=\\'M9 19v2M13 19v2M17 19v2\\'/></svg>',55:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 12a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014 2 4 4 0 014-1z\\'/><path d=\\'M8 19v2M12 19v2.5M16 19v2\\'/></svg>',56:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 12a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014 2 4 4 0 014-1z\\'/><path d=\\'M8 19v2M12 19v2.5M16 19v2\\'/></svg>',57:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 12a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014 2 4 4 0 014-1z\\'/><path d=\\'M8 19v2M12 19v2.5M16 19v2\\'/></svg>',61:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 12a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014 2 4 4 0 014-1z\\'/><path d=\\'M8 19v2M12 19v2.5M16 19v2\\'/></svg>',63:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 12a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014 2 4 4 0 014-1z\\'/><path d=\\'M8 19v2M12 19v2.5M16 19v2\\'/></svg>',65:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 12a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014 2 4 4 0 014-1z\\'/><path d=\\'M8 19v2M12 19v2.5M16 19v2\\'/></svg>',66:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 11a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014-2 4 4 0 014 1z\\'/><path d=\\'M8 19l1 1-1 1M12 19l1 1-1 1M16 19l1 1-1 1\\'/></svg>',67:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 11a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014-2 4 4 0 014 1z\\'/><path d=\\'M8 19l1 1-1 1M12 19l1 1-1 1M16 19l1 1-1 1\\'/></svg>',71:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M12 2v20M4 6l16 12M20 6L4 18\\'/><path d=\\'M12 6l-2-2M12 6l2-2M12 18l-2 2M12 18l2 2M6 8l-2.5.5M18 8l2.5.5M6 16l-2.5-.5M18 16l2.5-.5\\'/></svg>',73:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M12 2v20M4 6l16 12M20 6L4 18\\'/><path d=\\'M12 6l-2-2M12 6l2-2M12 18l-2 2M12 18l2 2M6 8l-2.5.5M18 8l2.5.5M6 16l-2.5-.5M18 16l2.5-.5\\'/></svg>',75:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M12 2v20M4 6l16 12M20 6L4 18\\'/><path d=\\'M12 6l-2-2M12 6l2-2M12 18l-2 2M12 18l2 2M6 8l-2.5.5M18 8l2.5.5M6 16l-2.5-.5M18 16l2.5-.5\\'/></svg>',77:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M12 2v20M4 6l16 12M20 6L4 18\\'/><path d=\\'M12 6l-2-2M12 6l2-2M12 18l-2 2M12 18l2 2M6 8l-2.5.5M18 8l2.5.5M6 16l-2.5-.5M18 16l2.5-.5\\'/></svg>',80:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><circle cx=\\'7\\' cy=\\'7\\' r=\\'3\\'/><path d=\\'M7 1.5v2M13.5 7h-2M7 12.5v2M2 7H0M10.2 3.8l1.4 1.4M2.4 11.6l1.4-1.4M2.8 3.4l1.4 1.4\\'/><path d=\\'M18 12a4 4 0 014 4 3 3 0 01-3 3H10a3 3 0 010-6 4 4 0 014-3 4 4 0 014 2z\\'/><path d=\\'M9 19v2M13 19v2M17 19v2\\'/></svg>',81:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 12a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014 2 4 4 0 014-1z\\'/><path d=\\'M8 19v2M12 19v2.5M16 19v2\\'/></svg>',82:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 11a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014-2 4 4 0 014 1z\\'/><path d=\\'M13 14l-3 5h3l-2 4\\'/></svg>',85:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 11a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014-2 4 4 0 014 1z\\'/><path d=\\'M8 19l1 1-1 1M12 19l1 1-1 1M16 19l1 1-1 1\\'/></svg>',86:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 11a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014-2 4 4 0 014 1z\\'/><path d=\\'M8 19l1 1-1 1M12 19l1 1-1 1M16 19l1 1-1 1\\'/></svg>',95:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 11a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014-2 4 4 0 014 1z\\'/><path d=\\'M13 14l-3 5h3l-2 4\\'/></svg>',96:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 11a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014-2 4 4 0 014 1z\\'/><path d=\\'M13 14l-3 5h3l-2 4\\'/></svg>',99:'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M18 11a4 4 0 014 4 3 3 0 01-3 3H6a3 3 0 010-6 4 4 0 014-3 4 4 0 014-2 4 4 0 014 1z\\'/><path d=\\'M13 14l-3 5h3l-2 4\\'/></svg>'};
 const W_LABEL={0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',56:'Freezing drizzle',57:'Heavy freezing drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',66:'Freezing rain',67:'Heavy freezing rain',71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow grains',80:'Light showers',81:'Showers',82:'Violent showers',85:'Snow showers',86:'Heavy snow showers',95:'Thunderstorm',96:'Thunderstorm + hail',99:'Severe thunderstorm'};
-function renderWeather(){const t=activeTrip();if(!t||!t.weather)return;const w=t.weather,cur=w.current,daily=w.daily;let days=daily.time,start=0,end=days.length;if(t.depart){const di=days.indexOf(t.depart);if(di>=0)start=di}let html=\`<div class="weather-current"><div class="w-icon">\${W_ICON[cur.weather_code]||'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M14 14.76V5a2 2 0 10-4 0v9.76a4 4 0 104 0z\\'/><circle cx=\\'12\\' cy=\\'17\\' r=\\'1.5\\'/></svg>'}</div><div class="w-info"><div class="w-label">Current in \${t.city}</div><div class="w-cond">\${W_LABEL[cur.weather_code]||'—'}</div><div class="w-extra"><svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M12 2.5S5 11 5 16a7 7 0 0014 0c0-5-7-13.5-7-13.5z\\'/></svg> \${cur.relative_humidity_2m}% · <svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M3 8h11a3 3 0 100-6M3 12h15a3 3 0 110 6M3 16h9\\'/></svg> \${Math.round(cur.wind_speed_10m)} km/h</div></div><div class="w-temp">\${Math.round(cur.temperature_2m)}°</div></div><div class="weather-scroll">\`;for(let i=start;i<end&&i<days.length;i++){const d=new Date(days[i]+'T00:00');const lbl=d.toLocaleDateString('en',{weekday:'short',day:'numeric'});const hi=Math.round(daily.temperature_2m_max[i]);const lo=Math.round(daily.temperature_2m_min[i]);const prec=daily.precipitation_probability_max?.[i]??0;html+=\`<div class="w-day"><div class="d-label">\${lbl}</div><div class="d-icon">\${W_ICON[daily.weather_code[i]]||'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M14 14.76V5a2 2 0 10-4 0v9.76a4 4 0 104 0z\\'/><circle cx=\\'12\\' cy=\\'17\\' r=\\'1.5\\'/></svg>'}</div><div class="d-hi">\${hi}°</div><div class="d-lo">\${lo}°</div>\${prec>20?\`<div class="d-precip"><svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M12 2.5S5 11 5 16a7 7 0 0014 0c0-5-7-13.5-7-13.5z\\'/></svg>\${prec}%</div>\`:''}</div>\`}html+='</div>';document.getElementById('weatherBlock').innerHTML=html}
+function renderWeather(){const t=activeTrip();if(!t||!t.weather||!t.weather.current||!t.weather.daily)return;const w=t.weather,cur=w.current,daily=w.daily;let days=daily.time,start=0,end=days.length;if(t.depart){const di=days.indexOf(t.depart);if(di>=0)start=di}let html=\`<div class="weather-current"><div class="w-icon">\${W_ICON[cur.weather_code]||'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M14 14.76V5a2 2 0 10-4 0v9.76a4 4 0 104 0z\\'/><circle cx=\\'12\\' cy=\\'17\\' r=\\'1.5\\'/></svg>'}</div><div class="w-info"><div class="w-label">Current in \${t.city}</div><div class="w-cond">\${W_LABEL[cur.weather_code]||'—'}</div><div class="w-extra"><svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M12 2.5S5 11 5 16a7 7 0 0014 0c0-5-7-13.5-7-13.5z\\'/></svg> \${cur.relative_humidity_2m}% · <svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M3 8h11a3 3 0 100-6M3 12h15a3 3 0 110 6M3 16h9\\'/></svg> \${Math.round(cur.wind_speed_10m)} km/h</div></div><div class="w-temp">\${Math.round(cur.temperature_2m)}°</div></div><div class="weather-scroll">\`;for(let i=start;i<end&&i<days.length;i++){const d=new Date(days[i]+'T00:00');const lbl=d.toLocaleDateString('en',{weekday:'short',day:'numeric'});const hi=Math.round(daily.temperature_2m_max[i]);const lo=Math.round(daily.temperature_2m_min[i]);const prec=daily.precipitation_probability_max?.[i]??0;html+=\`<div class="w-day"><div class="d-label">\${lbl}</div><div class="d-icon">\${W_ICON[daily.weather_code[i]]||'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M14 14.76V5a2 2 0 10-4 0v9.76a4 4 0 104 0z\\'/><circle cx=\\'12\\' cy=\\'17\\' r=\\'1.5\\'/></svg>'}</div><div class="d-hi">\${hi}°</div><div class="d-lo">\${lo}°</div>\${prec>20?\`<div class="d-precip"><svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M12 2.5S5 11 5 16a7 7 0 0014 0c0-5-7-13.5-7-13.5z\\'/></svg>\${prec}%</div>\`:''}</div>\`}html+='</div>';document.getElementById('weatherBlock').innerHTML=html}
 
 /* Auto-suggest */
 function autoSuggest(){const t=activeTrip();if(!t)return;const w=t.weather;let maxT=22,minT=15,rain=false,snow=false,uvHi=false;if(w?.daily){const d=w.daily;const depIdx=t.depart?Math.max(0,d.time.indexOf(t.depart)):0;const n=Math.min(16,d.time.length-depIdx);for(let i=depIdx;i<depIdx+n&&i<d.time.length;i++){maxT=Math.max(maxT,d.temperature_2m_max[i]);minT=Math.min(minT,d.temperature_2m_min[i]);if((d.precipitation_probability_max?.[i]??0)>30)rain=true;if(d.weather_code[i]>=71&&d.weather_code[i]<=77)snow=true;if((d.uv_index_max?.[i]??0)>6)uvHi=true}}const add=(label,cat,key)=>{const k=\`auto-\${key}\`;if(!t.items[k])t.items[k]={cat,label,checked:false,qty:1,packed:0,auto:true}};if(maxT>=28){add('Sunscreen','grooming','sunscreen');add('Hat / Cap','apparel','hat')}if(minT<=5){add('Heavy jacket','apparel','heavy-jacket');add('Thermal base layer','apparel','thermal');add('Gloves','apparel','gloves')}if(minT<=-5){add('Scarf','apparel','scarf');add('Warm beanie','apparel','beanie')}if(rain){add('Rain jacket','gear','rain-jacket');add('Umbrella','gear','umbrella')}if(snow){add('Snow boots','gear','snow-boots')}if(uvHi){add('Sunglasses','gear','sunglasses')}if(maxT<=18&&minT>=6){add('Light layer','apparel','light-layer')}save();renderPack()}
@@ -1820,15 +2013,15 @@ function renderPack(){
     if(!catItems.length)return;
     const done=catItems.filter(([k,v])=>v.checked).length;
     const allDone=catItems.length>0&&done===catItems.length;
-    html+=\`<div class="cat-section\${allDone?' open':''}" data-cat="\${cat.id}"><div class="cat-head" onclick="this.parentElement.classList.toggle('open')"><div class="left"><span class="cat-icon">\${cat.icon}</span><span class="cat-name">\${cat.name}</span></div><div class="right"><span class="pill \${allDone?'done':''}">\${done}/\${catItems.length}</span><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div></div><div class="cat-body"><div class="pack-list">\${catItems.map(([k,v])=>{const packed=v.packed||0;const total=v.qty||1;const isDone=packed>=total;return \`<div class="pack-row \${isDone?'checked':''}" data-key="\${k}"><div class="check" onclick="toggleItem('\${k}')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="p-label">\${v.label}\${v.essential?' <span class="essential-badge">essential</span>':''}\${v.auto?' <span class="auto-badge">weather</span>':''}\${v.fromTemplate?' <span class="auto-badge" style="background:#fef3c7;color:#92400e">'+v.fromTemplate+'</span>':''}</span><div class="pack-counter"><button class="pc-btn" onclick="packedQty('\${k}',-1)">−</button><span class="pc-val">\${packed}<span class="pc-sep">/</span>\${total}</span><button class="pc-btn" onclick="packedQty('\${k}',1)">+</button></div><div class="qty-control"><button class="qty-btn" onclick="qtyItem('\${k}',-1)">−</button><span class="qty-val">\${total}</span><button class="qty-btn" onclick="qtyItem('\${k}',1)">+</button></div><button class="del-btn" onclick="delItem('\${k}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>\`}).join('')}<div class="add-item"><input class="ai-inp" id="add-\${cat.id}" placeholder="Add \${cat.name.toLowerCase()} item…" onkeydown="if(event.key==='Enter')addItem('\${cat.id}')"><button class="ai-btn" onclick="addItem('\${cat.id}')">Add</button></div></div></div></div>\`;
+    html+=\`<div class="cat-section\${allDone?' open':''}" data-cat="\${cat.id}"><div class="cat-head" onclick="this.parentElement.classList.toggle('open')"><div class="left"><span class="cat-icon">\${cat.icon}</span><span class="cat-name">\${cat.name}</span></div><div class="right"><span class="pill \${allDone?'done':''}">\${done}/\${catItems.length}</span><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div></div><div class="cat-body"><div class="pack-list">\${catItems.map(([k,v])=>{const me=currentUser();const tr=activeTrip();const shared=(tr&&Array.isArray(tr.sharedWith))?tr.sharedWith.filter(u=>u):[];if(!v.packedBy)v.packedBy={};const packed=(typeof v.packedBy[me]==='number')?v.packedBy[me]:(v.packed||0);const total=v.qty||1;const isDone=packed>=total;const others=shared.filter(u=>u!==me).map(u=>{const p=(typeof v.packedBy[u]==='number')?v.packedBy[u]:(v.packed||0);return '<span class="pc-other"><b>'+u+'</b> '+p+'/'+total+'</span>'}).join('');const othersHtml=others?'<span class="pc-others">'+others+'</span>':'';return \`<div class="pack-row \${isDone?'checked':''}" data-key="\${k}"><div class="check" onclick="toggleItem('\${k}')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="p-label">\${v.label}\${v.essential?' <span class="essential-badge">essential</span>':''}\${v.auto?' <span class="auto-badge">weather</span>':''}\${v.fromTemplate?' <span class="auto-badge" style="background:#fef3c7;color:#92400e">'+v.fromTemplate+'</span>':''}</span><div class="pack-counter"><button class="pc-btn" onclick="packedQty('\${k}',-1)">−</button><span class="pc-val">\${packed}<span class="pc-sep">/</span>\${total}</span><button class="pc-btn" onclick="packedQty('\${k}',1)">+</button></div>\${othersHtml}<div class="qty-control"><button class="qty-btn" onclick="qtyItem('\${k}',-1)">−</button><span class="qty-val">\${total}</span><button class="qty-btn" onclick="qtyItem('\${k}',1)">+</button></div><button class="del-btn" onclick="delItem('\${k}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>\`}).join('')}<div class="add-item"><input class="ai-inp" id="add-\${cat.id}" placeholder="Add \${cat.name.toLowerCase()} item…" onkeydown="if(event.key==='Enter')addItem('\${cat.id}')"><button class="ai-btn" onclick="addItem('\${cat.id}')">Add</button></div></div></div></div>\`;
   });
   el.innerHTML=html;
   updateProgress();
   if(!search){const first=el.querySelector('.cat-section');if(first)first.classList.add('open')}
 }
-function toggleItem(k){const items=activeItems();if(!items[k])return;const total=items[k].qty||1;const packed=items[k].packed||0;if(packed<total){items[k].packed=total}else{items[k].packed=0}items[k].checked=items[k].packed>=(items[k].qty||1);save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack();if(allPacked())document.getElementById('modalBg').classList.add('show')}
-function packedQty(k,dir){const items=activeItems();if(!items[k])return;const total=items[k].qty||1;items[k].packed=Math.max(0,Math.min(total,(items[k].packed||0)+dir));items[k].checked=items[k].packed>=total;save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack();if(allPacked())document.getElementById('modalBg').classList.add('show')}
-function qtyItem(k,dir){const items=activeItems();if(!items[k])return;items[k].qty=Math.max(1,(items[k].qty||1)+dir);if((items[k].packed||0)>items[k].qty)items[k].packed=items[k].qty;items[k].checked=items[k].packed>=items[k].qty;save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack()}
+function toggleItem(k){const items=activeItems();if(!items[k])return;const total=items[k].qty||1;const me=currentUser();if(!items[k].packedBy)items[k].packedBy={};const cur=(typeof items[k].packedBy[me]==='number')?items[k].packedBy[me]:(items[k].packed||0);if(cur<total){items[k].packedBy[me]=total}else{items[k].packedBy[me]=0}items[k].packed=items[k].packedBy[me];items[k].checked=items[k].packedBy[me]>=total;save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack();if(allPacked())document.getElementById('modalBg').classList.add('show')}
+function packedQty(k,dir){const items=activeItems();if(!items[k])return;const total=items[k].qty||1;const me=currentUser();if(!items[k].packedBy)items[k].packedBy={};if(typeof items[k].packedBy[me]!=='number')items[k].packedBy[me]=items[k].packed||0;items[k].packedBy[me]=Math.max(0,Math.min(total,items[k].packedBy[me]+dir));items[k].packed=items[k].packedBy[me];items[k].checked=items[k].packedBy[me]>=total;save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack();if(allPacked())document.getElementById('modalBg').classList.add('show')}
+function qtyItem(k,dir){const items=activeItems();if(!items[k])return;items[k].qty=Math.max(1,(items[k].qty||1)+dir);const me=currentUser();if(items[k].packedBy&&typeof items[k].packedBy[me]==='number'&&items[k].packedBy[me]>items[k].qty)items[k].packedBy[me]=items[k].qty;if((items[k].packed||0)>items[k].qty)items[k].packed=items[k].qty;items[k].checked=(items[k].packedBy?items[k].packedBy[me]:items[k].packed)>=items[k].qty;save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack()}
 function delItem(k){const items=activeItems();if(!items[k])return;delete items[k];save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack()}
 function addItem(catId){const items=activeItems();const inp=document.getElementById(\`add-\${catId}\`);const label=inp.value.trim();if(!label)return;items[\`c-\${Date.now()}\`]={cat:catId,label,checked:false,qty:1,packed:0,auto:false};inp.value='';save();const t=activeTrip();if(t)sbSaveTrip(t);renderPack()}
 function allPacked(){const items=activeItems();const ks=Object.keys(items);return ks.length>0&&ks.every(k=>items[k].checked)}
@@ -1871,6 +2064,8 @@ async function searchFlights(){const fromEl=document.getElementById('fromInput')
 
 /* Shared trips */
 async function searchUserTrips(){const inp=document.getElementById('userSearchInput');const list=document.getElementById('userTripsList');if(!list)return;const username=inp?inp.value.trim():'';list.innerHTML='<div class="empty-state">Searching…</div>';try{const trips=await sbLoadTrips();let filtered=trips;if(username){filtered=trips.filter(t=>{const cb=(t.createdBy||t.created_by||'').toLowerCase();return cb.includes(username.toLowerCase())})}if(!filtered.length){list.innerHTML='<div class="empty-state">No trips found for this user.</div>';return}list.innerHTML=filtered.map(t=>{const initials=(t.city||'?')[0];const dates=[];if(t.depart)dates.push(fmtDate(t.depart));if(t.return)dates.push(fmtDate(t.return));return \`<div class="shared-trip" onclick="selectTrip('\${t.id}')"><div class="st-avatar">\${initials}</div><div class="st-info"><div class="st-city">\${t.city||'Unknown'}, \${t.country||''}</div><div class="st-meta">\${dates.join(' — ')||'No dates'}\${t.createdBy?' · '+t.createdBy:''}</div></div></div>\`}).join('')}catch(e){list.innerHTML='<div class="empty-state">Search failed — try again.</div>'}}
+async function shareTrip(){const t=activeTrip();if(!t){toast('Set a trip first');return}const inp=document.getElementById('shareUserInput');const u=inp?inp.value.trim():'';if(!u){toast('Enter a username to share with');return}try{const r=await fetch('/api/trips/share',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tripId:t.id,username:u})});if(!r.ok){toast('Share failed');return}if(!Array.isArray(t.sharedWith))t.sharedWith=[];if(!t.sharedWith.includes(u))t.sharedWith.push(u);save();sbSaveTrip(t);renderSharedWith();if(inp)inp.value='';toast('Shared with '+u)}catch{toast('Share failed')}}
+function renderSharedWith(){const el=document.getElementById('sharedWithList');if(!el)return;const t=activeTrip();if(!t||!Array.isArray(t.sharedWith)||!t.sharedWith.length){el.innerHTML='';return}el.innerHTML='<div style="margin-bottom:6px;font-weight:600">Shared with:</div>'+t.sharedWith.map(u=>'<span class="share-chip">'+u+'</span>').join(' ')}
 
 /* Closet */
 function handleClosetUpload(e){const closet=activeCloset();const files=[...e.target.files];files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{closet.push({id:'c'+Date.now()+Math.random().toString(36).slice(2,6),src:ev.target.result,selected:false});save();renderCloset()};reader.readAsDataURL(file)});if(files.length)toast(\`Added \${files.length} photo\${files.length>1?'s':''}\`)}
@@ -1881,7 +2076,7 @@ function delCloset(id){const closet=activeCloset();const t=activeTrip();if(t){t.
 /* Style */
 const STYLE_TAGS=['Casual','Formal','Beach','Street','Athletic','Evening','Business'];let activeTag='Casual';
 function handleStyleUpload(e){const style=activeStyle();const files=[...e.target.files];files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{style.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,6),src:ev.target.result,tag:activeTag,note:''});save();renderStyle()};reader.readAsDataURL(file)});if(files.length)toast(\`Added \${files.length} photo\${files.length>1?'s':''}\`)}
-function renderStyle(){const tagsEl=document.getElementById('styleTags');if(tagsEl)tagsEl.innerHTML=STYLE_TAGS.map(t=>\`<button class="stag \${t===activeTag?'active':''}" onclick="setTag('\${t}')">\${t}</button>\`).join('');const grid=document.getElementById('styleGrid');const style=activeStyle();if(!style.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">No style photos yet — upload above ↑</div>';return}grid.innerHTML=style.map(s=>\`<div class="style-card"><img src="\${s.src}" alt="outfit"><div class="sc-body"><div class="sc-tag">\${s.tag}</div><input class="sc-inp" placeholder="Note…" value="\${s.note||''}" onchange="editStyleNote('\${s.id}',this.value)"></div><div class="sc-foot"><button class="sc-del" onclick="delStyle('\${s.id}')">Remove</button><span style="font-size:.65rem;color:var(--muted);">\${s.tag}</span></div></div>\`).join('')}
+function renderStyle(){const tagsEl=document.getElementById('styleTags');if(tagsEl)tagsEl.innerHTML=STYLE_TAGS.map(t=>\`<button class="stag \${t===activeTag?'active':''}" onclick="setTag('\${t}')">\${t}</button>\`).join('');const grid=document.getElementById('styleGrid');const style=activeStyle();if(!style.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;">No style photos yet — upload above ↑</div>';return}grid.innerHTML=style.map(s=>\`<div class="style-card"><img src="\${s.src}" alt="outfit"><div class="sc-body"><div class="sc-tag">\${s.tag}</div><input class="sc-inp" placeholder="Note…" value="\${(s.note||'').replace(/"/g,'&quot;')}" onchange="editStyleNote('\${s.id}',this.value)"></div><div class="sc-foot"><button class="sc-del" onclick="delStyle('\${s.id}')">Remove</button><span style="font-size:.65rem;color:var(--muted);">\${s.tag}</span></div></div>\`).join('')}
 function setTag(t){activeTag=t;renderStyle()}
 function editStyleNote(id,note){const style=activeStyle();const s=style.find(x=>x.id===id);if(s){s.note=note;save()}}
 function delStyle(id){const style=activeStyle();const t=activeTrip();if(t){t.style=t.style.filter(x=>x.id!==id)}else{S.localStyle=S.localStyle.filter(x=>x.id!==id)}save();renderStyle()}
@@ -1891,17 +2086,17 @@ function setupDnD(uid,fid){const el=document.getElementById(uid);if(!el)return;e
 setupDnD('closetUpload','closetFile');setupDnD('styleUpload','styleFile');
 
 /* Sync */
-function renderSync(){document.getElementById('sbUrl').value=S.config.url||'';document.getElementById('sbKey').value=S.config.key||'';const un=document.getElementById('syncUserName');if(un){un.textContent=currentUser()||'—'}const st=document.getElementById('syncStatus');if(sbConfigured()){st.className='sync-status connected';document.getElementById('syncStatusText').textContent='Connected — '+S.trips.length+' trips';document.getElementById('syncTripsCount').textContent=S.trips.length+' trips synced'}else{st.className='sync-status disconnected';document.getElementById('syncStatusText').textContent='Not connected';document.getElementById('syncTripsCount').textContent=''}}
-async function syncConnect(){const url=document.getElementById('sbUrl').value.trim().replace(/\\/$/,'');const key=document.getElementById('sbKey').value.trim();if(!url||!key){toast('Enter URL and key');return}S.config={url,key};save();showLoading('Syncing…','Loading trips from Supabase');try{const trips=await sbLoadTrips();hideLoading();const sbIds=new Set(trips.map(t=>t.id));S.trips=[...S.trips.filter(t=>!sbIds.has(t.id)),...trips];if(!S.activeId&&S.trips.length)S.activeId=S.trips[0].id;save();renderSync();renderTripsList();if(activeTrip())renderTripSummary();toast(\`Synced \${trips.length} trips\`)}catch{hideLoading();toast('Sync failed — check URL and key')}}
+function renderSync(){document.getElementById('sbUrl').value=S.config.url||'';document.getElementById('sbKey').value=S.config.key||'';const un=document.getElementById('syncUserName');if(un){un.textContent=currentUser()||'—'}const st=document.getElementById('syncStatus');if(sbConfigured()){st.className='sync-status connected';document.getElementById('syncStatusText').textContent='Connected — '+S.trips.length+' trips';document.getElementById('syncTripsCount').textContent=S.trips.length+' trips synced'}else{st.className='sync-status disconnected';document.getElementById('syncStatusText').textContent='Not connected';document.getElementById('syncTripsCount').textContent=''}renderSharedWith()}
+async function syncConnect(){const url=document.getElementById('sbUrl').value.trim().replace(/\\/$/,'');const key=document.getElementById('sbKey').value.trim();if(!url||!key){toast('Enter URL and key');return}S.config={url,key};save();showLoading('Syncing…','Loading trips from Supabase');try{const trips=await sbLoadTrips();const shared=await sbLoadSharedTrips().catch(()=>[]);const all=[...trips,...shared];hideLoading();const sbIds=new Set(all.map(t=>t.id));S.trips=[...S.trips.filter(t=>!sbIds.has(t.id)),...all];if(!S.activeId&&S.trips.length)S.activeId=S.trips[0].id;save();renderSync();renderTripsList();if(activeTrip())renderTripSummary();toast(\`Synced \${trips.length} trips\`)}catch{hideLoading();toast('Sync failed — check URL and key')}}
 
 /* Screenshot OCR */
 const AIRLINES={'JL':'JAL','NH':'ANA','AA':'American Airlines','UA':'United Airlines','DL':'Delta','WN':'Southwest','BA':'British Airways','AF':'Air France','LH':'Lufthansa','KL':'KLM','EK':'Emirates','QR':'Qatar Airways','SQ':'Singapore Airlines','CX':'Cathay Pacific','AC':'Air Canada','QF':'Qantas','NZ':'Air New Zealand','VS':'Virgin Atlantic','FI':'Icelandair','SK':'SAS','IB':'Iberia','AZ':'ITA Airways','KE':'Korean Air','OZ':'Asiana Airlines','CA':'Air China','MU':'China Eastern','CZ':'China Southern','TG':'Thai Airways','MH':'Malaysia Airlines','PR':'Philippine Airlines','5J':'Cebu Pacific','FJ':'Fiji Airways','HA':'Hawaiian Airlines','B6':'JetBlue','NK':'Spirit','AS':'Alaska Airlines','WS':'WestJet'};
-async function handleScanScreenshot(e){const file=e.target.files?.[0];if(!file)return;showLoading('Scanning…','AI reading your screenshot');try{const reader=new FileReader();const base64=await new Promise((res,rej)=>{reader.onload=()=>res(reader.result);reader.onerror=rej;reader.readAsDataURL(file)});const fnUrl='/api/scan-trip';showLoading('Analyzing…','AI vision parsing flight details');const r=await fetch(fnUrl,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':\`Bearer \${SB_KEY}\`,'Content-Type':'application/json'},body:JSON.stringify({image:base64})});if(!r.ok){const err=await r.text();throw new Error('Scan failed: '+err)}const result=await r.json();if(result.error)throw new Error(result.error);hideLoading();if(result.trip){const t=result.trip;currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};destInput.value=\`\${t.city}, \${t.country}\`;document.getElementById('departDate').value=t.depart||'';document.getElementById('returnDate').value=t.return||'';document.getElementById('airline').value=t.airline||'';document.getElementById('flightNum').value=t.flightNum||'';document.getElementById('flightTime').value=t.flightTime||'';document.getElementById('bookingRef').value=t.bookingRef||'';const newTrip={id:t.id,city:t.city,country:t.country,cc:t.cc,lat:t.lat,lon:t.lon,tz:t.tz,depart:t.depart,return:t.return,airline:t.airline,flightNum:t.flightNum,flightTime:t.flightTime,bookingRef:t.bookingRef,items:t.items,closet:[],style:t.style||[],weather:t.weather,events:null,recommendations:null,chatHistory:[],source:'screenshot',rawOcr:null,createdBy:currentUser()};S.trips.push(newTrip);S.activeId=t.id;save();renderTripSummary();renderTripsList();renderPack();toast('Trip scanned & saved — packing list ready')}}catch(err){hideLoading();toast('Scan failed — try again or fill in manually');console.error('Scan error:',err)}e.target.value=''}
+async function handleScanScreenshot(e){const file=e.target.files?.[0];if(!file)return;showLoading('Scanning…','AI reading your screenshot');try{const reader=new FileReader();const base64=await new Promise((res,rej)=>{reader.onload=()=>res(reader.result);reader.onerror=rej;reader.readAsDataURL(file)});const fnUrl='/api/scan-trip';showLoading('Analyzing…','AI vision parsing flight details');const r=await fetch(fnUrl,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':\`Bearer \${SB_KEY}\`,'Content-Type':'application/json'},body:JSON.stringify({image:base64})});if(!r.ok){const err=await r.text();throw new Error('Scan failed: '+err)}const result=await r.json();if(result.error)throw new Error(result.error);hideLoading();if(result.trip){const t=result.trip;currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};destInput.value=\`\${t.city}, \${t.country}\`;document.getElementById('departDate').value=t.depart||'';document.getElementById('returnDate').value=t.return||'';document.getElementById('airline').value=t.airline||'';document.getElementById('flightNum').value=t.flightNum||'';document.getElementById('flightTime').value=t.flightTime||'';document.getElementById('bookingRef').value=t.bookingRef||'';const newTrip={id:t.id,city:t.city,country:t.country,cc:t.cc,lat:t.lat,lon:t.lon,tz:t.tz,depart:t.depart,return:t.return,airline:t.airline,flightNum:t.flightNum,flightTime:t.flightTime,bookingRef:t.bookingRef,items:t.items,closet:[],style:t.style||[],weather:t.weather,events:null,recommendations:null,chatHistory:[],source:'screenshot',rawOcr:null,createdBy:currentUser()};S.trips.push(newTrip);S.activeId=t.id;save();renderTripSummary();renderTripsList();renderPack();fetchWeather();toast('Trip scanned & saved — packing list ready')}}catch(err){hideLoading();toast('Scan failed — try again or fill in manually');console.error('Scan error:',err)}e.target.value=''}
 
 /* Init */
 async function initApp(){
-  if(sbConfigured()){const trips=await sbLoadTrips().catch(()=>[]);if(trips&&trips.length){const sbIds=new Set(trips.map(t=>t.id));S.trips=[...S.trips.filter(t=>!sbIds.has(t.id)),...trips];if(!S.activeId&&S.trips.length)S.activeId=S.trips[0].id;save()}}
-  if(S.activeId&&activeTrip()){const t=activeTrip();currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};destInput.value=\`\${t.city}, \${t.country}\`;document.getElementById('departDate').value=t.depart||'';document.getElementById('returnDate').value=t.return||'';document.getElementById('airline').value=t.airline||'';document.getElementById('flightNum').value=t.flightNum||'';document.getElementById('flightTime').value=t.flightTime||'';document.getElementById('bookingRef').value=t.bookingRef||'';renderTripSummary()}
+  if(sbConfigured()){const trips=await sbLoadTrips().catch(()=>[]);const shared=await sbLoadSharedTrips().catch(()=>[]);const all=[...(trips||[]),...shared];if(all.length){const sbIds=new Set(all.map(t=>t.id));S.trips=[...S.trips.filter(t=>!sbIds.has(t.id)),...all];if(!S.activeId&&S.trips.length)S.activeId=S.trips[0].id;save()}}
+  if(S.activeId&&activeTrip()){const t=activeTrip();currentDest={name:t.city,country:t.country,country_code:t.cc,latitude:t.lat,longitude:t.lon,timezone:t.tz};destInput.value=\`\${t.city}, \${t.country}\`;document.getElementById('departDate').value=t.depart||'';document.getElementById('returnDate').value=t.return||'';document.getElementById('airline').value=t.airline||'';document.getElementById('flightNum').value=t.flightNum||'';document.getElementById('flightTime').value=t.flightTime||'';document.getElementById('bookingRef').value=t.bookingRef||'';renderTripSummary();if(t.weather)renderWeather()}
   renderTripsList();renderPack();renderCloset();renderStyle();renderSync();renderCalendar();
 }
 if(checkAuth()){initApp()}else{showAuthGate()}
@@ -2187,6 +2382,36 @@ export default {
         const filtered = trips.filter(t => t.id !== id);
         await env.TRIPS_KV.put('all_trips', JSON.stringify(filtered));
         return json({ ok: true });
+      } catch (err) {
+        return json({ error: err.message }, 500);
+      }
+    }
+    // ─── POST /api/trips/share ───────────────────────────────────────────────
+    if (path === '/api/trips/share' && request.method === 'POST') {
+      try {
+        const { tripId, username } = await request.json();
+        if (!tripId || !username) return json({ error: 'tripId and username required' }, 400);
+        const raw = await env.TRIPS_KV.get('all_trips');
+        const trips = raw ? JSON.parse(raw) : [];
+        const trip = trips.find(t => t.id === tripId);
+        if (!trip) return json({ error: 'Trip not found' }, 404);
+        if (!Array.isArray(trip.sharedWith)) trip.sharedWith = [];
+        if (!trip.sharedWith.includes(username)) trip.sharedWith.push(username);
+        await env.TRIPS_KV.put('all_trips', JSON.stringify(trips));
+        return json({ ok: true, sharedWith: trip.sharedWith });
+      } catch (err) {
+        return json({ error: err.message }, 500);
+      }
+    }
+    // ─── GET /api/trips/shared ───────────────────────────────────────────────
+    if (path === '/api/trips/shared' && request.method === 'GET') {
+      try {
+        const user = url.searchParams.get('user');
+        if (!user) return json({ error: 'user query param required' }, 400);
+        const raw = await env.TRIPS_KV.get('all_trips');
+        const trips = raw ? JSON.parse(raw) : [];
+        const mine = trips.filter(t => t.created_by === user || (Array.isArray(t.sharedWith) && t.sharedWith.includes(user)));
+        return json(mine);
       } catch (err) {
         return json({ error: err.message }, 500);
       }
