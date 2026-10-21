@@ -1,9 +1,0 @@
-.git
-src
-supabase
-.supabase
-functions
-schema.sql
-wrangler.jsonc
-.assetsignore
-README.md
