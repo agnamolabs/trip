@@ -1,4 +1,9 @@
 const DEEPSEEK_KEY = Deno.env.get("DEEPSEEK_KEY") || "";
+// All model traffic goes through Cloudflare AI Gateway -> DeepSeek. No other providers, no direct fallback.
+const CF_ACCOUNT_ID = Deno.env.get("CF_ACCOUNT_ID") || "";
+const CF_AIG_GATEWAY = Deno.env.get("CF_AIG_GATEWAY") || "default";
+const CF_AIG_TOKEN = Deno.env.get("CF_AIG_TOKEN") || ""; // set if the gateway is authenticated
+const AIG_DEEPSEEK = `https://gateway.ai.cloudflare.com/v1/${CF_ACCOUNT_ID}/${CF_AIG_GATEWAY}/deepseek/chat/completions`;
 const SB_URL = Deno.env.get("SB_URL") || "";
 const SB_KEY = Deno.env.get("SB_SERVICE_KEY") || "";
 
@@ -10,9 +15,14 @@ const corsHeaders = {
 
 async function parseScreenshot(imageBase64) {
   const prompt = `You are a flight booking parser. Extract all trip details from this screenshot. Return ONLY valid JSON with these fields: {"airline":"airline name","flightNumber":"flight code","departureTime":"HH:MM","departureDate":"YYYY-MM-DD","returnDate":"YYYY-MM-DD or null","destinationCity":"city name","bookingRef":"6-char code"}. If you cant find a field use null.`;
-  const res = await fetch("https://api.deepseek.com/v1/chat/completions", {
+  if (!CF_ACCOUNT_ID) throw new Error("CF_ACCOUNT_ID not set");
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  // DEEPSEEK_KEY unset = key stored in the gateway (BYOK)
+  if (DEEPSEEK_KEY) headers.Authorization = `Bearer ${DEEPSEEK_KEY}`;
+  if (CF_AIG_TOKEN) headers["cf-aig-authorization"] = `Bearer ${CF_AIG_TOKEN}`;
+  const res = await fetch(AIG_DEEPSEEK, {
     method: "POST",
-    headers: { Authorization: `Bearer ${DEEPSEEK_KEY}`, "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({
       model: "deepseek-v4-pro",
       messages: [{ role: "user", content: [
