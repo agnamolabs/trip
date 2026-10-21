@@ -1,3 +1,3 @@
 name = "trip"
 compatibility_date = "2024-09-23"
-main = "worker.js"
+main = "_worker.js"

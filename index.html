@@ -245,6 +245,27 @@ input,textarea{-webkit-appearance:none;appearance:none}
 .auth-card .ac-err{font-size:.8rem;color:var(--red);text-align:center;margin-top:12px;display:none}
 .auth-card .ac-err.show{display:block}
 .auth-card .ac-hint{font-size:.72rem;color:var(--muted);text-align:center;margin-top:16px}
+
+/* ─── Pack v2 improvements ─── */
+.pack-stats{display:flex;gap:10px;margin-bottom:16px}
+.pack-stat{flex:1;text-align:center;padding:14px 8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm)}
+.pack-stat .ps-num{font-family:'Unbounded',sans-serif;font-weight:800;font-size:1.5rem;line-height:1}
+.pack-stat .ps-lbl{font-size:.58rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
+.pack-search{margin-bottom:16px}
+.pack-search .ps-inp{width:100%;padding:13px 14px;font-size:.9rem;border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--surface);outline:none;transition:border-color .15s}
+.pack-search .ps-inp:focus{border-color:var(--orange)}
+.pack-search .ps-inp::placeholder{color:var(--muted)}
+.template-chips{display:flex;gap:8px;overflow-x:auto;margin-bottom:16px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.template-chips::-webkit-scrollbar{display:none}
+.t-chip{flex:0 0 auto;display:flex;align-items:center;gap:5px;font-size:.76rem;font-weight:700;padding:8px 15px;border-radius:100px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink-2);white-space:nowrap;transition:all .12s;cursor:pointer}
+.t-chip:active{transform:scale(.95)}
+.t-chip .t-icon{font-size:.9rem}
+.ai-suggest-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;margin-bottom:20px;background:var(--grad);color:#fff;border-radius:var(--r-sm);font-size:.86rem;font-weight:700;cursor:pointer;transition:transform .12s;border:none}
+.ai-suggest-btn:active{transform:scale(.98)}
+.ai-suggest-btn.loading{opacity:.6;pointer-events:none}
+.essential-badge{font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 6px;border-radius:100px;background:#fef3c7;color:#92400e;white-space:nowrap}
+.cat-icon{font-size:1.05rem;line-height:1}
+
 </style>
 </head>
 <body>
@@ -282,6 +303,10 @@ input,textarea{-webkit-appearance:none;appearance:none}
 <div class="screen" id="screen-pack">
   <div class="brand-row"><div class="brand"><span class="a">agnamo</span><span class="dot">.</span></div><span class="section-label" style="color:var(--orange)">pack list</span></div>
   <div class="progress-card"><div class="p-top"><span class="p-title" id="pTitle">0 of 0 packed</span><span class="p-pct" id="pPct">0%</span></div><div class="p-track"><div class="p-fill" id="pFill" style="width:0%"></div></div></div>
+  <div class="pack-stats"><div class="pack-stat"><div class="ps-num" id="psTotal">0</div><div class="ps-lbl">Total</div></div><div class="pack-stat"><div class="ps-num" id="psPacked" style="color:var(--teal)">0</div><div class="ps-lbl">Packed</div></div><div class="pack-stat"><div class="ps-num" id="psLeft" style="color:var(--orange)">0</div><div class="ps-lbl">Left</div></div></div>
+  <div class="pack-search"><input class="ps-inp" id="packSearch" type="text" placeholder="Search items…" oninput="filterPack()"></div>
+  <div class="template-chips" id="templateChips"></div>
+  <button class="ai-suggest-btn" id="aiSuggestBtn" onclick="aiSuggest()">✨ AI Suggest — smart packing for your trip</button>
   <div id="packList"></div>
 </div>
 
@@ -404,14 +429,80 @@ function renderWeather(){const t=activeTrip();if(!t||!t.weather)return;const w=t
 function autoSuggest(){const t=activeTrip();if(!t)return;const w=t.weather;let maxT=22,minT=15,rain=false,snow=false,uvHi=false;if(w?.daily){const d=w.daily;const depIdx=t.depart?d.time.indexOf(t.depart):0;const n=Math.min(7,d.time.length-depIdx);for(let i=depIdx;i<depIdx+n&&i<d.time.length;i++){maxT=Math.max(maxT,d.temperature_2m_max[i]);minT=Math.min(minT,d.temperature_2m_min[i]);if((d.precipitation_probability_max?.[i]??0)>30)rain=true;if(d.weather_code[i]>=71&&d.weather_code[i]<=77)snow=true;if((d.uv_index_max?.[i]??0)>6)uvHi=true}}const add=(label,cat,key)=>{const k=`auto-${key}`;if(!t.items[k])t.items[k]={cat,label,checked:false,qty:1,auto:true}};if(maxT>=28){add('Sunscreen','grooming','sunscreen');add('Hat / Cap','apparel','hat')}if(minT<=5){add('Heavy jacket','apparel','heavy-jacket');add('Thermal base layer','apparel','thermal');add('Gloves','apparel','gloves')}if(minT<=-5){add('Scarf','apparel','scarf');add('Warm beanie','apparel','beanie')}if(rain){add('Rain jacket','gear','rain-jacket');add('Umbrella','gear','umbrella')}if(snow){add('Snow boots','gear','snow-boots')}if(uvHi){add('Sunglasses','gear','sunglasses')}if(maxT<=18&&minT>=6){add('Light layer','apparel','light-layer')}save();renderPack()}
 
 /* Packing */
-const CATS=[{id:'apparel',name:'Apparel'},{id:'grooming',name:'Grooming'},{id:'gear',name:'Gear'},{id:'tech',name:'Tech & Docs'}];
-function renderPack(){const el=document.getElementById('packList');const t=activeTrip();if(!t){el.innerHTML='<div class="empty-state">Set up a trip first → Trip tab</div>';updateProgress();return}if(Object.keys(t.items).length===0){const seeds=[['apparel','Tops / Tees',3],['apparel','Pants / Shorts',2],['apparel','Evening Fit',1],['apparel','Sleepwear',1],['apparel','Underwear & Socks',5],['apparel','Light Jacket',1],['grooming','Skincare',1],['grooming','Deodorant',1],['grooming','Hair Products',1],['grooming','Toothbrush & Paste',1],['grooming','Shower Kit',1],['gear','Sneakers',1],['gear','Dress Shoes',1],['gear','Sunglasses & Watch',1],['gear','Day Bag',1],['tech','Phone + Cable',1],['tech','Power Bank',1],['tech','Earbuds / Headphones',1],['tech','Wallet & ID',1]];seeds.forEach(([cat,label,qty])=>{t.items[`seed-${cat}-${label}`]={cat,label,checked:false,qty,auto:false}});save()}let html='';CATS.forEach(cat=>{const items=Object.entries(t.items).filter(([k,v])=>v.cat===cat.id);if(!items.length)return;const done=items.filter(([k,v])=>v.checked).length;const allDone=items.length>0&&done===items.length;html+=`<div class="cat-section" data-cat="${cat.id}"><div class="cat-head" onclick="this.parentElement.classList.toggle('open')"><div class="left"><span class="cat-name">${cat.name}</span></div><div class="right"><span class="pill ${allDone?'done':''}">${done}/${items.length}</span><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div></div><div class="cat-body"><div class="pack-list">${items.map(([k,v])=>`<div class="pack-row ${v.checked?'checked':''}" data-key="${k}"><div class="check" onclick="toggleItem('${k}')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="p-label">${v.label}${v.auto?' <span class="auto-badge">weather</span>':''}</span><div class="qty-control"><button class="qty-btn" onclick="qtyItem('${k}',-1)">−</button><span class="qty-val">${v.qty}</span><button class="qty-btn" onclick="qtyItem('${k}',1)">+</button></div><button class="del-btn" onclick="delItem('${k}')">✕</button></div>`).join('')}</div><div class="add-item"><input class="ai-inp" type="text" placeholder="Add item…" id="add-${cat.id}" onkeydown="if(event.key==='Enter'){addItem('${cat.id}');}"><button class="ai-btn" onclick="addItem('${cat.id}')">Add</button></div></div></div>`});el.innerHTML=html;const first=el.querySelector('.cat-section');if(first)first.classList.add('open');updateProgress()}
+const CATS=[
+  {id:'apparel',name:'Apparel',icon:'👕'},
+  {id:'grooming',name:'Grooming',icon:'🧴'},
+  {id:'beauty',name:'Face & Beauty',icon:'💄'},
+  {id:'tech',name:'Tech',icon:'🔌'},
+  {id:'health',name:'Health & Meds',icon:'💊'},
+  {id:'docs',name:'Travel Docs',icon:'📄'},
+  {id:'gear',name:'Gear',icon:'🎒'}
+];
+const TEMPLATES=[
+  {id:'beach',name:'Beach',icon:'🏖️',items:[['apparel','Swimwear',1],['apparel','Sun Hat',1],['apparel','Flip Flops',1],['grooming','Sunscreen',2],['grooming','After Sun Lotion',1],['gear','Beach Bag',1],['gear','Sunglasses',1]]},
+  {id:'business',name:'Business',icon:'💼',items:[['apparel','Suit / Blazer',1],['apparel','Dress Shirts',3],['gear','Dress Shoes',1],['tech','Laptop + Charger',1],['docs','Business Cards',1],['docs','Meeting Agenda',1]]},
+  {id:'weekend',name:'Weekend',icon:'⚡',items:[['apparel','Tops / Tees',2],['apparel','Pants / Shorts',1],['grooming','Toothbrush & Paste',1],['tech','Phone + Cable',1],['tech','Power Bank',1]]},
+  {id:'adventure',name:'Adventure',icon:'🥾',items:[['apparel','Hiking Boots',1],['apparel','Moisture-Wick Tops',2],['apparel','Trail Pants',1],['gear','Day Bag',1],['gear','Water Bottle',1],['health','First Aid Kit',1],['health','Bug Repellent',1]]},
+  {id:'festival',name:'Festival',icon:'🎪',items:[['tech','Portable Charger',1],['gear','Fanny Pack',1],['gear','Earplugs',1],['gear','Reusable Cup',1],['apparel','Bandana',1],['health','Sunscreen',1],['health','Electrolytes',1]]}
+];
+function renderPack(){
+  const el=document.getElementById('packList');const t=activeTrip();
+  if(!t){el.innerHTML='<div class="empty-state">Set up a trip first → Trip tab</div>';updateProgress();renderTemplates();return}
+  if(Object.keys(t.items).length===0){
+    const seeds=[
+      ['apparel','Tops / Tees',3,false],['apparel','Pants / Shorts',2,false],['apparel','Evening Fit',1,false],
+      ['apparel','Outerwear / Jacket',1,false],['apparel','Sleepwear',1,false],['apparel','Underwear & Socks',5,true],
+      ['apparel','Swimwear',1,false],['apparel','Accessories',1,false],
+      ['grooming','Skincare',1,true],['grooming','Deodorant',1,true],['grooming','Hair Products',1,false],
+      ['grooming','Toothbrush & Paste',1,true],['grooming','Shower Kit',1,false],['grooming','Shaving Kit',1,false],
+      ['beauty','Foundation',1,false],['beauty','Concealer',1,false],['beauty','Blush / Bronzer',1,false],
+      ['beauty','Eyeliner / Mascara',1,false],['beauty','Lip Color',1,false],['beauty','Brushes & Tools',1,false],
+      ['beauty','Makeup Remover',1,false],['beauty','Setting Spray',1,false],
+      ['tech','Phone + Cable',1,true],['tech','Power Bank',1,false],['tech','Laptop + Charger',1,false],
+      ['tech','Earbuds / Headphones',1,false],['tech','Travel Adapter',1,false],
+      ['health','First Aid Kit',1,false],['health','Prescription Meds',1,true],['health','Pain Reliever',1,false],
+      ['health','Vitamins',1,false],['health','Sunscreen',1,false],['health','Bug Repellent',1,false],
+      ['docs','Passport / ID',1,true],['docs','Boarding Pass / Tickets',1,true],['docs','Hotel Reservations',1,false],
+      ['docs','Travel Insurance',1,false],['docs','Emergency Contacts',1,false],
+      ['gear','Day Bag',1,true],['gear','Sunglasses',1,false],['gear','Water Bottle',1,false],
+      ['gear','Umbrella',1,false],['gear','Travel Pillow',1,false],['gear','Luggage Lock',1,false]
+    ];
+    seeds.forEach(([cat,label,qty,essential])=>{t.items[`seed-${cat}-${label}`]={cat,label,checked:false,qty,essential:essential||false,auto:false}});
+    save();
+  }
+  renderTemplates();
+  const search=(document.getElementById('packSearch')?.value||'').trim().toLowerCase();
+  let html='';
+  CATS.forEach(cat=>{
+    let items=Object.entries(t.items).filter(([k,v])=>v.cat===cat.id);
+    if(search)items=items.filter(([k,v])=>v.label.toLowerCase().includes(search));
+    if(!items.length)return;
+    const done=items.filter(([k,v])=>v.checked).length;
+    const allDone=items.length>0&&done===items.length;
+    html+=`<div class="cat-section${allDone?' open':''}" data-cat="${cat.id}"><div class="cat-head" onclick="this.parentElement.classList.toggle('open')"><div class="left"><span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.name}</span></div><div class="right"><span class="pill ${allDone?'done':''}">${done}/${items.length}</span><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div></div><div class="cat-body"><div class="pack-list">${items.map(([k,v])=>`<div class="pack-row ${v.checked?'checked':''}" data-key="${k}"><div class="check" onclick="toggleItem('${k}')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="p-label">${v.label}${v.essential?' <span class="essential-badge">essential</span>':''}${v.auto?' <span class="auto-badge">weather</span>':''}${v.fromTemplate?' <span class="auto-badge" style="background:#fef3c7;color:#92400e">'+v.fromTemplate+'</span>':''}</span><div class="qty-control"><button class="qty-btn" onclick="qtyItem('${k}',-1)">−</button><span class="qty-val">${v.qty||1}</span><button class="qty-btn" onclick="qtyItem('${k}',1)">+</button></div><button class="del-btn" onclick="delItem('${k}')">✕</button></div>`).join('')}<div class="add-item"><input class="ai-inp" id="add-${cat.id}" placeholder="Add ${cat.name.toLowerCase()} item…" onkeydown="if(event.key==='Enter')addItem('${cat.id}')"><button class="ai-btn" onclick="addItem('${cat.id}')">Add</button></div></div></div></div>`;
+  });
+  el.innerHTML=html;
+  updateProgress();
+  if(!search){const first=el.querySelector('.cat-section');if(first)first.classList.add('open')}
+}
+
 function toggleItem(k){const t=activeTrip();if(!t||!t.items[k])return;t.items[k].checked=!t.items[k].checked;save();sbSaveTrip(t);renderPack();if(allPacked())document.getElementById('modalBg').classList.add('show')}
 function qtyItem(k,dir){const t=activeTrip();if(!t||!t.items[k])return;t.items[k].qty=Math.max(1,(t.items[k].qty||1)+dir);save();sbSaveTrip(t);renderPack()}
 function delItem(k){const t=activeTrip();if(!t||!t.items[k])return;delete t.items[k];save();sbSaveTrip(t);renderPack()}
 function addItem(catId){const t=activeTrip();if(!t)return;const inp=document.getElementById(`add-${catId}`);const label=inp.value.trim();if(!label)return;t.items[`c-${Date.now()}`]={cat:catId,label,checked:false,qty:1,auto:false};inp.value='';save();sbSaveTrip(t);renderPack()}
 function allPacked(){const t=activeTrip();if(!t)return false;const ks=Object.keys(t.items);return ks.length>0&&ks.every(k=>t.items[k].checked)}
-function updateProgress(){const t=activeTrip();const ks=t?Object.keys(t.items):[];const total=ks.length,done=t?ks.filter(k=>t.items[k].checked).length:0;const pct=total?Math.round(done/total*100):0;document.getElementById('pPct').textContent=pct+'%';document.getElementById('pPct').style.color=pct===100?'var(--teal)':'var(--orange)';document.getElementById('pFill').style.width=pct+'%';document.getElementById('pFill').classList.toggle('done',pct===100);document.getElementById('pTitle').textContent=`${done} of ${total} packed`}
+function updateProgress(){
+  const t=activeTrip();const ks=t?Object.keys(t.items):[];
+  const total=ks.length,done=t?ks.filter(k=>t.items[k].checked).length:0;
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('pPct').textContent=pct+'%';
+  document.getElementById('pPct').style.color=pct===100?'var(--teal)':'var(--orange)';
+  document.getElementById('pFill').style.width=pct+'%';
+  document.getElementById('pFill').classList.toggle('done',pct===100);
+  document.getElementById('pTitle').textContent=`${done} of ${total} packed`;
+  const psT=document.getElementById('psTotal'),psP=document.getElementById('psPacked'),psL=document.getElementById('psLeft');
+  if(psT){psT.textContent=total;psP.textContent=done;psL.textContent=total-done}
+}
 
 /* Closet */
 function handleClosetUpload(e){const t=activeTrip();if(!t){toast('Set up a trip first');return}const files=[...e.target.files];files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{t.closet.push({id:'c'+Date.now()+Math.random().toString(36).slice(2,6),src:ev.target.result,selected:false});save();renderCloset()};reader.readAsDataURL(file)});if(files.length)toast(`Added ${files.length} photo${files.length>1?'s':''}`)}
@@ -427,6 +518,61 @@ function setTag(t){activeTag=t;renderStyle()}
 function editStyleNote(id,note){const tr=activeTrip();if(!tr)return;const s=tr.style.find(x=>x.id===id);if(s){s.note=note;save()}}
 function delStyle(id){const t=activeTrip();if(!t)return;t.style=t.style.filter(x=>x.id!==id);save();renderStyle()}
 
+
+/* Pack v2 — templates, filter, AI suggest */
+function renderTemplates(){
+  const el=document.getElementById('templateChips');if(!el)return;
+  el.innerHTML=TEMPLATES.map(t=>`<button class="t-chip" onclick="applyTemplate('${t.id}')"><span class="t-icon">${t.icon}</span>${t.name}</button>`).join('');
+}
+function filterPack(){renderPack()}
+function applyTemplate(id){
+  const t=activeTrip();if(!t){toast('Set up a trip first');return}
+  const tpl=TEMPLATES.find(x=>x.id===id);if(!tpl)return;
+  let added=0;
+  tpl.items.forEach(([cat,label,qty])=>{
+    const k=`tpl-${id}-${cat}-${label}`;
+    if(!t.items[k]){t.items[k]={cat,label,checked:false,qty,essential:false,auto:false,fromTemplate:tpl.name};added++}
+  });
+  save();sbSaveTrip(t);renderPack();
+  if(added)toast(`Added ${added} items from ${tpl.name} template`);
+  else toast(`${tpl.name} items already in your list`);
+}
+async function aiSuggest(){
+  const t=activeTrip();if(!t){toast('Set up a trip first');return}
+  const btn=document.getElementById('aiSuggestBtn');
+  if(btn){btn.classList.add('loading');btn.textContent='✨ AI is thinking…'}
+  showLoading('AI Suggest','Generating smart packing list');
+  try{
+    const body={destination:`${t.city}, ${t.country}`,departDate:t.depart,returnDate:t.return,weather:t.weather};
+    const fnUrl='/api/suggest-packing';
+    const r=await fetch(fnUrl,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok){const err=await r.text();throw new Error('AI suggest failed: '+err)}
+    const result=await r.json();
+    hideLoading();
+    if(result.categories&&Array.isArray(result.categories)){
+      let added=0;
+      result.categories.forEach(cat=>{
+        if(cat.items&&Array.isArray(cat.items)){
+          cat.items.forEach(item=>{
+            const k=`ai-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
+            const catId=CATS.find(c=>c.name.toLowerCase()===cat.name?.toLowerCase()?.replace(' & beauty','')?.replace(' & meds',''))?.id||cat.id||'gear';
+            if(!t.items[k]){t.items[k]={cat:catId,label:item.label,checked:false,qty:item.qty||1,essential:item.essential||false,auto:false,fromTemplate:'AI'};added++}
+          });
+        }
+      });
+      save();sbSaveTrip(t);renderPack();
+      toast(`AI added ${added} smart suggestions`);
+    }else{toast('AI suggestion format unexpected')}
+  }catch(err){
+    hideLoading();
+    // Fallback: use local auto-suggest
+    autoSuggest();
+    toast('AI suggest unavailable — used weather-based suggestions instead');
+  }
+  if(btn){btn.classList.remove('loading');btn.textContent='✨ AI Suggest — smart packing for your trip'}
+}
+
+
 /* Screenshot OCR */
 const AIRLINES={'JL':'JAL','NH':'ANA','AA':'American Airlines','UA':'United Airlines','DL':'Delta','WN':'Southwest','BA':'British Airways','AF':'Air France','LH':'Lufthansa','KL':'KLM','EK':'Emirates','QR':'Qatar Airways','SQ':'Singapore Airlines','CX':'Cathay Pacific','AC':'Air Canada','QF':'Qantas','NZ':'Air New Zealand','VS':'Virgin Atlantic','FI':'Icelandair','SK':'SAS','IB':'Iberia','AZ':'ITA Airways','KE':'Korean Air','OZ':'Asiana Airlines','CA':'Air China','MU':'China Eastern','CZ':'China Southern','TG':'Thai Airways','MH':'Malaysia Airlines','PR':'Philippine Airlines','5J':'Cebu Pacific','FJ':'Fiji Airways','HA':'Hawaiian Airlines','B6':'JetBlue','NK':'Spirit','AS':'Alaska Airlines','WS':'WestJet'};
 const MONTHS={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12,january:1,february:2,march:3,april:4,june:6,july:7,august:8,september:9,october:10,november:11,december:12};
@@ -435,7 +581,7 @@ async function handleScanScreenshot(e){const file=e.target.files?.[0];if(!file)r
 try{
 const reader=new FileReader();
 const base64=await new Promise((res,rej)=>{reader.onload=()=>res(reader.result);reader.onerror=rej;reader.readAsDataURL(file)});
-const fnUrl=SB_URL+'/functions/v1/scan-trip';
+const fnUrl='/api/scan-trip';
 showLoading('Analyzing…','AI vision parsing flight details');
 const r=await fetch(fnUrl,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({image:base64})});
 if(!r.ok){const err=await r.text();throw new Error('Scan failed: '+err)}
