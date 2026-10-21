@@ -435,9 +435,9 @@ async function handleScanScreenshot(e){const file=e.target.files?.[0];if(!file)r
 try{
 const reader=new FileReader();
 const base64=await new Promise((res,rej)=>{reader.onload=()=>res(reader.result);reader.onerror=rej;reader.readAsDataURL(file)});
-const fnUrl=SB_URL+'/functions/v1/scan-trip';
+const fnUrl='/api/scan';
 showLoading('Analyzing…','AI vision parsing flight details');
-const r=await fetch(fnUrl,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({image:base64})});
+const r=await fetch(fnUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:base64})});
 if(!r.ok){const err=await r.text();throw new Error('Scan failed: '+err)}
 const result=await r.json();
 if(result.error)throw new Error(result.error);
@@ -453,8 +453,8 @@ document.getElementById('flightNum').value=t.flightNum||'';
 document.getElementById('flightTime').value=t.flightTime||'';
 document.getElementById('bookingRef').value=t.bookingRef||'';
 const newTrip={id:t.id,city:t.city,country:t.country,cc:t.cc,lat:t.lat,lon:t.lon,tz:t.tz,depart:t.depart,return:t.return,airline:t.airline,flightNum:t.flightNum,flightTime:t.flightTime,bookingRef:t.bookingRef,items:t.items,closet:[],style:t.style||[],weather:t.weather,source:'screenshot',rawOcr:null};
-S.trips.push(newTrip);S.activeId=t.id;save();
-renderTripSummary();renderTripsList();renderPack();
+S.trips.push(newTrip);S.activeId=t.id;save();sbSaveTrip(newTrip);
+renderTripSummary();renderTripsList();renderPack();autoSuggest();renderWeather();
 toast('Trip scanned & saved — packing list ready');
 }else if(result.parsed){
 const p=result.parsed;
