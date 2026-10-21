@@ -435,9 +435,9 @@ async function handleScanScreenshot(e){const file=e.target.files?.[0];if(!file)r
 try{
 const reader=new FileReader();
 const base64=await new Promise((res,rej)=>{reader.onload=()=>res(reader.result);reader.onerror=rej;reader.readAsDataURL(file)});
-const fnUrl=SB_URL+'.functions.supabase.co/scan-trip';
+const fnUrl=SB_URL+'/functions/v1/scan-trip';
 showLoading('Analyzing…','AI vision parsing flight details');
-const r=await fetch(fnUrl,{method:'POST',headers:{'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({image:base64})});
+const r=await fetch(fnUrl,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({image:base64})});
 if(!r.ok){const err=await r.text();throw new Error('Scan failed: '+err)}
 const result=await r.json();
 if(result.error)throw new Error(result.error);
