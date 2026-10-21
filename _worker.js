@@ -1582,6 +1582,7 @@ input,textarea{-webkit-appearance:none;appearance:none}
       </div>
       <div class="plan-section">
         <div class="ps-head"><span class="ps-title">Recommendations</span><button class="btn btn-ghost" style="padding:6px 14px;font-size:.72rem" onclick="fetchRecsForTrip()">Get recs</button></div>
+        <div style="margin-bottom:14px"><button class="btn btn-dark btn-block" onclick="runAgentsManual()" style="font-size:.82rem;padding:12px">Run 3 Agents — Guide + Research + Planning</button></div>
         <div id="recsList"><div class="empty-state">No recommendations yet. Tap "Get recs" for activity ideas.</div></div>
       </div>
     </div>
@@ -1689,14 +1690,47 @@ function showLoading(text,sub){const o=document.getElementById('loadingOverlay')
 function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
 
 /* Perplexity API */
+let searchFailCount=0;
 async function pplxChat(messages,systemPrompt){
   try{
     const payload={model:'sonar',messages:[]};
     if(systemPrompt)payload.messages.push({role:'system',content:systemPrompt});
     messages.forEach(m=>payload.messages.push({role:m.role,content:m.content}));
     const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    if(!r.ok)return null;
+    if(!r.ok){searchFailCount++;if(searchFailCount>2){return await runAgentFallback(messages,systemPrompt)}return null}
+    searchFailCount=0;
     const d=await r.json();return d.choices?.[0]?.message?.content?.trim()||null
+  }catch{searchFailCount++;if(searchFailCount>2){return await runAgentFallback(messages,systemPrompt)}return null}
+}
+async function runAgentsManual(){
+  const t=activeTrip();if(!t){toast('Set a trip first');return}
+  toast('Running 3 agents in parallel...');
+  try{
+    const tripCtx={city:t.city,depart:t.depart,return:t.return,weather:t.weather};
+    const query='Give me a complete travel brief for '+t.city+' departing '+t.depart+' returning '+t.return+'. Include local events, dining, activities, and a day-by-day plan.';
+    const r=await fetch('/api/agents/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,tripContext:tripCtx})});
+    if(!r.ok){toast('Agent run failed');return}
+    const d=await r.json();
+    if(d.results){
+      const list=document.getElementById('recsList');if(!list)return;
+      list.innerHTML=d.results.map(res=>'<div class="reco-card"><div class="reco-head"><span class="reco-icon">'+(res.agent==='travel-guide'?'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\'><circle cx=\\'12\\' cy=\\'12\\' r=\\'9\\'/><circle cx=\\'12\\' cy=\\'12\\' r=\\'5\\'/></svg>':res.agent==='research'?'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\'><circle cx=\\'11\\' cy=\\'11\\' r=\\'8\\'/><path d=\\'M21 21l-4-4\\'/></svg>':'<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\'><rect x=\\'3\\' y=\\'4\\' width=\\'18\\' height=\\'18\\' rx=\\'2\\'/><path d=\\'M3 10h18M8 2v4M16 2v4\\'/></svg>')+'</span><span class="reco-name">'+res.agent.replace(/-/g,' ').replace(/\\b\\w/g,c=>c.toUpperCase())+'</span></div><div class="reco-body" style="white-space:pre-wrap;font-size:.82rem;line-height:1.5">'+(res.content||res.error||'No response')+'</div></div>').join('');
+      toast('3 agents responded');
+    }
+  }catch(e){toast('Agent run failed: '+e.message)}
+}
+async function runAgentFallback(messages,systemPrompt){
+  try{
+    toast('Running 3 agents in parallel...');
+    const query=messages.map(m=>m.content).join(' ');
+    const tripCtx=activeTrip()?{city:activeTrip().city,depart:activeTrip().depart,return:activeTrip().return,weather:activeTrip().weather}:null;
+    const r=await fetch('/api/agents/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,tripContext:tripCtx})});
+    if(!r.ok)return null;
+    const d=await r.json();
+    if(d.results){
+      let out='';d.results.forEach(res=>{if(res.content){out+='### '+res.agent.toUpperCase()+'\\n'+res.content+'\\n\\n'}});
+      return out.trim()||null
+    }
+    return null
   }catch{return null}
 }
 
@@ -1979,6 +2013,78 @@ export default {
         return json(data);
       } catch (err) {
         return json({ error: err.message || 'Chat failed' }, 500);
+      }
+    }
+    // ─── GET /api/agents/:name — fetch agent SOUL.md or user context from R2 ───
+    if (path.startsWith('/api/agents/') && request.method === 'GET') {
+      try {
+        const name = path.split('/api/agents/')[1];
+        const validNames = ['lux', 'travel-guide-SOUL', 'research-SOUL', 'planning-SOUL'];
+        if (!validNames.includes(name)) return json({ error: 'Invalid agent file' }, 400);
+        const obj = await env.trip_agents.get(name + '.md');
+        if (!obj) return json({ error: 'File not found' }, 404);
+        const text = await obj.text();
+        return json({ name, content: text });
+      } catch (err) {
+        return json({ error: err.message }, 500);
+      }
+    }
+    // ─── POST /api/agents/run — run all 3 agents in parallel via Perplexity ───
+    if (path === '/api/agents/run' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        const { query, tripContext } = body;
+        if (!query) return json({ error: 'Query required' }, 400);
+
+        // Load all context files from R2 in parallel
+        const [luxRes, guideRes, researchRes, planningRes] = await Promise.all([
+          env.trip_agents.get('lux.md'),
+          env.trip_agents.get('travel-guide-SOUL.md'),
+          env.trip_agents.get('research-SOUL.md'),
+          env.trip_agents.get('planning-SOUL.md'),
+        ]);
+
+        const userCtx = luxRes ? await luxRes.text() : '';
+        const guideSoul = guideRes ? await guideRes.text() : '';
+        const researchSoul = researchRes ? await researchRes.text() : '';
+        const planningSoul = planningRes ? await planningRes.text() : '';
+
+        const tripStr = tripContext ? JSON.stringify(tripContext).substring(0, 2000) : '';
+        const pplxKey = env.PPLX_KEY || '';
+        if (!pplxKey) return json({ error: 'PPLX_KEY not configured' }, 500);
+
+        // Build 3 agent payloads
+        const agents = [
+          { name: 'travel-guide', soul: guideSoul, system: guideSoul + '\n\n## User Context\n' + userCtx + '\n\n## Trip Context\n' + tripStr },
+          { name: 'research', soul: researchSoul, system: researchSoul + '\n\n## User Context\n' + userCtx + '\n\n## Trip Context\n' + tripStr },
+          { name: 'planning', soul: planningSoul, system: planningSoul + '\n\n## User Context\n' + userCtx + '\n\n## Trip Context\n' + tripStr },
+        ];
+
+        // Run all 3 in parallel
+        const results = await Promise.all(agents.map(async (agent) => {
+          try {
+            const res = await fetch('https://api.perplexity.ai/chat/completions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + pplxKey },
+              body: JSON.stringify({
+                model: 'sonar',
+                messages: [
+                  { role: 'system', content: agent.system },
+                  { role: 'user', content: query },
+                ],
+              }),
+            });
+            if (!res.ok) return { agent: agent.name, error: 'Perplexity ' + res.status };
+            const data = await res.json();
+            return { agent: agent.name, content: data.choices?.[0]?.message?.content?.trim() || '' };
+          } catch (e) {
+            return { agent: agent.name, error: e.message };
+          }
+        }));
+
+        return json({ results, query, tripContext: !!tripContext });
+      } catch (err) {
+        return json({ error: err.message }, 500);
       }
     }
     // ─── /api/auth ──────────────────────────────────────────────────────────

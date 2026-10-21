@@ -2,6 +2,10 @@ name = "trip"
 compatibility_date = "2024-09-23"
 main = "_worker.js"
 
+[[r2_buckets]]
+binding = "trip_agents"
+bucket_name = "trip-agents"
+
 [[kv_namespaces]]
 binding = "TRIPS_KV"
 id = "e1a47846a214431885a6f62b4d7a938d"
