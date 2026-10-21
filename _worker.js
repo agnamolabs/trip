@@ -752,45 +752,92 @@ input,textarea{-webkit-appearance:none;appearance:none}
 /* ===== HIDDEN ===== */
 .hidden{display:none!important}
 
-/* ===== AUTH GATE ===== */
+/* ===== AUTH GATE — PREMIUM FULL-SCREEN LOGIN ===== */
 .auth-gate{
-  position:fixed;inset:0;z-index:9999;
+  position:fixed;inset:0;z-index:99999;
   background:var(--bg);
+  background-image:
+    radial-gradient(ellipse 70% 50% at 50% -5%,rgba(255,77,143,.07),transparent),
+    radial-gradient(ellipse 55% 35% at 88% 8%,rgba(255,77,0,.06),transparent),
+    radial-gradient(ellipse 50% 40% at 12% 92%,rgba(13,148,136,.05),transparent);
+  background-attachment:fixed;
   display:flex;align-items:center;justify-content:center;
   padding:24px;
+  animation:authGateIn .4s var(--ease-out);
 }
+@keyframes authGateIn{from{opacity:0}to{opacity:1}}
+.auth-gate.leaving{animation:authGateOut .45s var(--ease) forwards}
+@keyframes authGateOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-20px)}}
 .auth-card{
   background:var(--surface);
   border-radius:var(--r-lg);
-  padding:40px 32px;
-  max-width:360px;width:100%;
-  box-shadow:var(--shadow-lg);
+  padding:48px 38px 36px;
+  max-width:400px;width:100%;
+  box-shadow:0 24px 64px rgba(23,23,28,.12),0 8px 24px rgba(23,23,28,.06);
   border:1px solid var(--line);
+  animation:authCardIn .5s var(--ease-out);
+  position:relative;overflow:hidden;
+}
+@keyframes authCardIn{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.auth-gate.leaving .auth-card{animation:authCardOut .45s var(--ease) forwards}
+@keyframes authCardOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-20px) scale(.97)}}
+.auth-card::before{
+  content:'';position:absolute;top:-50px;right:-50px;
+  width:140px;height:140px;
+  background:var(--grad);opacity:.06;border-radius:50%;filter:blur(35px);
 }
 .auth-card .ac-brand{
-  font-family:var(--font-display);font-weight:800;font-size:1.1rem;
+  font-family:var(--font-display);font-weight:800;font-size:1.45rem;
   display:flex;align-items:baseline;gap:1px;
-  margin-bottom:28px;justify-content:center;letter-spacing:-.03em;
+  margin-bottom:6px;justify-content:center;letter-spacing:-.03em;
+  position:relative;
 }
 .auth-card .ac-brand .a{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .auth-card .ac-brand .dot{color:var(--teal)}
-.auth-card h2{font-size:1.35rem;margin-bottom:8px;text-align:center;letter-spacing:-.03em}
-.auth-card .ac-sub{font-size:.82rem;color:var(--muted);text-align:center;margin-bottom:28px;font-weight:500}
+.auth-card .ac-tagline{
+  font-size:.72rem;font-weight:600;color:var(--muted);
+  text-align:center;margin-bottom:32px;letter-spacing:.06em;
+  text-transform:uppercase;position:relative;
+}
+.auth-card h2{font-size:1.5rem;margin-bottom:8px;text-align:center;letter-spacing:-.03em;position:relative}
+.auth-card .ac-sub{font-size:.84rem;color:var(--muted);text-align:center;margin-bottom:30px;font-weight:500;position:relative}
+.auth-card .ac-field{margin-bottom:18px;position:relative}
+.auth-card .ac-label{
+  font-size:.62rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--muted);
+  display:block;margin-bottom:7px;position:relative;
+}
 .auth-card .ac-inp{
-  width:100%;padding:14px 16px;
+  width:100%;padding:14px 18px;
   font-size:.95rem;font-weight:500;
   border:1.5px solid var(--line);
   border-radius:var(--r-sm);
   background:var(--surface-2);outline:none;
   transition:border-color .2s,background .2s,box-shadow .2s;
-  text-align:center;letter-spacing:.08em;
-  margin-bottom:12px;
+  text-align:left;letter-spacing:0;
 }
 .auth-card .ac-inp:focus{border-color:var(--orange);background:var(--surface);box-shadow:0 0 0 4px rgba(255,77,0,.08)}
-.auth-card .ac-btn{width:100%;margin-top:8px}
-.auth-card .ac-err{font-size:.8rem;color:var(--red);text-align:center;margin-top:12px;display:none;font-weight:600}
-.auth-card .ac-err.show{display:block}
-.auth-card .ac-hint{font-size:.72rem;color:var(--muted);text-align:center;margin-top:20px;font-weight:500;letter-spacing:.02em}
+.auth-card .ac-inp::placeholder{color:var(--muted);font-weight:400}
+.auth-card .ac-btn{
+  width:100%;margin-top:6px;
+  padding:16px 26px;font-size:.92rem;font-weight:700;
+  background:var(--grad);color:#fff;
+  border-radius:100px;border:none;cursor:pointer;
+  letter-spacing:-.01em;
+  box-shadow:0 4px 16px rgba(255,77,0,.25),0 2px 6px rgba(255,77,0,.15);
+  transition:all .18s var(--ease);
+}
+.auth-card .ac-btn:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(255,77,0,.32),0 4px 10px rgba(255,77,0,.18)}
+.auth-card .ac-btn:active{transform:scale(.97)}
+.auth-card .ac-err{font-size:.8rem;color:var(--red);text-align:center;margin-top:14px;display:none;font-weight:600;position:relative}
+.auth-card .ac-err.show{display:block;animation:authErrShake .3s var(--ease)}
+@keyframes authErrShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.auth-card .ac-hint{
+  font-size:.72rem;color:var(--muted);text-align:center;
+  margin-top:24px;font-weight:500;letter-spacing:.02em;
+  padding-top:18px;border-top:1px solid var(--line-soft);
+  position:relative;
+}
 
 /* ===== PACK STATS ===== */
 .pack-stats{display:flex;gap:12px;margin-bottom:18px}
@@ -1223,7 +1270,257 @@ input,textarea{-webkit-appearance:none;appearance:none}
     animation-duration:.01ms!important;
     transition-duration:.01ms!important;
   }
-}</style>
+}
+
+/* ===== PREMIUM ANIMATIONS ===== */
+
+/* (10) Page load — first-screen entrance */
+@keyframes pageLoadIn{
+  from{opacity:0;transform:translateY(18px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+.brand-row,.trip-hero,.field-group,.scan-btn,.btn-row,.trip-info,.section-label{
+  animation:pageLoadIn .55s var(--ease-out) both;
+}
+.brand-row{animation-delay:.04s}
+.trip-hero{animation-delay:.09s}
+.trip-info{animation-delay:.07s}
+.field-group{animation-delay:.14s}
+.scan-btn{animation-delay:.19s}
+.btn-row{animation-delay:.24s}
+
+/* (1) Staggered fade-in-up for list items */
+@keyframes staggerFadeUp{
+  from{opacity:0;transform:translateY(16px)}
+  to{opacity:1;transform:none}
+}
+.trip-card,.pack-row,.event-card,.reco-card,.flight-card,.w-day,.shared-trip{
+  animation:staggerFadeUp .42s var(--ease-out) both;
+}
+.trip-card:nth-child(1){animation-delay:.04s}
+.trip-card:nth-child(2){animation-delay:.08s}
+.trip-card:nth-child(3){animation-delay:.12s}
+.trip-card:nth-child(4){animation-delay:.16s}
+.trip-card:nth-child(5){animation-delay:.20s}
+.trip-card:nth-child(6){animation-delay:.24s}
+.pack-row:nth-child(1){animation-delay:.03s}
+.pack-row:nth-child(2){animation-delay:.06s}
+.pack-row:nth-child(3){animation-delay:.09s}
+.pack-row:nth-child(4){animation-delay:.12s}
+.pack-row:nth-child(5){animation-delay:.15s}
+.pack-row:nth-child(6){animation-delay:.18s}
+.pack-row:nth-child(7){animation-delay:.21s}
+.pack-row:nth-child(8){animation-delay:.24s}
+.pack-row:nth-child(n+9){animation-delay:.27s}
+.event-card:nth-child(1){animation-delay:.04s}
+.event-card:nth-child(2){animation-delay:.08s}
+.event-card:nth-child(3){animation-delay:.12s}
+.event-card:nth-child(4){animation-delay:.16s}
+.event-card:nth-child(5){animation-delay:.20s}
+.event-card:nth-child(n+6){animation-delay:.24s}
+.reco-card:nth-child(1){animation-delay:.05s}
+.reco-card:nth-child(2){animation-delay:.10s}
+.reco-card:nth-child(3){animation-delay:.15s}
+.reco-card:nth-child(4){animation-delay:.20s}
+.reco-card:nth-child(5){animation-delay:.25s}
+.flight-card:nth-child(1){animation-delay:.04s}
+.flight-card:nth-child(2){animation-delay:.08s}
+.flight-card:nth-child(3){animation-delay:.12s}
+.flight-card:nth-child(4){animation-delay:.16s}
+.flight-card:nth-child(5){animation-delay:.20s}
+.w-day:nth-child(1){animation-delay:.03s}
+.w-day:nth-child(2){animation-delay:.06s}
+.w-day:nth-child(3){animation-delay:.09s}
+.w-day:nth-child(4){animation-delay:.12s}
+.w-day:nth-child(5){animation-delay:.15s}
+.w-day:nth-child(6){animation-delay:.18s}
+.w-day:nth-child(7){animation-delay:.21s}
+.shared-trip:nth-child(1){animation-delay:.05s}
+.shared-trip:nth-child(2){animation-delay:.10s}
+.shared-trip:nth-child(3){animation-delay:.15s}
+.shared-trip:nth-child(n+4){animation-delay:.20s}
+
+/* (2) Card hover lift with shadow growth */
+.trip-card,.reco-card,.flight-card,.event-card{
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease),border-color .3s var(--ease);
+}
+.trip-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 14px 40px rgba(23,23,28,.10),0 4px 14px rgba(255,77,0,.10);
+  border-color:var(--orange);
+}
+.reco-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 36px rgba(23,23,28,.09),0 3px 12px rgba(255,77,0,.08);
+  border-color:var(--line);
+}
+.flight-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 36px rgba(23,23,28,.09),0 3px 12px rgba(255,77,0,.07);
+}
+.event-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 32px rgba(23,23,28,.08),0 2px 8px rgba(255,77,0,.06);
+  border-color:var(--line);
+}
+
+/* (3) Smooth scale-in for modals & loading overlays */
+@keyframes overlayFadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+@keyframes overlayScaleIn{
+  from{opacity:0;transform:scale(.88) translateY(24px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+.modal-bg.show{
+  animation:overlayFadeIn .28s var(--ease-out) both;
+}
+.modal-bg.show .modal{
+  animation:overlayScaleIn .42s var(--ease-out) both;
+}
+.loading-overlay.show{
+  animation:overlayFadeIn .28s var(--ease-out) both;
+}
+.loading-overlay.show .lo-box{
+  animation:overlayScaleIn .42s var(--ease-out) both;
+}
+
+/* (4) Pulse animation for active tab indicator */
+@keyframes tabPulse{
+  0%,100%{filter:drop-shadow(0 0 0 rgba(255,77,0,0))}
+  50%{filter:drop-shadow(0 0 7px rgba(255,77,0,.4))}
+}
+.tab.active{
+  animation:tabPulse 2.6s var(--ease) infinite;
+}
+
+/* (5) Shimmer loading effect */
+@keyframes shimmerSweep{
+  0%{background-position:-200% 0}
+  100%{background-position:200% 0}
+}
+.empty-state{
+  position:relative;
+  overflow:hidden;
+}
+.empty-state::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,77,0,.05) 50%,transparent 100%);
+  background-size:200% 100%;
+  animation:shimmerSweep 2.2s linear infinite;
+  pointer-events:none;
+}
+.shimmer-skel{
+  background:linear-gradient(90deg,var(--surface-2) 25%,var(--line-soft) 50%,var(--surface-2) 75%);
+  background-size:200% 100%;
+  animation:shimmerSweep 1.5s linear infinite;
+  border-radius:var(--r-sm);
+}
+
+/* (6) Chat message slide-in (user from right, assistant from left) */
+@keyframes msgSlideRight{
+  from{opacity:0;transform:translateX(28px)}
+  to{opacity:1;transform:translateX(0)}
+}
+@keyframes msgSlideLeft{
+  from{opacity:0;transform:translateX(-28px)}
+  to{opacity:1;transform:translateX(0)}
+}
+.msg.user{
+  animation:msgSlideRight .38s var(--ease-out) both;
+}
+.msg.assistant{
+  animation:msgSlideLeft .38s var(--ease-out) both;
+}
+.msg.user .bubble,.msg.assistant .bubble{
+  transition:box-shadow .2s var(--ease);
+}
+
+/* (7) Calendar cell hover effect */
+.cal-day{
+  transition:transform .2s var(--ease),box-shadow .2s var(--ease),background .2s var(--ease),border-color .2s var(--ease),color .2s var(--ease);
+}
+.cal-day:not(.empty):not(.trip-day):hover{
+  transform:translateY(-2px) scale(1.06);
+  box-shadow:0 5px 18px rgba(255,77,0,.14);
+  border-color:var(--orange);
+  color:var(--orange);
+}
+.cal-day:not(.empty):active{
+  transform:scale(.93);
+}
+
+/* (8) Button press scale effect */
+@keyframes btnPress{
+  0%{transform:scale(1)}
+  50%{transform:scale(.92)}
+  100%{transform:scale(1)}
+}
+.btn{
+  transition:transform .16s var(--ease),box-shadow .25s var(--ease),background .25s var(--ease),border-color .25s var(--ease),color .25s var(--ease);
+}
+.btn:active{
+  animation:btnPress .28s var(--ease);
+}
+.btn-fill:active,.btn-dark:active{
+  transform:scale(.94);
+  box-shadow:0 1px 4px rgba(255,77,0,.2);
+}
+.btn-ghost:active{
+  transform:scale(.94);
+}
+.scan-btn{
+  transition:transform .22s var(--ease),box-shadow .22s var(--ease),border-color .22s var(--ease);
+}
+.scan-btn:active{
+  transform:scale(.96);
+}
+
+/* (9) Smooth color transitions on all interactive elements */
+.tab,.tab svg,.inp,.lbl,.edit-link,.qty-btn,.del-btn,.cat-head,.cat-head .chevron,.cat-head .pill,.cal-nav-btn,.cal-day,.pack-row .check,.pack-row .qty-btn,.pack-row .del-btn{
+  transition-property:color,background-color,border-color,box-shadow,transform,opacity,filter;
+  transition-duration:.2s;
+  transition-timing-function:var(--ease);
+}
+
+/* Enhanced screen entrance on tab switch */
+@keyframes screenEntrance{
+  from{opacity:0;transform:translateY(14px) scale(.992)}
+  to{opacity:1;transform:none}
+}
+.screen.active{
+  animation:screenEntrance .38s var(--ease-out) both;
+}
+
+/* Weather tile hover lift */
+.w-day{
+  transition:transform .22s var(--ease),box-shadow .22s var(--ease);
+}
+.w-day:hover{
+  transform:translateY(-3px);
+  box-shadow:0 6px 20px rgba(23,23,28,.08),0 2px 8px rgba(255,77,0,.06);
+}
+
+/* Cat-head interactive polish */
+.cat-head{
+  transition:transform .22s var(--ease),border-color .22s var(--ease),background .22s var(--ease),box-shadow .22s var(--ease);
+}
+.cat-head:active{
+  transform:scale(.99);
+}
+
+/* Shared-trip hover lift */
+.shared-trip{
+  transition:transform .26s var(--ease),box-shadow .26s var(--ease),border-color .26s var(--ease);
+}
+.shared-trip:hover{
+  transform:translateY(-3px);
+  box-shadow:0 8px 28px rgba(23,23,28,.08),0 2px 8px rgba(255,77,0,.06);
+}
+</style>
 </head>
 <body>
 <nav class="tabbar">
@@ -1322,7 +1619,7 @@ input,textarea{-webkit-appearance:none;appearance:none}
   <div class="sync-card">
     <div id="userBadge" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface-2);border-radius:var(--r-sm);margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:var(--teal)"></span><span style="font-size:.82rem;font-weight:600" id="syncUserName">—</span></div>
-      <button class="btn btn-ghost" style="padding:6px 14px;font-size:.74rem" onclick="logoutUser()">Switch user</button>
+      <button class="btn btn-fill" style="padding:8px 18px;font-size:.76rem;font-weight:700" onclick="logoutUser()">Log out</button>
     </div>
     <div class="field-group" style="margin-top:0">
       <div><label class="lbl">Supabase URL</label><input id="sbUrl" class="inp" type="text" placeholder="https://xxxxx.supabase.co" autocapitalize="none" spellcheck="false"></div>
@@ -1353,18 +1650,27 @@ function checkAuth(){const u=localStorage.getItem(AUTH_USER_KEY);if(u&&AUTH_USER
 function currentUser(){return localStorage.getItem(AUTH_USER_KEY)||null}
 function showAuthGate(){
   const g=document.createElement('div');g.className='auth-gate';g.id='authGate';
-  g.innerHTML='<div class="auth-card"><div class="ac-brand"><span class="a">agnamo</span><span class="dot">.</span>&nbsp;trip</div><h2>Plan together</h2><p class="ac-sub">Enter your name and access code</p><input class="ac-inp" type="text" id="authUser" placeholder="Your name" maxlength="20" autocomplete="off" style="margin-bottom:10px;letter-spacing:0"><input class="ac-inp" type="password" id="authInp" placeholder="Access code" maxlength="12" autocomplete="off"><div class="ac-err" id="authErr">Wrong name or code</div><button class="btn btn-fill ac-btn" onclick="tryAuth()">Enter</button><div class="ac-hint">Vrinda · Gabe · Lux · Kian</div></div>';
+  g.innerHTML='<div class="auth-card">'
+    +'<div class="ac-brand"><span class="a">agnamo</span><span class="dot">.</span></div>'
+    +'<div class="ac-tagline">trip planner</div>'
+    +'<h2>Welcome back</h2>'
+    +'<p class="ac-sub">Sign in to plan your next adventure</p>'
+    +'<div class="ac-field"><label class="ac-label" for="authUser">Username</label><input class="ac-inp" type="text" id="authUser" placeholder="Your name" maxlength="20" autocomplete="off"></div>'
+    +'<div class="ac-field"><label class="ac-label" for="authInp">Access code</label><input class="ac-inp" type="password" id="authInp" placeholder="Enter access code" maxlength="12" autocomplete="off"></div>'
+    +'<div class="ac-err" id="authErr">Wrong name or code — try again</div>'
+    +'<button class="ac-btn" onclick="tryAuth()">Log in →</button>'
+    +'<div class="ac-hint">Valid users · Vrinda · Gabe · Lux · Kian</div>'
+    +'</div>';
   document.body.appendChild(g);
   const u=document.getElementById('authUser');u.focus();
   u.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('authInp').focus()});
   document.getElementById('authInp').addEventListener('keydown',e=>{if(e.key==='Enter')tryAuth()});
 }
-function tryAuth(){
+async function tryAuth(){
   const raw=document.getElementById('authUser').value.trim();
   const code=document.getElementById('authInp').value.trim();
   const name=raw.charAt(0).toUpperCase()+raw.slice(1).toLowerCase();
-  if(AUTH_USERS[name]&&code===AUTH_USERS[name]){localStorage.setItem(AUTH_KEY,code);localStorage.setItem(AUTH_USER_KEY,name);document.getElementById('authGate').remove();initApp()}
-  else{document.getElementById('authErr').classList.add('show');document.getElementById('authInp').value='';document.getElementById('authInp').focus()}
+  try{const r=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:name,password:code})});const d=await r.json();if(d.valid){localStorage.setItem(AUTH_KEY,code);localStorage.setItem(AUTH_USER_KEY,name);document.getElementById('authGate').remove();initApp()}else{document.getElementById('authErr').classList.add('show');document.getElementById('authInp').value='';document.getElementById('authInp').focus()}}catch{document.getElementById('authErr').classList.add('show');document.getElementById('authInp').value='';document.getElementById('authInp').focus()}
 }
 function logoutUser(){localStorage.removeItem(AUTH_KEY);localStorage.removeItem(AUTH_USER_KEY);location.reload()}
 
@@ -1394,14 +1700,13 @@ async function pplxChat(messages,systemPrompt){
   }catch{return null}
 }
 
-/* Supabase */
-function sbConfigured(){return S.config.url&&S.config.key}
-async function sbFetch(path,opts={}){if(!sbConfigured())return null;try{return await fetch(\`\${S.config.url}/rest/v1/\${path}\`,{...opts,headers:{'apikey':S.config.key,'Authorization':\`Bearer \${S.config.key}\`,'Content-Type':'application/json',...opts.headers}})}catch{return null}}
+/* Worker API */
+function sbConfigured(){return true}
 function tripToRow(t){return{id:t.id,city:t.city,country:t.country,cc:t.cc,lat:t.lat,lon:t.lon,tz:t.tz,depart:t.depart,return_date:t.return,airline:t.airline,flight_num:t.flightNum,flight_time:t.flightTime,booking_ref:t.bookingRef,items:t.items,closet:t.closet,style:t.style,weather:t.weather,events:t.events,recommendations:t.recommendations,chat_history:t.chatHistory,source:t.source,raw_ocr:t.rawOcr,created_by:currentUser()}}
 function rowToTrip(r){return{id:r.id,city:r.city,country:r.country,cc:r.cc,lat:r.lat,lon:r.lon,tz:r.tz,depart:r.depart,return:r.return_date,airline:r.airline,flightNum:r.flight_num,flightTime:r.flight_time,bookingRef:r.booking_ref,items:r.items||{},closet:r.closet||[],style:r.style||[],weather:r.weather,events:r.events,recommendations:r.recommendations,chatHistory:r.chat_history,source:r.source,rawOcr:r.raw_ocr,createdBy:r.created_by}}
-async function sbLoadTrips(){const r=await sbFetch('trips?order=created_at.desc');if(!r||!r.ok)return[];return(await r.json()).map(rowToTrip)}
-async function sbSaveTrip(t){if(!sbConfigured())return;await sbFetch('trips',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates'},body:JSON.stringify(tripToRow(t))})}
-async function sbDeleteTrip(id){if(!sbConfigured())return;await sbFetch(\`trips?id=eq.\${id}\`,{method:'DELETE'})}
+async function sbLoadTrips(){try{const r=await fetch('/api/trips');if(!r.ok)return[];return(await r.json()).map(rowToTrip)}catch{return[]}}
+async function sbSaveTrip(t){try{await fetch('/api/trips',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(tripToRow(t))})}catch{}}
+async function sbDeleteTrip(id){try{await fetch('/api/trips?id='+id,{method:'DELETE'})}catch{}}
 
 /* Screen nav — 5 tabs */
 function goScreen(name){
@@ -1531,7 +1836,7 @@ async function sendChat(){const inp=document.getElementById('chatInput');const b
 async function searchFlights(){const fromEl=document.getElementById('fromInput'),toEl=document.getElementById('toInput');const resEl=document.getElementById('flightResults');if(!fromEl||!toEl){toast('Flight search inputs not found');return}const from=fromEl.value.trim().toUpperCase();const to=toEl.value.trim().toUpperCase();if(!from||!to){toast('Enter origin and destination airport codes');return}const t=activeTrip();const depDate=t&&t.depart?t.depart:'soon';if(resEl)resEl.innerHTML='<div class="empty-state">Searching flights…</div>';try{const text=await pplxChat([{role:'user',content:\`Find 3-5 real commercial flights from \${from} to \${to} on \${depDate}. List each as: FLIGHT NUMBER | AIRLINE | DEPARTURE TIME | ARRIVAL TIME | DURATION | APPROX PRICE USD. Only real airlines and realistic times.\`}],'You are a flight search assistant. Return 3-5 flight options in the exact format requested. No preamble.');if(!text){if(resEl)resEl.innerHTML='<div class="empty-state">Could not retrieve flights. Try again.</div>';return}const lines=text.split(/\\r?\\n/).map(s=>s.trim()).filter(s=>s.length>0&&!/^(#|\\*|-{2,})/.test(s));let html='';let count=0;lines.forEach(line=>{const parts=line.split('|').map(s=>s.trim());if(parts.length<3)return;const num=parts[0];const airline=parts[1];const depT=parts[2];const arrT=parts[3]||'';const dur=parts[4]||'';const price=parts[5]||'';html+=\`<div class="flight-card"><div class="fl-route"><span>\${from}</span><span class="fl-arrow">→</span><span>\${to}</span></div><div class="fl-meta"><span class="fl-num">\${num}</span><span>\${airline}</span></div><div class="fl-times">\${depT?\`<span class="fl-t">\${depT}</span>\`:''}<span class="fl-dur">\${dur}</span>\${arrT?\`<span class="fl-t">\${arrT}</span>\`:''}</div>\${price?\`<div class="fl-footer"><span class="fl-price">\${price}</span><button class="btn btn-ghost" style="padding:4px 12px;font-size:.72rem" onclick="toast('Flight noted')">Select</button></div>\`:''}</div>\`;count++});resEl.innerHTML=count?html:'<div class="empty-state">No flights parsed.</div>'}catch(e){if(resEl)resEl.innerHTML='<div class="empty-state">Flight search error.</div>';toast('Flight search failed')}}
 
 /* Shared trips */
-async function searchUserTrips(){const inp=document.getElementById('userSearchInput');const list=document.getElementById('userTripsList');if(!list)return;const username=inp?inp.value.trim():'';if(!sbConfigured()){toast('Connect Supabase first');return}list.innerHTML='<div class="empty-state">Searching…</div>';try{const trips=await sbLoadTrips();let filtered=trips;if(username){filtered=trips.filter(t=>{const cb=(t.createdBy||t.created_by||'').toLowerCase();return cb.includes(username.toLowerCase())})}if(!filtered.length){list.innerHTML='<div class="empty-state">No trips found for this user.</div>';return}list.innerHTML=filtered.map(t=>{const initials=(t.city||'?')[0];const dates=[];if(t.depart)dates.push(fmtDate(t.depart));if(t.return)dates.push(fmtDate(t.return));return \`<div class="shared-trip" onclick="selectTrip('\${t.id}')"><div class="st-avatar">\${initials}</div><div class="st-info"><div class="st-city">\${t.city||'Unknown'}, \${t.country||''}</div><div class="st-meta">\${dates.join(' — ')||'No dates'}\${t.createdBy?' · '+t.createdBy:''}</div></div></div>\`}).join('')}catch(e){list.innerHTML='<div class="empty-state">Search failed — check Supabase connection.</div>'}}
+async function searchUserTrips(){const inp=document.getElementById('userSearchInput');const list=document.getElementById('userTripsList');if(!list)return;const username=inp?inp.value.trim():'';list.innerHTML='<div class="empty-state">Searching…</div>';try{const trips=await sbLoadTrips();let filtered=trips;if(username){filtered=trips.filter(t=>{const cb=(t.createdBy||t.created_by||'').toLowerCase();return cb.includes(username.toLowerCase())})}if(!filtered.length){list.innerHTML='<div class="empty-state">No trips found for this user.</div>';return}list.innerHTML=filtered.map(t=>{const initials=(t.city||'?')[0];const dates=[];if(t.depart)dates.push(fmtDate(t.depart));if(t.return)dates.push(fmtDate(t.return));return \`<div class="shared-trip" onclick="selectTrip('\${t.id}')"><div class="st-avatar">\${initials}</div><div class="st-info"><div class="st-city">\${t.city||'Unknown'}, \${t.country||''}</div><div class="st-meta">\${dates.join(' — ')||'No dates'}\${t.createdBy?' · '+t.createdBy:''}</div></div></div>\`}).join('')}catch(e){list.innerHTML='<div class="empty-state">Search failed — try again.</div>'}}
 
 /* Closet */
 function handleClosetUpload(e){const closet=activeCloset();const files=[...e.target.files];files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{closet.push({id:'c'+Date.now()+Math.random().toString(36).slice(2,6),src:ev.target.result,selected:false});save();renderCloset()};reader.readAsDataURL(file)});if(files.length)toast(\`Added \${files.length} photo\${files.length>1?'s':''}\`)}
@@ -1674,6 +1979,110 @@ export default {
         return json(data);
       } catch (err) {
         return json({ error: err.message || 'Chat failed' }, 500);
+      }
+    }
+    // ─── /api/auth ──────────────────────────────────────────────────────────
+    if (path === '/api/auth' && request.method === 'POST') {
+      try {
+        const { user, password } = await request.json();
+        const AUTH = { 'Vrinda': 'hawaii-27', 'Gabe': 'hawaii-27', 'Lux': 'hawaii-27', 'Kian': 'hawaii' };
+        if (user && AUTH[user] && AUTH[user] === password) {
+          return json({ valid: true, user });
+        }
+        return json({ valid: false }, 401);
+      } catch (err) {
+        return json({ valid: false, error: err.message }, 400);
+      }
+    }
+    // ─── GET /api/trips ──────────────────────────────────────────────────────
+    if (path === '/api/trips' && request.method === 'GET') {
+      try {
+        const raw = await env.TRIPS_KV.get('all_trips');
+        const trips = raw ? JSON.parse(raw) : [];
+        return json(trips);
+      } catch (err) {
+        return json({ error: err.message }, 500);
+      }
+    }
+    // ─── POST /api/trips ─────────────────────────────────────────────────────
+    if (path === '/api/trips' && request.method === 'POST') {
+      try {
+        const trip = await request.json();
+        if (!trip.id) return json({ error: 'Trip id required' }, 400);
+        const raw = await env.TRIPS_KV.get('all_trips');
+        const trips = raw ? JSON.parse(raw) : [];
+        const idx = trips.findIndex(t => t.id === trip.id);
+        if (idx >= 0) trips[idx] = trip; else trips.push(trip);
+        await env.TRIPS_KV.put('all_trips', JSON.stringify(trips));
+        return json({ ok: true });
+      } catch (err) {
+        return json({ error: err.message }, 500);
+      }
+    }
+    // ─── DELETE /api/trips ───────────────────────────────────────────────────
+    if (path === '/api/trips' && request.method === 'DELETE') {
+      try {
+        const id = url.searchParams.get('id');
+        if (!id) return json({ error: 'Trip id required' }, 400);
+        const raw = await env.TRIPS_KV.get('all_trips');
+        const trips = raw ? JSON.parse(raw) : [];
+        const filtered = trips.filter(t => t.id !== id);
+        await env.TRIPS_KV.put('all_trips', JSON.stringify(filtered));
+        return json({ ok: true });
+      } catch (err) {
+        return json({ error: err.message }, 500);
+      }
+    }
+    // ─── /api/auth ──────────────────────────────────────────────────────────
+    if (path === '/api/auth' && request.method === 'POST') {
+      try {
+        const { user, password } = await request.json();
+        const AUTH = { 'Vrinda': 'hawaii-27', 'Gabe': 'hawaii-27', 'Lux': 'hawaii-27', 'Kian': 'hawaii' };
+        if (user && AUTH[user] && AUTH[user] === password) {
+          return json({ valid: true, user });
+        }
+        return json({ valid: false }, 401);
+      } catch (err) {
+        return json({ valid: false, error: err.message }, 400);
+      }
+    }
+    // ─── GET /api/trips ──────────────────────────────────────────────────────
+    if (path === '/api/trips' && request.method === 'GET') {
+      try {
+        const raw = await env.TRIPS_KV.get('all_trips');
+        const trips = raw ? JSON.parse(raw) : [];
+        return json(trips);
+      } catch (err) {
+        return json({ error: err.message }, 500);
+      }
+    }
+    // ─── POST /api/trips ─────────────────────────────────────────────────────
+    if (path === '/api/trips' && request.method === 'POST') {
+      try {
+        const trip = await request.json();
+        if (!trip.id) return json({ error: 'Trip id required' }, 400);
+        const raw = await env.TRIPS_KV.get('all_trips');
+        const trips = raw ? JSON.parse(raw) : [];
+        const idx = trips.findIndex(t => t.id === trip.id);
+        if (idx >= 0) trips[idx] = trip; else trips.push(trip);
+        await env.TRIPS_KV.put('all_trips', JSON.stringify(trips));
+        return json({ ok: true });
+      } catch (err) {
+        return json({ error: err.message }, 500);
+      }
+    }
+    // ─── DELETE /api/trips ───────────────────────────────────────────────────
+    if (path === '/api/trips' && request.method === 'DELETE') {
+      try {
+        const id = url.searchParams.get('id');
+        if (!id) return json({ error: 'Trip id required' }, 400);
+        const raw = await env.TRIPS_KV.get('all_trips');
+        const trips = raw ? JSON.parse(raw) : [];
+        const filtered = trips.filter(t => t.id !== id);
+        await env.TRIPS_KV.put('all_trips', JSON.stringify(filtered));
+        return json({ ok: true });
+      } catch (err) {
+        return json({ error: err.message }, 500);
       }
     }
     // ─── /api/health ─────────────────────────────────────────────────────────
