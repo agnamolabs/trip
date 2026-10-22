@@ -2371,7 +2371,7 @@ export default {
         const raw = (data.choices?.[0]?.message?.content || '').trim();
         let flights;
         try { flights = JSON.parse(raw); } catch { const m = raw.match(/\[[\s\S]*\]/); try { flights = m ? JSON.parse(m[0]) : []; } catch { flights = []; } }
-        if (!Array.isArray(flights)) flights = [];
+        if (!Array.isArray(flights)) { const vals = Object.values(flights).filter(v => Array.isArray(v)); flights = vals.length ? vals[0] : []; }
         return json({ flights, offset: pageOffset, has_more: flights.length >= 10 });
       } catch (err) { return json({ error: err.message }, 500); }
     }
