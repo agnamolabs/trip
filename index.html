@@ -1699,6 +1699,65 @@ input,textarea{-webkit-appearance:none;appearance:none}
   padding-top:12px;border-top:1px solid var(--line-soft);margin-top:4px;
 }
 .share-dialog .share-roster .shared-user-chip{font-size:.74rem}
+
+/* ===== FLIGHT ACTION ROW (search + refresh) ===== */
+.flight-actions{display:flex;gap:10px;margin-bottom:12px}
+.flight-actions .btn-ghost.btn-block{flex:1}
+.fl-refresh-btn{
+  flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  font-weight:700;font-size:.72rem;letter-spacing:-.01em;
+  padding:9px 16px;border-radius:100px;
+  background:transparent;border:1.5px solid var(--line);color:var(--muted);
+  transition:all .18s var(--ease);
+}
+.fl-refresh-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .5s var(--ease)}
+.fl-refresh-btn:hover{border-color:var(--ink-2);color:var(--ink-2);background:var(--surface-2)}
+.fl-refresh-btn:active{transform:scale(.96)}
+.fl-refresh-btn.spinning svg{transform:rotate(360deg)}
+
+/* ===== FLIGHT STATUS BADGE ===== */
+.flight-card .fl-status-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:.66rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  padding:4px 10px;border-radius:100px;line-height:1;margin-left:auto;flex-shrink:0;
+}
+.fl-status-badge .fl-status-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.fl-status-badge.st-on-time{background:rgba(34,197,94,.12);color:var(--green)}
+.fl-status-badge.st-delayed{background:rgba(255,77,0,.12);color:var(--orange)}
+.fl-status-badge.st-cancelled{background:rgba(239,68,68,.12);color:var(--red)}
+.fl-status-badge.st-scheduled{background:var(--surface-2);color:var(--muted)}
+.fl-status-badge.st-board{background:rgba(13,148,136,.12);color:var(--teal)}
+
+/* ===== LOAD MORE ===== */
+.fl-load-more{
+  display:flex;width:100%;align-items:center;justify-content:center;gap:8px;
+  font-weight:700;font-size:.8rem;letter-spacing:-.01em;
+  padding:14px 22px;margin-top:4px;margin-bottom:14px;
+  border-radius:var(--r);border:1.5px dashed var(--line);
+  background:transparent;color:var(--ink-2);
+  transition:all .18s var(--ease);
+}
+.fl-load-more:hover{border-color:var(--orange);color:var(--orange);border-style:solid;background:rgba(255,77,0,.03)}
+.fl-load-more:active{transform:scale(.98)}
+
+/* ===== FLIGHT TRACKING MODAL ===== */
+.track-modal{display:none;position:fixed;inset:0;z-index:200;background:rgba(23,23,28,.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px}
+.track-modal.show{display:flex;animation:overlayFadeIn .22s var(--ease-out) both}
+.track-modal-card{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);border:1px solid var(--line);max-width:420px;width:100%;padding:24px;max-height:80vh;overflow-y:auto}
+.track-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.track-close{padding:4px;color:var(--muted);border-radius:var(--r-xs);transition:color .2s var(--ease);display:inline-flex}
+.track-close:hover{color:var(--ink)}
+.track-panel .track-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
+.track-panel .track-num{font-family:var(--font-display);font-weight:700;font-size:1.1rem;letter-spacing:-.02em}
+.track-panel .track-status{font-size:.8rem;font-weight:600;margin-top:5px;display:flex;align-items:center;gap:5px}
+.track-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.track-cell{background:var(--surface-2);border-radius:var(--r-sm);padding:14px}
+.track-cell .tc-lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
+.track-cell .tc-val{font-family:var(--font-display);font-weight:700;font-size:1rem}
+.track-cell .tc-sub{font-size:.72rem;color:var(--muted);margin-top:4px}
+.track-raw{margin-top:16px;font-size:.78rem;line-height:1.5;color:var(--ink-2);white-space:pre-wrap;background:var(--surface-2);border-radius:var(--r-sm);padding:12px}
+.flight-card .track-btn{padding:5px 12px;font-size:.72rem;font-weight:600;display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line)}
+.flight-card .track-btn:hover{border-color:var(--orange);color:var(--orange)}
 </style>
 </head>
 <body>
@@ -1730,8 +1789,10 @@ input,textarea{-webkit-appearance:none;appearance:none}
     <div id="weatherBlock"></div>
     <div class="section-label" style="margin:20px 0 10px">Flight search</div>
     <div class="field-row" style="margin-bottom:10px"><input id="fromInput" class="inp" type="text" placeholder="From (SEA)" autocapitalize="characters"><input id="toInput" class="inp" type="text" placeholder="To (DFW)" autocapitalize="characters"></div>
-    <button class="btn btn-ghost btn-block" onclick="searchFlights()" style="margin-bottom:12px">Search flights →</button>
+    <div class="btn-row" style="margin-bottom:12px"><button class="btn btn-ghost" style="flex:1" onclick="searchFlights()">Search flights →</button><button class="btn btn-ghost" id="refreshFlightsBtn" onclick="refreshFlights()" style="display:none;padding:14px 16px" title="Refresh flights"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button></div>
     <div id="flightResults"></div>
+    <button class="btn btn-ghost btn-block fl-load-more" id="loadMoreFlightsBtn" onclick="loadMoreFlights()" style="display:none;margin-bottom:12px">Load more flights</button>
+    <div id="trackModal" class="track-modal" onclick="if(event.target===this)closeTrackModal()"><div class="track-modal-card"><div class="track-modal-head"><span class="section-label" style="color:var(--orange)">Flight tracking</span><button class="track-close" onclick="closeTrackModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div><div id="trackModalBody"></div></div></div>
     <div class="btn-row"><button class="btn btn-dark btn-block" onclick="goScreen('plan')">Plan itinerary →</button></div>
   </div>
   <div id="tripsList" class="trips-list hidden"><div class="list-label">My Trips</div><div id="tripsListContent"></div></div>
@@ -2056,7 +2117,16 @@ function renderChat(){const box=document.getElementById('chatMessages');if(!box)
 async function sendChat(){const inp=document.getElementById('chatInput');const box=document.getElementById('chatMessages');if(!inp||!box)return;const text=inp.value.trim();if(!text)return;const t=activeTrip();if(!t){toast('Set up a trip first');return}if(!Array.isArray(t.chatHistory))t.chatHistory=[];const empty=box.querySelector('#chatEmpty');if(empty)empty.remove();t.chatHistory.push({role:'user',content:text});box.insertAdjacentHTML('beforeend',`<div class="msg user"><div class="bubble">${text.replace(/</g,'&lt;')}</div></div>`);inp.value='';box.scrollTop=box.scrollHeight;save();const typing=box.querySelector('.typing-bubble');if(typing)typing.remove();box.insertAdjacentHTML('beforeend','<div class="msg assistant"><div class="bubble typing-bubble">Thinking…</div></div>');box.scrollTop=box.scrollHeight;let sys='You are a helpful trip planning assistant. Keep responses concise and practical. The user is planning a trip';if(t.city)sys+=` to ${t.city}, ${t.country}`;if(t.depart)sys+=` departing ${t.depart}`;if(t.return)sys+=` returning ${t.return}`;if(t.weather){const wx=t.weather;sys+=`. Current weather: ${Math.round(wx.current?.temperature_2m)}°C, ${W_LABEL[wx.current?.weather_code]||'mixed'}`}sys+='.';try{const reply=await pplxChat(t.chatHistory.slice(-12),sys);const tb=box.querySelector('.typing-bubble');if(tb)tb.parentElement.remove();if(!reply){toast('AI could not respond');return}t.chatHistory.push({role:'assistant',content:reply});box.insertAdjacentHTML('beforeend',`<div class="msg assistant"><div class="bubble">${reply.replace(/</g,'&lt;')}</div></div>`);box.scrollTop=box.scrollHeight;save();sbSaveTrip(t)}catch(e){const tb=box.querySelector('.typing-bubble');if(tb)tb.parentElement.remove();toast('Chat error')}}
 
 /* Flight search */
-async function searchFlights(){const fromEl=document.getElementById('fromInput'),toEl=document.getElementById('toInput');const resEl=document.getElementById('flightResults');if(!fromEl||!toEl){toast('Flight search inputs not found');return}const from=fromEl.value.trim().toUpperCase();const to=toEl.value.trim().toUpperCase();if(!from||!to){toast('Enter origin and destination airport codes');return}const t=activeTrip();const depDate=t&&t.depart?t.depart:'soon';if(resEl)resEl.innerHTML='<div class="empty-state">Searching flights…</div>';try{const text=await pplxChat([{role:'user',content:`Find 3-5 real commercial flights from ${from} to ${to} on ${depDate}. List each as: FLIGHT NUMBER | AIRLINE | DEPARTURE TIME | ARRIVAL TIME | DURATION | APPROX PRICE USD. Only real airlines and realistic times.`}],'You are a flight search assistant. Return 3-5 flight options in the exact format requested. No preamble.');if(!text){if(resEl)resEl.innerHTML='<div class="empty-state">Could not retrieve flights. Try again.</div>';return}const lines=text.split(/\r?\n/).map(s=>s.trim()).filter(s=>s.length>0&&!/^(#|\*|-{2,})/.test(s));let html='';let count=0;lines.forEach(line=>{const parts=line.split('|').map(s=>s.trim());if(parts.length<3)return;const num=parts[0];const airline=parts[1];const depT=parts[2];const arrT=parts[3]||'';const dur=parts[4]||'';const price=parts[5]||'';html+=`<div class="flight-card"><div class="fl-route"><span>${from}</span><span class="fl-arrow">→</span><span>${to}</span></div><div class="fl-meta"><span class="fl-num">${num}</span><span>${airline}</span></div><div class="fl-times">${depT?`<span class="fl-t">${depT}</span>`:''}<span class="fl-dur">${dur}</span>${arrT?`<span class="fl-t">${arrT}</span>`:''}</div>${price?`<div class="fl-footer"><span class="fl-price">${price}</span><button class="btn btn-ghost" style="padding:4px 12px;font-size:.72rem" onclick="toast('Flight noted')">Select</button></div>`:''}</div>`;count++});resEl.innerHTML=count?html:'<div class="empty-state">No flights parsed.</div>'}catch(e){if(resEl)resEl.innerHTML='<div class="empty-state">Flight search error.</div>';toast('Flight search failed')}}
+async function searchFlights(){const fromEl=document.getElementById('fromInput'),toEl=document.getElementById('toInput');if(!fromEl||!toEl){toast('Flight search inputs not found');return}const from=fromEl.value.trim().toUpperCase(),to=toEl.value.trim().toUpperCase();if(!from||!to){toast('Enter origin and destination airport codes');return}const t=activeTrip();const depDate=t&&t.depart?t.depart:'soon';flightSearchState={from,to,date:depDate,offset:0,results:[],hasMore:false};await runFlightSearch(true)}
+async function refreshFlights(){if(!flightSearchState.from||!flightSearchState.to){toast('Search flights first');return}flightSearchState.offset=0;flightSearchState.results=[];flightSearchState.hasMore=false;await runFlightSearch(true)}
+async function loadMoreFlights(){if(!flightSearchState.from||!flightSearchState.to){toast('Search flights first');return}await runFlightSearch(false)}
+async function runFlightSearch(clear){const{from,to,date}=flightSearchState;const resEl=document.getElementById('flightResults'),moreBtn=document.getElementById('loadMoreFlightsBtn'),rfb=document.getElementById('refreshFlightsBtn');if(clear&&resEl)resEl.innerHTML='<div class="empty-state">Searching flights...</div>';if(moreBtn)moreBtn.style.display='none';let flights=[];try{const r=await fetch('/api/flights/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from,to,date,offset:flightSearchState.offset})});if(r.ok){const d=await r.json();flights=Array.isArray(d.flights)?d.flights:(Array.isArray(d)?d:[]);flightSearchState.hasMore=!!d.has_more}else{flights=await flightsFallback(from,to,date)}}catch{flights=await flightsFallback(from,to,date)}if(!flights.length&&flightSearchState.offset===0){if(resEl)resEl.innerHTML='<div class="empty-state">No flights found. Try again.</div>';if(moreBtn)moreBtn.style.display='none';if(rfb)rfb.style.display='inline-flex';return}renderFlightCards(flights,clear);flightSearchState.results=flightSearchState.results.concat(flights);flightSearchState.offset+=flights.length;if(moreBtn)moreBtn.style.display=flightSearchState.hasMore?'block':'none';if(rfb)rfb.style.display='inline-flex'}
+async function flightsFallback(from,to,date){const text=await pplxChat([{role:'user',content:'Find 5 real commercial flights from '+from+' to '+to+' on '+date+'. List each as: FLIGHT NUMBER | AIRLINE | DEPARTURE TIME | ARRIVAL TIME | DURATION | APPROX PRICE USD. Only real airlines and realistic times.'}],'You are a flight search assistant. Return flight options in the exact format requested. No preamble.');if(!text)return[];return text.split(/\r?\n/).map(s=>s.trim()).filter(s=>s.length>0&&!/^(#|\*|-{2,})/.test(s)).map(line=>{const p=line.split('|').map(s=>s.trim());if(p.length<3)return null;return{flightNumber:p[0],airline:p[1],departureTime:p[2],arrivalTime:p[3]||'',duration:p[4]||'',price:p[5]||''}}).filter(Boolean)}
+function renderFlightCards(flights,clear){const resEl=document.getElementById('flightResults');if(!resEl)return;const{from,to}=flightSearchState;let html='';flights.forEach(f=>{const num=(f.flightNumber||f.flight_number||'').toString();const airline=(f.airline||'').toString();const depT=(f.departureTime||f.depTime||'').toString();const arrT=(f.arrivalTime||f.arrival_time||'').toString();const dur=(f.duration||'').toString();const price=(f.price||'').toString();const status=(f.status||'scheduled').toString();const stClass='st-'+status.toLowerCase().replace(/[^a-z-]/g,'');const esc=s=>s.replace(/'/g,"\'");html+='<div class="flight-card"><div class="fl-route"><span>'+from+'</span><span class="fl-arrow">\u2192</span><span>'+to+'</span></div><div class="fl-meta"><span class="fl-num">'+num+'</span><span>'+airline+'</span><span class="fl-status-badge '+stClass+'"><span class="fl-status-dot"></span>'+status+'</span></div><div class="fl-times">'+(depT?'<span class="fl-t">'+depT+'</span>':'')+'<span class="fl-dur">'+dur+'</span>'+(arrT?'<span class="fl-t">'+arrT+'</span>':'')+'</div><div class="fl-footer">'+(price?'<span class="fl-price">'+price+'</span>':'<span></span>')+'<button class="btn btn-ghost track-btn" onclick="trackFlight(\''+esc(airline)+'\',\''+esc(num)+'\',\''+esc(flightSearchState.date||'')+'\')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Track</button></div></div>'});if(clear)resEl.innerHTML=html;else resEl.insertAdjacentHTML('beforeend',html)}
+async function trackFlight(airline,flightNumber,date){const modal=document.getElementById('trackModal'),body=document.getElementById('trackModalBody');if(!modal||!body)return;body.innerHTML='<div class="empty-state">Tracking live status...</div>';modal.classList.add('show');try{let data=null;const r=await fetch('/api/flights/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({airline,flightNumber,date})});if(r.ok)data=await r.json();if(!data||!data.flight){const text=await pplxChat([{role:'user',content:'What is the current live status of flight '+airline+' '+flightNumber+' on '+date+'? Include: STATUS, DEPARTURE TIME, GATE, TERMINAL, ARRIVAL TIME, DELAY MINUTES.'}],'You are a flight tracking assistant. Return the status concisely.');data={flight:{text:text||'Status unavailable'}}}renderTrackPanel(data.flight||data,airline,flightNumber)}catch{body.innerHTML='<div class="empty-state">Tracking unavailable. Try again.</div>'}}
+function renderTrackPanel(s,airline,flightNumber){const body=document.getElementById('trackModalBody');if(!body)return;const status=(s.status||'Unknown').toString();const dep=(s.departureTime||s.departure_time||'').toString();const arr=(s.arrivalTime||s.arrival_time||'').toString();const gate=(s.gate||'').toString();const terminal=(s.terminal||'').toString();const delay=(s.delayMinutes||s.delay_minutes||0);const col=/delay|late/i.test(status)?'var(--orange)':/cancel/i.test(status)?'var(--red)':/board|on.?time|departed|arrived|landed|sched/i.test(status)?'var(--green)':'var(--muted)';body.innerHTML='<div class="track-panel"><div class="track-head"><div><div class="track-num">'+airline+' '+flightNumber+'</div><div class="track-status" style="color:'+col+'">'+status+(delay>0?' · '+delay+'m delay':'')+'</div></div></div><div class="track-grid"><div class="track-cell"><div class="tc-lbl">Departure</div><div class="tc-val">'+(dep||'\u2014')+'</div>'+(terminal?'<div class="tc-sub">Terminal '+terminal+'</div>':'')+(gate?'<div class="tc-sub">Gate '+gate+'</div>':'')+'</div><div class="track-cell"><div class="tc-lbl">Arrival</div><div class="tc-val">'+(arr||'\u2014')+'</div></div></div>'+(s.text?'<div class="track-raw">'+(s.text).replace(/</g,'&lt;')+'</div>':'')+'</div>'}
+function closeTrackModal(){const m=document.getElementById('trackModal');if(m)m.classList.remove('show')}
+let flightSearchState={from:'',to:'',date:'',offset:0,results:[],hasMore:false}
 
 /* Shared trips */
 async function searchUserTrips(){const inp=document.getElementById('userSearchInput');const list=document.getElementById('userTripsList');if(!list)return;const username=inp?inp.value.trim():'';list.innerHTML='<div class="empty-state">Searching…</div>';try{const trips=await sbLoadTrips();let filtered=trips;if(username){filtered=trips.filter(t=>{const cb=(t.createdBy||t.created_by||'').toLowerCase();return cb.includes(username.toLowerCase())})}if(!filtered.length){list.innerHTML='<div class="empty-state">No trips found for this user.</div>';return}list.innerHTML=filtered.map(t=>{const initials=(t.city||'?')[0];const dates=[];if(t.depart)dates.push(fmtDate(t.depart));if(t.return)dates.push(fmtDate(t.return));return `<div class="shared-trip" onclick="selectTrip('${t.id}')"><div class="st-avatar">${initials}</div><div class="st-info"><div class="st-city">${t.city||'Unknown'}, ${t.country||''}</div><div class="st-meta">${dates.join(' — ')||'No dates'}${t.createdBy?' · '+t.createdBy:''}</div></div></div>`}).join('')}catch(e){list.innerHTML='<div class="empty-state">Search failed — try again.</div>'}}
