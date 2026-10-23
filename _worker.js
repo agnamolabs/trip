@@ -1,3 +1,5 @@
+import { isAdmin } from './trip-settings.mjs';
+import { handleTripTools, issueSession, toolSession } from './trip-tools.mjs';
 // agnamo · trip — Cloudflare Worker
 // Routes: /api/scan-trip, /api/suggest-packing, /api/health, /schema.sql
 // All AI traffic → Cloudflare AI Gateway → DeepSeek. SPA fallback to index.html.
@@ -1897,8 +1899,10 @@ input,textarea{-webkit-appearance:none;appearance:none}
 <div class="loading-overlay" id="loadingOverlay"><div class="lo-box"><div class="spinner"></div><div class="lo-text" id="loText">Loading…</div><div class="lo-sub" id="loSub"></div></div></div>
 
 <script>
-const AUTH_USERS={'Vrinda':'hawaii-27','Gabe':'hawaii-27','Lux':'hawaii-27','Kian':'hawaii'};const AUTH_KEY='agnamoTripAuth';const AUTH_USER_KEY='agnamoTripUser';
-function checkAuth(){const u=localStorage.getItem(AUTH_USER_KEY);if(u&&AUTH_USERS[u]&&localStorage.getItem(AUTH_KEY)===AUTH_USERS[u])return true;const code=localStorage.getItem(AUTH_KEY);if(code){for(const[name,c]of Object.entries(AUTH_USERS)){if(c===code){localStorage.setItem(AUTH_USER_KEY,name);return true}}}return false}
+const AUTH_USERS={};
+const nativeTripFetch=window.fetch.bind(window);
+window.fetch=(input,init={})=>{const target=new URL(typeof input==='string'?input:input.url,location.href);if(target.origin===location.origin&&target.pathname.startsWith('/api/')){const headers=new Headers(init.headers||(input instanceof Request?input.headers:undefined));const token=sessionStorage.getItem('tripToolSession');if(token)headers.set('Authorization','Bearer '+token);return nativeTripFetch(input,{...init,headers})}return nativeTripFetch(input,init)};const AUTH_KEY='agnamoTripAuth';const AUTH_USER_KEY='agnamoTripUser';
+function checkAuth(){return !!sessionStorage.getItem('tripToolSession')&&Number(sessionStorage.getItem('tripToolExpires'))>Date.now()}
 function currentUser(){return localStorage.getItem(AUTH_USER_KEY)||null}
 function showAuthGate(){
   const g=document.createElement('div');g.className='auth-gate';g.id='authGate';
@@ -1922,12 +1926,12 @@ async function tryAuth(){
   const raw=document.getElementById('authUser').value.trim();
   const code=document.getElementById('authInp').value.trim();
   const name=raw.charAt(0).toUpperCase()+raw.slice(1).toLowerCase();
-  try{const r=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:name,password:code})});const d=await r.json();if(d.valid){localStorage.setItem(AUTH_KEY,code);localStorage.setItem(AUTH_USER_KEY,name);document.getElementById('authGate').remove();initApp()}else{document.getElementById('authErr').classList.add('show');document.getElementById('authInp').value='';document.getElementById('authInp').focus()}}catch{document.getElementById('authErr').classList.add('show');document.getElementById('authInp').value='';document.getElementById('authInp').focus()}
+  try{const r=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:name,password:code})});const d=await r.json();if(d.valid){if(d.token){sessionStorage.setItem('tripToolSession',d.token);sessionStorage.setItem('tripToolExpires',String(Date.now()+3600000))}localStorage.setItem(AUTH_USER_KEY,name);document.getElementById('authGate').remove();initApp()}else{document.getElementById('authErr').classList.add('show');document.getElementById('authInp').value='';document.getElementById('authInp').focus()}}catch{document.getElementById('authErr').classList.add('show');document.getElementById('authInp').value='';document.getElementById('authInp').focus()}
 }
 function logoutUser(){localStorage.removeItem(AUTH_KEY);localStorage.removeItem(AUTH_USER_KEY);location.reload()}
 
 const STORE='agnamoTripPack_v4';
-const SB_URL='https://ioogwysicqqiknjzczhe.supabase.co';const SB_KEY='eyJhbG...3OTA';
+const SB_URL='https://ioogwysicqqiknjzczhe.supabase.co';const SB_KEY='';
 let S=load();let currentDest=null,destResults=[],destTimer=null;
 function load(){try{const s=JSON.parse(localStorage.getItem(STORE));if(s&&s.trips)return s}catch{}return{config:{url:SB_URL,key:SB_KEY},trips:[],activeId:null,localChecklist:{},localCloset:[],localStyle:[]}}
 function save(){localStorage.setItem(STORE,JSON.stringify(S))}
@@ -2223,6 +2227,15 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
+    const providerRoutes=['/api/chat','/api/agents/run','/api/flights/search','/api/flights/track','/api/scan-trip','/api/suggest-packing'];
+    if (providerRoutes.includes(path) && request.method !== 'OPTIONS') {
+      const session=await toolSession(request,env);
+      if(!session)return json({error:'Sign in to use provider tools'},401);
+      if(!isAdmin(env,session.user))return json({error:'Use your approved integration group in Trip AI'},403);
+    }
+    const toolResponse = await handleTripTools(request, env);
+    if (toolResponse) return toolResponse;
+
     // Resolve env at request time
     const DEEPSEEK_KEY = env?.DEEPSEEK_KEY || '';
     const CF_ACCOUNT_ID = env?.CF_ACCOUNT_ID || '';
@@ -2401,13 +2414,14 @@ export default {
     if (path === '/api/auth' && request.method === 'POST') {
       try {
         const { user, password } = await request.json();
-        const AUTH = { 'Vrinda': 'hawaii-27', 'Gabe': 'hawaii-27', 'Lux': 'hawaii-27', 'Kian': 'hawaii' };
+        let AUTH; try { AUTH=env.TRIP_AUTH_USERS ? JSON.parse(env.TRIP_AUTH_USERS) : {}; } catch { return json({valid:false,error:'Server authentication is not configured'},503); }
+        if (!Object.keys(AUTH).length) return json({valid:false,error:'Server authentication is not configured'},503);
         if (user && AUTH[user] && AUTH[user] === password) {
-          return json({ valid: true, user });
+          return json({ valid: true, user, token: await issueSession(env, user) });
         }
         return json({ valid: false }, 401);
       } catch (err) {
-        return json({ valid: false, error: err.message }, 400);
+        return json({ valid: false, error: err.status === 503 ? err.message : 'Authentication failed' }, err.status || 400);
       }
     }
     // ─── GET /api/trips ──────────────────────────────────────────────────────
@@ -2453,13 +2467,14 @@ export default {
     if (path === '/api/auth' && request.method === 'POST') {
       try {
         const { user, password } = await request.json();
-        const AUTH = { 'Vrinda': 'hawaii-27', 'Gabe': 'hawaii-27', 'Lux': 'hawaii-27', 'Kian': 'hawaii' };
+        let AUTH; try { AUTH=env.TRIP_AUTH_USERS ? JSON.parse(env.TRIP_AUTH_USERS) : {}; } catch { return json({valid:false,error:'Server authentication is not configured'},503); }
+        if (!Object.keys(AUTH).length) return json({valid:false,error:'Server authentication is not configured'},503);
         if (user && AUTH[user] && AUTH[user] === password) {
-          return json({ valid: true, user });
+          return json({ valid: true, user, token: await issueSession(env, user) });
         }
         return json({ valid: false }, 401);
       } catch (err) {
-        return json({ valid: false, error: err.message }, 400);
+        return json({ valid: false, error: err.status === 503 ? err.message : 'Authentication failed' }, err.status || 400);
       }
     }
     // ─── GET /api/trips ──────────────────────────────────────────────────────
