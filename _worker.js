@@ -1,3 +1,4 @@
+import { authenticateTrip } from './trip-auth.mjs';
 import { isAdmin } from './trip-settings.mjs';
 import { handleTripTools, issueSession, toolSession } from './trip-tools.mjs';
 // agnamo · trip — Cloudflare Worker
@@ -1928,7 +1929,7 @@ async function tryAuth(){
   const name=raw.charAt(0).toUpperCase()+raw.slice(1).toLowerCase();
   try{const r=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:name,password:code})});const d=await r.json();if(d.valid){if(d.token){sessionStorage.setItem('tripToolSession',d.token);sessionStorage.setItem('tripToolExpires',String(Date.now()+3600000))}localStorage.setItem(AUTH_USER_KEY,name);document.getElementById('authGate').remove();initApp()}else{document.getElementById('authErr').classList.add('show');document.getElementById('authInp').value='';document.getElementById('authInp').focus()}}catch{document.getElementById('authErr').classList.add('show');document.getElementById('authInp').value='';document.getElementById('authInp').focus()}
 }
-function logoutUser(){localStorage.removeItem(AUTH_KEY);localStorage.removeItem(AUTH_USER_KEY);location.reload()}
+function logoutUser(){sessionStorage.removeItem('tripToolSession');sessionStorage.removeItem('tripToolExpires');localStorage.removeItem(AUTH_KEY);localStorage.removeItem(AUTH_USER_KEY);location.reload()}
 
 const STORE='agnamoTripPack_v4';
 const SB_URL='https://ioogwysicqqiknjzczhe.supabase.co';const SB_KEY='';
@@ -2414,9 +2415,7 @@ export default {
     if (path === '/api/auth' && request.method === 'POST') {
       try {
         const { user, password } = await request.json();
-        let AUTH; try { AUTH=env.TRIP_AUTH_USERS ? JSON.parse(env.TRIP_AUTH_USERS) : {}; } catch { return json({valid:false,error:'Server authentication is not configured'},503); }
-        if (!Object.keys(AUTH).length) return json({valid:false,error:'Server authentication is not configured'},503);
-        if (user && AUTH[user] && AUTH[user] === password) {
+        if (await authenticateTrip(env,user,password)) {
           return json({ valid: true, user, token: await issueSession(env, user) });
         }
         return json({ valid: false }, 401);
@@ -2467,9 +2466,7 @@ export default {
     if (path === '/api/auth' && request.method === 'POST') {
       try {
         const { user, password } = await request.json();
-        let AUTH; try { AUTH=env.TRIP_AUTH_USERS ? JSON.parse(env.TRIP_AUTH_USERS) : {}; } catch { return json({valid:false,error:'Server authentication is not configured'},503); }
-        if (!Object.keys(AUTH).length) return json({valid:false,error:'Server authentication is not configured'},503);
-        if (user && AUTH[user] && AUTH[user] === password) {
+        if (await authenticateTrip(env,user,password)) {
           return json({ valid: true, user, token: await issueSession(env, user) });
         }
         return json({ valid: false }, 401);

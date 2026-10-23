@@ -15,8 +15,8 @@ test('incorrect or unknown login cannot mint sessions',async()=>{
  const env=makeEnv();const r=await worker.fetch(auth(user,password),env);assert.equal(r.status,401);assert.equal(env.values.size,0);
  }
 });
-test('missing account configuration fails closed with service-unavailable response',async()=>{
- const env=makeEnv();delete env.TRIP_AUTH_USERS;const r=await worker.fetch(auth(),env);assert.equal(r.status,503);assert.equal((await r.json()).valid,false);
+test('unknown account is rejected when legacy migration fallback is active',async()=>{
+ const env=makeEnv();delete env.TRIP_AUTH_USERS;const r=await worker.fetch(auth(),env);assert.equal(r.status,401);assert.equal((await r.json()).valid,false);
 });
 test('invalid account configuration is a server failure, not invalid credentials',async()=>{
  const env=makeEnv();env.TRIP_AUTH_USERS='{invalid';const r=await worker.fetch(auth(),env);assert.equal(r.status,503);
@@ -47,4 +47,15 @@ test('legacy provider routes cannot bypass shared-key authorization',async()=>{
 test('ordinary authenticated users cannot spend server keys through legacy routes',async()=>{
  const env=makeEnv();const login=await (await worker.fetch(auth('Member','test-only-member-password'),env)).json();
  const r=await worker.fetch(new Request('https://trip.example/api/chat',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+login.token},body:JSON.stringify({messages:[{role:'user',content:'test'}]})}),env);assert.equal(r.status,403);
+});
+
+test('legacy verifier compatibility works without new account configuration',async()=>{
+ const {authenticateTrip}=await import('../trip-auth.mjs');
+ const user='LegacyTestAccount',password='legacy-test-only';
+ const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('trip-legacy:'+user+':'+password));
+ const hash=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
+ const verifiers={[user]:hash};
+ assert.equal(await authenticateTrip({},user,password,verifiers),true);
+ assert.equal(await authenticateTrip({},user,'wrong',verifiers),false);
+ assert.equal(await authenticateTrip({TRIP_AUTH_USERS:JSON.stringify({[user]:'new-test-only'})},user,password,verifiers),false);
 });
