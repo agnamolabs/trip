@@ -2,10 +2,20 @@
 
 Smart packing companion. [trip.agnamo.com](https://trip.agnamo.com)
 
-## Mobile UI prototype
+## Compact Trip UI prototype
 
-The approved compact Trip UI is in `prototypes/trip-mobile/`. Run `npm ci` and `npm run dev` there. A self-contained browser copy is in `preview/index.html`.
+The approved UI and complete runnable source are in `prototypes/trip-mobile/`.
 
-This prototype uses local browser storage. AI chat, agent output, flight/weather data, member roles, and optimization are demonstrations. Image import supports manual booking entry; OCR and the existing backend are not connected. The production frontend and backend remain in their existing locations.
+```sh
+cd prototypes/trip-mobile
+npm ci
+npm run dev
+```
 
-Validation: runtime integrity check, production build, and four Sites worker tests passed.
+Live preview: https://agnamo-trip-preview.luxdev-3821.chatgpt.site
+
+To generate a standalone HTML copy, run `npm run build` followed by `python scripts/make-offline-copy.py` from the prototype directory.
+
+The prototype uses local browser storage. AI chat, agents, flight/weather data, member roles, and optimization are demonstrations. Booking image import supports manual entry; OCR and the production backend are not connected.
+
+Validation: runtime integrity, production build, and four Sites worker tests passed. Production frontend and backend files are unchanged.
