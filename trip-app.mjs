@@ -20,7 +20,11 @@ async function readBody(request,limit){const reader=request.body?.getReader();le
 function mergeUI(previous,incoming,user,tripOwner){
  if(!incoming||typeof incoming!=='object'||Array.isArray(incoming))throw fail('Invalid trip content');
  if((incoming.pages||[]).length>30)throw fail('Whitepages is limited to 30 pages');
- for(const key of ['stops','pages','bookings','clothes'])if(incoming[key]!==undefined&&!Array.isArray(incoming[key]))throw fail('Invalid '+key);
+ for(const key of ['stops','pages','bookings','clothes','discoveries'])if(incoming[key]!==undefined&&!Array.isArray(incoming[key]))throw fail('Invalid '+key);
+ if(incoming.discoveries){
+  if(incoming.discoveries.length>500)throw fail('Keep up to 500 discoveries per trip');
+  const urls=new Set();for(const d of incoming.discoveries){if(!d||typeof d.id!=='string'||typeof d.title!=='string'||!d.title.trim()||d.title.length>500||typeof d.url!=='string'||d.url.length>3000||!['places','trails','events'].includes(d.kind)||!['recommended','dismissed','visited'].includes(d.state))throw fail('Invalid discovery');let url;try{url=new URL(d.url)}catch{throw fail('Invalid discovery URL')}if(url.protocol!=='https:'||url.username||url.password)throw fail('Invalid discovery URL');if(urls.has(d.url))throw fail('Duplicate discovery');urls.add(d.url);if(d.visitedOn&&!/^\d{4}-\d{2}-\d{2}$/.test(d.visitedOn))throw fail('Invalid visited date');}
+ }
  const prior=previous||{},next={...prior,...incoming};
  const oldItems=Array.isArray(prior.items)?prior.items:[];
  if(!Array.isArray(incoming.items))throw fail('Invalid packing list');
