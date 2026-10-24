@@ -1,6 +1,7 @@
 name = "trip"
 compatibility_date = "2024-09-23"
 main = "_worker.js"
+keep_vars = true
 
 [[r2_buckets]]
 binding = "trip_agents"
@@ -12,3 +13,12 @@ id = "e1a47846a214431885a6f62b4d7a938d"
 
 [build]
 command = "node scripts/build-production.mjs"
+
+# Wrangler auto-provisions and retains this named binding across deployments.
+[[d1_databases]]
+binding = "TRIP_DB"
+database_name = "trip-registry"
+migrations_dir = "migrations"
+
+[vars]
+TRIP_STORE_REQUIRED = "d1"
