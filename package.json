@@ -1,0 +1,12 @@
+{
+  "name": "agnamo-trip",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/flights.test.cjs tests/flights.dom.test.cjs",
+    "test:browser": "node --test tests/flights.browser.test.cjs"
+  },
+  "devDependencies": {
+    "linkedom": "^0.18.14",
+    "playwright": "1.62.1"
+  }
+}

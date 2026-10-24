@@ -1765,6 +1765,18 @@ input,textarea{-webkit-appearance:none;appearance:none}
 .track-raw{margin-top:16px;font-size:.78rem;line-height:1.5;color:var(--ink-2);white-space:pre-wrap;background:var(--surface-2);border-radius:var(--r-sm);padding:12px}
 .flight-card .track-btn{padding:5px 12px;font-size:.72rem;font-weight:600;display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line)}
 .flight-card .track-btn:hover{border-color:var(--orange);color:var(--orange)}
+/* Flight estimates must remain readable at narrow widths and with hostile long strings. */
+.flight-notice{font-size:.76rem;line-height:1.6;color:var(--ink-2);margin:10px 0 16px;overflow-wrap:anywhere}
+.flight-card,.track-panel{overflow-wrap:anywhere;min-width:0}
+.flight-card .fl-meta,.flight-card .fl-footer,.flight-card .fl-times{flex-wrap:wrap}
+.flight-card .fl-meta>*{min-width:0;max-width:100%}
+.flight-card .fl-times>*{min-width:0;max-width:100%;flex:1}
+.flight-card .fl-times .fl-t:last-child{text-align:right}
+.flight-card .fl-price{font-size:.9rem;min-width:0;max-width:100%}
+.flight-card .track-btn,.track-close{min-height:44px;min-width:44px}
+.track-grid{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:16px}
+#refreshFlightsBtn:disabled,#loadMoreFlightsBtn:disabled{opacity:.55;cursor:wait}
+@media(max-width:400px){.track-grid{grid-template-columns:1fr}.flight-card .fl-footer{align-items:flex-start}.flight-card .fl-price{flex-basis:100%}}
 </style>
 </head>
 <body>
@@ -1795,11 +1807,12 @@ input,textarea{-webkit-appearance:none;appearance:none}
     <div class="section-label" style="margin-bottom:14px">Weather at destination</div>
     <div id="weatherBlock"></div>
     <div class="section-label" style="margin:20px 0 10px">Flight search</div>
-    <div class="field-row" style="margin-bottom:10px"><input id="fromInput" class="inp" type="text" placeholder="From (SEA)" autocapitalize="characters"><input id="toInput" class="inp" type="text" placeholder="To (DFW)" autocapitalize="characters"></div>
-    <div class="btn-row" style="margin-bottom:12px"><button class="btn btn-ghost" style="flex:1" onclick="searchFlights()">Search flights →</button><button class="btn btn-ghost" id="refreshFlightsBtn" onclick="refreshFlights()" style="display:none;padding:14px 16px" title="Refresh flights"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button></div>
-    <div id="flightResults"></div>
-    <button class="btn btn-ghost btn-block fl-load-more" id="loadMoreFlightsBtn" onclick="loadMoreFlights()" style="display:none;margin-bottom:12px">Load more flights</button>
-    <div id="trackModal" class="track-modal" onclick="if(event.target===this)closeTrackModal()"><div class="track-modal-card"><div class="track-modal-head"><span class="section-label" style="color:var(--orange)">Flight tracking</span><button class="track-close" onclick="closeTrackModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div><div id="trackModalBody"></div></div></div>
+    <div class="field-row" style="margin-bottom:10px"><input id="fromInput" aria-label="Origin airport code" maxlength="3" class="inp" type="text" placeholder="From (SEA)" autocapitalize="characters"><input id="toInput" aria-label="Destination airport code" maxlength="3" class="inp" type="text" placeholder="To (DFW)" autocapitalize="characters"></div>
+    <div class="btn-row" style="margin-bottom:12px"><button class="btn btn-ghost" style="flex:1" onclick="searchFlights()">Search flights →</button><button class="btn btn-ghost" id="refreshFlightsBtn" onclick="refreshFlights()" style="display:none;padding:14px 16px" title="Refresh flight suggestions" aria-label="Refresh flight suggestions"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button></div>
+    <p class="flight-notice">AI-generated suggestions · Unverified. Confirm availability, prices, times, gates and status directly with the airline or airport. Additional suggestions may repeat; these are not verified search pages.</p>
+    <div id="flightResults" aria-live="polite"></div>
+    <button class="btn btn-ghost btn-block fl-load-more" id="loadMoreFlightsBtn" onclick="loadMoreFlights()" style="display:none;margin-bottom:12px">Find more suggestions</button>
+    <div id="trackModal" class="track-modal" onclick="if(event.target===this)closeTrackModal()"><div class="track-modal-card"><div class="track-modal-head"><span class="section-label" style="color:var(--orange)">Flight status estimate</span><button class="track-close" aria-label="Close flight status" onclick="closeTrackModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div><div id="trackModalBody"></div></div></div>
     <div class="btn-row"><button class="btn btn-dark btn-block" onclick="goScreen('plan')">Plan itinerary →</button></div>
   </div>
   <div id="tripsList" class="trips-list hidden"><div class="list-label">My Trips</div><div id="tripsListContent"></div></div>
@@ -2125,17 +2138,105 @@ function calNav(dir){calMonth+=dir;if(calMonth<0){calMonth=11;calYear--}if(calMo
 function renderChat(){const box=document.getElementById('chatMessages');if(!box)return;const t=activeTrip();if(!t){box.innerHTML='<div class="empty-state">Set up a trip first, then ask me anything about it.</div>';return}if(!Array.isArray(t.chatHistory))t.chatHistory=[];if(!t.chatHistory.length){box.innerHTML='<div class="empty-state" id="chatEmpty">Ask me anything about your trip — packing, weather, events, restaurants, itinerary…</div>';return}box.innerHTML=t.chatHistory.map(m=>\`<div class="msg \${m.role==='user'?'user':'assistant'}"><div class="bubble">\${m.content.replace(/</g,'&lt;')}</div></div>\`).join('');box.scrollTop=box.scrollHeight}
 async function sendChat(){const inp=document.getElementById('chatInput');const box=document.getElementById('chatMessages');if(!inp||!box)return;const text=inp.value.trim();if(!text)return;const t=activeTrip();if(!t){toast('Set up a trip first');return}if(!Array.isArray(t.chatHistory))t.chatHistory=[];const empty=box.querySelector('#chatEmpty');if(empty)empty.remove();t.chatHistory.push({role:'user',content:text});box.insertAdjacentHTML('beforeend',\`<div class="msg user"><div class="bubble">\${text.replace(/</g,'&lt;')}</div></div>\`);inp.value='';box.scrollTop=box.scrollHeight;save();const typing=box.querySelector('.typing-bubble');if(typing)typing.remove();box.insertAdjacentHTML('beforeend','<div class="msg assistant"><div class="bubble typing-bubble">Thinking…</div></div>');box.scrollTop=box.scrollHeight;let sys='You are a helpful trip planning assistant. Keep responses concise and practical. The user is planning a trip';if(t.city)sys+=\` to \${t.city}, \${t.country}\`;if(t.depart)sys+=\` departing \${t.depart}\`;if(t.return)sys+=\` returning \${t.return}\`;if(t.weather){const wx=t.weather;sys+=\`. Current weather: \${Math.round(wx.current?.temperature_2m)}°C, \${W_LABEL[wx.current?.weather_code]||'mixed'}\`}sys+='.';try{const reply=await pplxChat(t.chatHistory.slice(-12),sys);const tb=box.querySelector('.typing-bubble');if(tb)tb.parentElement.remove();if(!reply){toast('AI could not respond');return}t.chatHistory.push({role:'assistant',content:reply});box.insertAdjacentHTML('beforeend',\`<div class="msg assistant"><div class="bubble">\${reply.replace(/</g,'&lt;')}</div></div>\`);box.scrollTop=box.scrollHeight;save();sbSaveTrip(t)}catch(e){const tb=box.querySelector('.typing-bubble');if(tb)tb.parentElement.remove();toast('Chat error')}}
 
-/* Flight search */
-async function searchFlights(){const fromEl=document.getElementById('fromInput'),toEl=document.getElementById('toInput');if(!fromEl||!toEl){toast('Flight search inputs not found');return}const from=fromEl.value.trim().toUpperCase(),to=toEl.value.trim().toUpperCase();if(!from||!to){toast('Enter origin and destination airport codes');return}const t=activeTrip();const depDate=t&&t.depart?t.depart:'soon';flightSearchState={from,to,date:depDate,offset:0,results:[],hasMore:false};await runFlightSearch(true)}
-async function refreshFlights(){if(!flightSearchState.from||!flightSearchState.to){toast('Search flights first');return}flightSearchState.offset=0;flightSearchState.results=[];flightSearchState.hasMore=false;await runFlightSearch(true)}
-async function loadMoreFlights(){if(!flightSearchState.from||!flightSearchState.to){toast('Search flights first');return}await runFlightSearch(false)}
-async function runFlightSearch(clear){const{from,to,date}=flightSearchState;const resEl=document.getElementById('flightResults'),moreBtn=document.getElementById('loadMoreFlightsBtn'),rfb=document.getElementById('refreshFlightsBtn');if(clear&&resEl)resEl.innerHTML='<div class="empty-state">Searching flights...</div>';if(moreBtn)moreBtn.style.display='none';let flights=[];try{const r=await fetch('/api/flights/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from,to,date,offset:flightSearchState.offset})});if(r.ok){const d=await r.json();flights=Array.isArray(d.flights)?d.flights:(Array.isArray(d)?d:[]);flightSearchState.hasMore=!!d.has_more}else{flights=await flightsFallback(from,to,date)}}catch{flights=await flightsFallback(from,to,date)}if(!flights.length&&flightSearchState.offset===0){if(resEl)resEl.innerHTML='<div class="empty-state">No flights found. Try again.</div>';if(moreBtn)moreBtn.style.display='none';if(rfb)rfb.style.display='inline-flex';return}renderFlightCards(flights,clear);flightSearchState.results=flightSearchState.results.concat(flights);flightSearchState.offset+=flights.length;if(moreBtn)moreBtn.style.display=flightSearchState.hasMore?'block':'none';if(rfb)rfb.style.display='inline-flex'}
-async function flightsFallback(from,to,date){const text=await pplxChat([{role:'user',content:'Find 5 real commercial flights from '+from+' to '+to+' on '+date+'. List each as: FLIGHT NUMBER | AIRLINE | DEPARTURE TIME | ARRIVAL TIME | DURATION | APPROX PRICE USD. Only real airlines and realistic times.'}],'You are a flight search assistant. Return flight options in the exact format requested. No preamble.');if(!text)return[];return text.split(/\\r?\\n/).map(s=>s.trim()).filter(s=>s.length>0&&!/^(#|\\*|-{2,})/.test(s)).map(line=>{const p=line.split('|').map(s=>s.trim());if(p.length<3)return null;return{flightNumber:p[0],airline:p[1],departureTime:p[2],arrivalTime:p[3]||'',duration:p[4]||'',price:p[5]||''}}).filter(Boolean)}
-function renderFlightCards(flights,clear){const resEl=document.getElementById('flightResults');if(!resEl)return;const{from,to}=flightSearchState;let html='';flights.forEach(f=>{const num=(f.flightNumber||f.flight_number||'').toString();const airline=(f.airline||'').toString();const depT=(f.departureTime||f.depTime||'').toString();const arrT=(f.arrivalTime||f.arrival_time||'').toString();const dur=(f.duration||'').toString();const price=(f.price||'').toString();const status=(f.status||'scheduled').toString();const stClass='st-'+status.toLowerCase().replace(/[^a-z-]/g,'');const esc=s=>s.replace(/'/g,"\\'");html+='<div class="flight-card"><div class="fl-route"><span>'+from+'</span><span class="fl-arrow">\\u2192</span><span>'+to+'</span></div><div class="fl-meta"><span class="fl-num">'+num+'</span><span>'+airline+'</span><span class="fl-status-badge '+stClass+'"><span class="fl-status-dot"></span>'+status+'</span></div><div class="fl-times">'+(depT?'<span class="fl-t">'+depT+'</span>':'')+'<span class="fl-dur">'+dur+'</span>'+(arrT?'<span class="fl-t">'+arrT+'</span>':'')+'</div><div class="fl-footer">'+(price?'<span class="fl-price">'+price+'</span>':'<span></span>')+'<button class="btn btn-ghost track-btn" onclick="trackFlight(\\''+esc(airline)+'\\',\\''+esc(num)+'\\',\\''+esc(flightSearchState.date||'')+'\\')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Track</button></div></div>'});if(clear)resEl.innerHTML=html;else resEl.insertAdjacentHTML('beforeend',html)}
-async function trackFlight(airline,flightNumber,date){const modal=document.getElementById('trackModal'),body=document.getElementById('trackModalBody');if(!modal||!body)return;body.innerHTML='<div class="empty-state">Tracking live status...</div>';modal.classList.add('show');try{let data=null;const r=await fetch('/api/flights/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({airline,flightNumber,date})});if(r.ok)data=await r.json();if(!data||!data.flight){const text=await pplxChat([{role:'user',content:'What is the current live status of flight '+airline+' '+flightNumber+' on '+date+'? Include: STATUS, DEPARTURE TIME, GATE, TERMINAL, ARRIVAL TIME, DELAY MINUTES.'}],'You are a flight tracking assistant. Return the status concisely.');data={flight:{text:text||'Status unavailable'}}}renderTrackPanel(data.flight||data,airline,flightNumber)}catch{body.innerHTML='<div class="empty-state">Tracking unavailable. Try again.</div>'}}
-function renderTrackPanel(s,airline,flightNumber){const body=document.getElementById('trackModalBody');if(!body)return;const status=(s.status||'Unknown').toString();const dep=(s.departureTime||s.departure_time||'').toString();const arr=(s.arrivalTime||s.arrival_time||'').toString();const gate=(s.gate||'').toString();const terminal=(s.terminal||'').toString();const delay=(s.delayMinutes||s.delay_minutes||0);const col=/delay|late/i.test(status)?'var(--orange)':/cancel/i.test(status)?'var(--red)':/board|on.?time|departed|arrived|landed|sched/i.test(status)?'var(--green)':'var(--muted)';body.innerHTML='<div class="track-panel"><div class="track-head"><div><div class="track-num">'+airline+' '+flightNumber+'</div><div class="track-status" style="color:'+col+'">'+status+(delay>0?' · '+delay+'m delay':'')+'</div></div></div><div class="track-grid"><div class="track-cell"><div class="tc-lbl">Departure</div><div class="tc-val">'+(dep||'\\u2014')+'</div>'+(terminal?'<div class="tc-sub">Terminal '+terminal+'</div>':'')+(gate?'<div class="tc-sub">Gate '+gate+'</div>':'')+'</div><div class="track-cell"><div class="tc-lbl">Arrival</div><div class="tc-val">'+(arr||'\\u2014')+'</div></div></div>'+(s.text?'<div class="track-raw">'+(s.text).replace(/</g,'&lt;')+'</div>':'')+'</div>'}
-function closeTrackModal(){const m=document.getElementById('trackModal');if(m)m.classList.remove('show')}
-let flightSearchState={from:'',to:'',date:'',offset:0,results:[],hasMore:false}
+/* Flight search: model output is always unverified, even when it claims otherwise. */
+const FLIGHT_NOTICE='AI-generated suggestions · Unverified. Availability, prices, times, gates and status may be inaccurate. Confirm directly with the airline or airport before booking or traveling.';
+function flightText(value){return typeof value==='string'?value.slice(0,500):typeof value==='number'&&Number.isFinite(value)?String(value):''}
+function flightRecord(value){return value!==null&&typeof value==='object'&&!Array.isArray(value)}
+function cleanFlight(value){
+  if(!flightRecord(value))return null;
+  const airline=flightText(value.airline),flightNumber=flightText(value.flightNumber||value.flight_number);
+  if(!airline||!flightNumber)return null;
+  return {airline,flightNumber,departureTime:flightText(value.departureTime||value.depTime||value.departure_time),arrivalTime:flightText(value.arrivalTime||value.arrival_time),duration:flightText(value.duration),price:flightText(value.price),status:flightText(value.status)};
+}
+function flightIdentity(f){return [f.airline,f.flightNumber].map(v=>v.toLowerCase().replace(/\\s+/g,'')).join('|')}
+function flightNode(tag,className,text){const node=document.createElement(tag);node.className=className;if(text!==undefined)node.textContent=flightText(text);return node}
+function flightMessage(text,append=false){const el=document.getElementById('flightResults');if(!el)return;el.querySelectorAll('.flight-message').forEach(n=>n.remove());if(!append)el.replaceChildren();el.append(flightNode('div','empty-state flight-message',text))}
+let flightSearchState={from:'',to:'',date:'',offset:0,results:[],hasMore:false,busy:false};
+let flightController=null,trackController=null,trackRequest=0;
+async function searchFlights(){
+  const from=document.getElementById('fromInput')?.value.trim().toUpperCase(),to=document.getElementById('toInput')?.value.trim().toUpperCase();
+  if(!/^[A-Z]{3}$/.test(from||'')||!/^[A-Z]{3}$/.test(to||'')||from===to){toast('Enter two different 3-letter airport codes');return}
+  flightController?.abort();
+  flightSearchState={from,to,date:activeTrip()?.depart||'soon',offset:0,results:[],hasMore:false,busy:false};
+  await runFlightSearch(true);
+}
+async function refreshFlights(){
+  if(!flightSearchState.from){toast('Search flights first');return}
+  flightController?.abort();
+  flightSearchState={...flightSearchState,offset:0,results:[],hasMore:false,busy:false};
+  await runFlightSearch(true);
+}
+async function loadMoreFlights(){if(flightSearchState.hasMore&&!flightSearchState.busy)await runFlightSearch(false)}
+async function runFlightSearch(clear){
+  const state=flightSearchState;if(state.busy)return;
+  const controller=new AbortController();flightController=controller;state.busy=true;
+  const more=document.getElementById('loadMoreFlightsBtn'),refresh=document.getElementById('refreshFlightsBtn');
+  if(clear)flightMessage('Searching unverified flight suggestions…');
+  if(more)more.disabled=true;
+  if(refresh){refresh.style.display='inline-flex';refresh.disabled=true}
+  const timeout=setTimeout(()=>controller.abort(),30000);
+  try{
+    const r=await fetch('/api/flights/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from:state.from,to:state.to,date:state.date,offset:state.offset}),signal:controller.signal});
+    if(!r.ok)throw new Error('Search failed');
+    const data=await r.json();
+    if(!flightRecord(data)||!Array.isArray(data.flights))throw new Error('Invalid flight response');
+    if(state!==flightSearchState)return;
+    const flights=data.flights.slice(0,30).map(cleanFlight).filter(Boolean),seen=new Set(state.results.map(flightIdentity));
+    const unique=flights.filter(f=>{const key=flightIdentity(f);if(seen.has(key))return false;seen.add(key);return true});
+    state.offset+=flights.length;state.results.push(...unique);
+    // This is a request for more model suggestions, never a verified provider cursor/total.
+    state.hasMore=data.can_request_more===true&&unique.length>0&&state.offset<100;
+    renderFlightCards(unique,clear);
+    if(!unique.length)flightMessage(clear?'No flight suggestions returned. Availability has not been checked.':'No additional unique suggestions returned.',!clear);
+  }catch{
+    if(state!==flightSearchState)return;
+    flightMessage(clear?'Flight search unavailable. Try Refresh.':'Could not load more suggestions. Existing results retained; try again.',!clear);
+  }finally{
+    clearTimeout(timeout);
+    if(state===flightSearchState){state.busy=false;if(more){more.disabled=false;more.style.display=state.hasMore?'block':'none'}if(refresh)refresh.disabled=false}
+  }
+}
+function renderFlightCards(flights,clear){
+  const el=document.getElementById('flightResults');if(!el)return;
+  if(clear)el.replaceChildren();else el.querySelectorAll('.flight-message').forEach(n=>n.remove());
+  const {from,to,date}=flightSearchState;
+  for(const value of flights){
+    const f=cleanFlight(value);if(!f)continue;
+    const card=flightNode('div','flight-card'),route=flightNode('div','fl-route'),meta=flightNode('div','fl-meta'),times=flightNode('div','fl-times'),footer=flightNode('div','fl-footer');
+    route.append(flightNode('span','',from),flightNode('span','fl-arrow','→'),flightNode('span','',to));
+    meta.append(flightNode('span','fl-num',f.flightNumber),flightNode('span','',f.airline),flightNode('span','fl-status-badge','Unverified'));
+    times.append(flightNode('span','fl-t',f.departureTime||'—'),flightNode('span','fl-dur',f.duration),flightNode('span','fl-t',f.arrivalTime||'—'));
+    const button=flightNode('button','btn btn-ghost track-btn','Status estimate');button.type='button';
+    button.addEventListener('click',()=>trackFlight(f.airline,f.flightNumber,date));
+    footer.append(flightNode('span','fl-price',f.price?'Est. '+f.price:'Price unverified'),button);
+    card.append(route,meta,times,footer);el.append(card);
+  }
+}
+async function trackFlight(airline,flightNumber,date){
+  const modal=document.getElementById('trackModal'),body=document.getElementById('trackModalBody');if(!modal||!body)return;
+  trackController?.abort();const controller=new AbortController();trackController=controller;const id=++trackRequest;
+  body.replaceChildren(flightNode('div','empty-state','Requesting an unverified status estimate…'));modal.classList.add('show');
+  const timeout=setTimeout(()=>controller.abort(),30000);
+  try{
+    const r=await fetch('/api/flights/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({airline,flightNumber,date}),signal:controller.signal});
+    if(!r.ok)throw new Error('Tracking failed');
+    const data=await r.json();if(!flightRecord(data)||!flightRecord(data.flight)||!Object.values(data.flight).some(v=>flightText(v)))throw new Error('Invalid status');
+    if(id===trackRequest)renderTrackPanel(data.flight,airline,flightNumber);
+  }catch{if(id===trackRequest)body.replaceChildren(flightNode('div','empty-state','Status estimate unavailable. Check directly with the airline or airport.'))}
+  finally{clearTimeout(timeout)}
+}
+function renderTrackPanel(value,airline,flightNumber){
+  const body=document.getElementById('trackModalBody');if(!body)return;
+  const s=flightRecord(value)?value:{},panel=flightNode('div','track-panel'),grid=flightNode('div','track-grid');
+  panel.append(flightNode('div','track-num',flightText(airline)+' '+flightText(flightNumber)),flightNode('p','flight-notice',FLIGHT_NOTICE),flightNode('div','track-status','Reported estimate: '+(flightText(s.status)||'Unknown')));
+  for(const [label,time,extra]of [['Departure',s.departureTime||s.departure_time,[['Terminal',s.terminal],['Gate',s.gate]]],['Arrival',s.arrivalTime||s.arrival_time,[]]]){
+    const cell=flightNode('div','track-cell');cell.append(flightNode('div','tc-lbl',label),flightNode('div','tc-val',flightText(time)||'—'));
+    for(const [name,v]of extra)if(flightText(v))cell.append(flightNode('div','tc-sub',name+' (unverified): '+flightText(v)));
+    grid.append(cell);
+  }
+  panel.append(grid);if(flightText(s.text))panel.append(flightNode('div','track-raw',s.text));body.replaceChildren(panel);
+}
+function closeTrackModal(){++trackRequest;trackController?.abort();document.getElementById('trackModal')?.classList.remove('show')}
 
 /* Shared trips */
 async function searchUserTrips(){const inp=document.getElementById('userSearchInput');const list=document.getElementById('userTripsList');if(!list)return;const username=inp?inp.value.trim():'';list.innerHTML='<div class="empty-state">Searching…</div>';try{const trips=await sbLoadTrips();let filtered=trips;if(username){filtered=trips.filter(t=>{const cb=(t.createdBy||t.created_by||'').toLowerCase();return cb.includes(username.toLowerCase())})}if(!filtered.length){list.innerHTML='<div class="empty-state">No trips found for this user.</div>';return}list.innerHTML=filtered.map(t=>{const initials=(t.city||'?')[0];const dates=[];if(t.depart)dates.push(fmtDate(t.depart));if(t.return)dates.push(fmtDate(t.return));return \`<div class="shared-trip" onclick="selectTrip('\${t.id}')"><div class="st-avatar">\${initials}</div><div class="st-info"><div class="st-city">\${t.city||'Unknown'}, \${t.country||''}</div><div class="st-meta">\${dates.join(' — ')||'No dates'}\${t.createdBy?' · '+t.createdBy:''}</div></div></div>\`}).join('')}catch(e){list.innerHTML='<div class="empty-state">Search failed — try again.</div>'}}
@@ -2222,6 +2323,44 @@ function json(data, status = 200) {
     headers: { ...CORS, 'Content-Type': 'application/json' },
   });
 }
+
+// Only known scalar fields can leave the model boundary. Never trust verification claims.
+function flightString(value) { return typeof value === 'string' ? value.slice(0, 500) : typeof value === 'number' && Number.isFinite(value) ? String(value) : ''; }
+function flightObject(value) { return value !== null && typeof value === 'object' && !Array.isArray(value); }
+function parseFlightOutput(data) {
+  const content = data?.choices?.[0]?.message?.content;
+  if (typeof content !== 'string') throw new Error('Invalid model response');
+  return JSON.parse(content.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, ''));
+}
+function normalizeFlightResults(value) {
+  if (value === null) return [];
+  const list = Array.isArray(value) ? value : flightObject(value) ? [value.flights, value.results, value.data].find(Array.isArray) : undefined;
+  if (!list) throw new Error('Invalid model flight list');
+  const seen = new Set();
+  return list.slice(0, 30).filter(flightObject).map(f => {
+    const result = {};
+    for (const field of ['airline','flightNumber','departureTime','arrivalTime','duration','price','status']) result[field] = flightString(f[field]);
+    result.flightNumber ||= flightString(f.flight_number);
+    result.departureTime ||= flightString(f.depTime || f.departure_time);
+    result.arrivalTime ||= flightString(f.arrival_time);
+    return result;
+  }).filter(f => {
+    if (!f.airline || !f.flightNumber) return false;
+    const key = [f.airline,f.flightNumber].map(v => v.toLowerCase().replace(/\s+/g, '')).join('|');
+    if (seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+}
+function normalizeFlightStatus(value) {
+  if (!flightObject(value)) throw new Error('Invalid model flight status');
+  const result = {};
+  for (const field of ['status','departureTime','arrivalTime','gate','terminal','text']) result[field] = flightString(value[field]);
+  result.departureTime ||= flightString(value.departure_time);
+  result.arrivalTime ||= flightString(value.arrival_time);
+  if (!Object.values(result).some(Boolean)) throw new Error('Empty model flight status');
+  return result;
+}
+const FLIGHT_VERIFICATION = { source: 'perplexity', verified: false, verification_status: 'ai_generated_unverified', pagination_supported: false };
 
 export default {
   async fetch(request, env) {
@@ -2366,50 +2505,37 @@ export default {
         return json({ error: err.message }, 500);
       }
     }
-    // ─── POST /api/flights/search — search flights via Perplexity with pagination ───
-    if (path === '/api/flights/search' && request.method === 'POST') {
+    // Flight suggestions and status estimates: no authoritative provider is configured.
+    if ((path === '/api/flights/search' || path === '/api/flights/track') && request.method === 'POST') {
+      let input;
+      try { input = await request.json(); } catch { return json({ error: 'Invalid request JSON' }, 400); }
+      if (!flightObject(input)) return json({ error: 'Invalid request' }, 400);
+      const searching = path.endsWith('/search');
+      const { from, to, date, airline, flightNumber } = input;
+      if (typeof date !== 'string' || !(date === 'soon' || /^\d{4}-\d{2}-\d{2}$/.test(date))) return json({ error: 'A date is required' }, 400);
+      const pageOffset = input.offset === undefined ? 0 : input.offset;
+      if (searching ? (typeof from !== 'string' || typeof to !== 'string' || !/^[A-Z]{3}$/.test(from) || !/^[A-Z]{3}$/.test(to) || from === to || !Number.isInteger(pageOffset) || pageOffset < 0 || pageOffset >= 100) : (typeof airline !== 'string' || !airline.trim() || airline.length > 500 || typeof flightNumber !== 'string' || !flightNumber.trim() || flightNumber.length > 500)) return json({ error: 'Invalid flight query' }, 400);
+      const pplxKey = env.PPLX_KEY || '';
+      if (!pplxKey) return json({ error: 'Flight estimates unavailable' }, 503);
+      const sysPrompt = searching
+        ? 'Suggest possible flights for research, not confirmed availability. Return ONLY a JSON array of up to 10 objects with string fields airline, flightNumber, departureTime, arrivalTime, duration, price, status. Prices and status are unverified estimates; leave unknown values empty. The offset is exploratory, not an authoritative result cursor. Avoid repeating earlier common suggestions when offset is nonzero.'
+        : 'Return ONLY a JSON object with string fields status, departureTime, arrivalTime, gate, terminal. This is an unverified research estimate, not live tracking. Leave unknown fields empty. Do not invent gates, times or status.';
       try {
-        const { from, to, date, offset } = await request.json();
-        if (!from || !to || !date) return json({ error: 'from, to, date required' }, 400);
-        const pageOffset = Math.max(0, parseInt(offset) || 0);
-        const pplxKey = env.PPLX_KEY || '';
-        if (!pplxKey) return json({ error: 'PPLX_KEY not configured' }, 500);
-        const sysPrompt = 'You are a real-time flight search assistant. Return ONLY a JSON array (no markdown, no prose, no code fences) of 10-15 real flights from ' + String(from) + ' to ' + String(to) + ' on ' + String(date) + '. Start at result #' + (pageOffset + 1) + ' (offset ' + pageOffset + ') — if offset > 0, skip the first ' + pageOffset + ' flights and return the next batch. Each flight object must have fields: airline (string), flightNumber (string), departureTime (string), arrivalTime (string), aircraft (string), gate (string), status (string: on-time, delayed, cancelled, boarding, scheduled), duration (string), price (string), stops (integer, 0 = nonstop). Use real airline names, real flight numbers, and realistic times for that date and route. Output ONLY the JSON array.';
         const res = await fetch('https://api.perplexity.ai/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + pplxKey },
-          body: JSON.stringify({ model: 'sonar', messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: 'Search flights from ' + from + ' to ' + to + ' on ' + date + ', offset ' + pageOffset }] }),
+          body: JSON.stringify({ model: 'sonar', messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: JSON.stringify(searching ? { from, to, date, offset: pageOffset } : { airline, flightNumber, date }) }] }),
+          signal: AbortSignal.timeout(25000),
         });
-        if (!res.ok) return json({ error: 'Perplexity ' + res.status }, 502);
-        const data = await res.json();
-        const raw = (data.choices?.[0]?.message?.content || '').trim();
-        let flights;
-        try { flights = JSON.parse(raw); } catch { const m = raw.match(/\[[\s\S]*\]/); try { flights = m ? JSON.parse(m[0]) : []; } catch { flights = []; } }
-        if (!Array.isArray(flights)) { const vals = Object.values(flights).filter(v => Array.isArray(v)); flights = vals.length ? vals[0] : []; }
-        return json({ flights, offset: pageOffset, has_more: flights.length >= 10 });
-      } catch (err) { return json({ error: err.message }, 500); }
-    }
-    // ─── POST /api/flights/track — live flight status via Perplexity ───
-    if (path === '/api/flights/track' && request.method === 'POST') {
-      try {
-        const { airline, flightNumber, date } = await request.json();
-        if (!airline || !flightNumber || !date) return json({ error: 'airline, flightNumber, date required' }, 400);
-        const pplxKey = env.PPLX_KEY || '';
-        if (!pplxKey) return json({ error: 'PPLX_KEY not configured' }, 500);
-        const sysPrompt = 'You are a live flight tracking assistant. Return ONLY a JSON object (no markdown, no prose) with the current real-time status of ' + String(airline) + ' flight ' + String(flightNumber) + ' on ' + String(date) + '. Include fields: airline, flightNumber, status (departed, arrived, delayed, cancelled, scheduled, boarding), departureTime, arrivalTime, gate, terminal, delayMinutes (integer), aircraft, origin, destination. Output ONLY the JSON object.';
-        const res = await fetch('https://api.perplexity.ai/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + pplxKey },
-          body: JSON.stringify({ model: 'sonar', messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: 'Track ' + airline + ' flight ' + flightNumber + ' on ' + date }] }),
-        });
-        if (!res.ok) return json({ error: 'Perplexity ' + res.status }, 502);
-        const data = await res.json();
-        const raw = (data.choices?.[0]?.message?.content || '').trim();
-        let status;
-        try { status = JSON.parse(raw); } catch { const m = raw.match(/\{[\s\S]*\}/); try { status = m ? JSON.parse(m[0]) : {}; } catch { status = {}; } }
-        if (!status || typeof status !== 'object') status = {};
-        return json({ flight: status });
-      } catch (err) { return json({ error: err.message }, 500); }
+        if (!res.ok) return json({ error: 'Flight estimate provider unavailable' }, 502);
+        const parsed = parseFlightOutput(await res.json());
+        const metadata = { ...FLIGHT_VERIFICATION, generated_at: new Date().toISOString() };
+        if (searching) {
+          const flights = normalizeFlightResults(parsed);
+          return json({ ...metadata, flights, offset: pageOffset, has_more: false, can_request_more: flights.length > 0 && pageOffset + flights.length < 100 });
+        }
+        return json({ ...metadata, flight: normalizeFlightStatus(parsed) });
+      } catch { return json({ error: 'Flight estimate provider returned an invalid or unavailable response' }, 502); }
     }
     // ─── /api/auth ──────────────────────────────────────────────────────────
     if (path === '/api/auth' && request.method === 'POST') {
