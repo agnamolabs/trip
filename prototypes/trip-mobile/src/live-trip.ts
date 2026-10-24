@@ -1,14 +1,15 @@
+import type {Discovery} from './trip-planning';
 import {apiRequest,credentials} from './integration-api';
 export const isProduction=()=>(globalThis as typeof globalThis&{__TRIP_PRODUCTION__?:boolean}).__TRIP_PRODUCTION__===true;
-export type LiveStop={id:string;title:string;time:string;duration:number;place:string;day:number;date?:string;fixed?:boolean;sourceUrl?:string;lat?:number;lon?:number};
+export type LiveStop={id:string;title:string;time:string;duration:number;place:string;day:number;date?:string;fixed?:boolean;sourceUrl?:string;discoveryId?:string;visitedOn?:string;lat?:number;lon?:number};
 export type LiveItem={id:string;name:string;qty:number;packed:Record<string,number>;shared?:boolean;owner?:string};
 export type LivePage={id:string;title:string;text:string};
 export type LiveBooking={id:string;route:string;flight:string;date:string;time:string;image:string;bookingRef?:string};
 export type LiveClothing={id:string;src:string;name:string;owner?:string};
-export type TripUi={stops:LiveStop[];items:LiveItem[];pages:LivePage[];bookings:LiveBooking[];clothes:LiveClothing[];members:{name:string;role:string}[]};
+export type TripUi={discoveries:Discovery[];stops:LiveStop[];items:LiveItem[];pages:LivePage[];bookings:LiveBooking[];clothes:LiveClothing[];members:{name:string;role:string}[]};
 export type LegacyTrip=Record<string,unknown>&{id:string;city?:string;depart?:string;return_date?:string;created_by?:string;ui?:Partial<TripUi>};
 export type LiveWeather={daily?:{time:string[];temperature_2m_max:number[];temperature_2m_min:number[];precipitation_probability_max?:number[]};current?:{temperature_2m?:number}};
-export const emptyTripUi=():TripUi=>({stops:[],items:[],pages:[],bookings:[],clothes:[],members:[]});
+export const emptyTripUi=():TripUi=>({discoveries:[],stops:[],items:[],pages:[],bookings:[],clothes:[],members:[]});
 const text=(value:unknown)=>typeof value==='string'?value:'';
 export function tripOwner(trip:LegacyTrip){return text(trip.created_by)||text(trip.createdBy)}
 export function readTripUi(trip:LegacyTrip,user:string):TripUi{
@@ -22,7 +23,7 @@ export function readTripUi(trip:LegacyTrip,user:string):TripUi{
  const shared=Array.isArray(trip.shared_with)?trip.shared_with:Array.isArray(trip.sharedWith)?trip.sharedWith:[];
  const rawMembers=Array.isArray(trip.members)?trip.members:Array.isArray(ui.members)?ui.members:[];
  for(const entry of [...shared,...rawMembers]){const name=typeof entry==='string'?entry:entry&&typeof entry==='object'?text((entry as Record<string,unknown>).name)||text((entry as Record<string,unknown>).user):'';if(name&&!names.has(name)){names.add(name);members.push({name,role:entry&&typeof entry==='object'?text((entry as Record<string,unknown>).role)||'Viewer':'Viewer'})}else if(name&&name!==owner&&entry&&typeof entry==='object'&&text((entry as Record<string,unknown>).role)){const member=members.find(m=>m.name===name);if(member)member.role=text((entry as Record<string,unknown>).role)}}
- return {stops:Array.isArray(ui.stops)?ui.stops:[],items:items.map(i=>({...i,owner:i.owner||owner,packed:i.packed&&typeof i.packed==='object'?i.packed:{}})).filter(i=>i.shared||i.owner===user),pages:Array.isArray(ui.pages)?ui.pages:[],bookings,clothes,members};
+ return {discoveries:Array.isArray(ui.discoveries)?ui.discoveries:[],stops:Array.isArray(ui.stops)?ui.stops:[],items:items.map(i=>({...i,owner:i.owner||owner,packed:i.packed&&typeof i.packed==='object'?i.packed:{}})).filter(i=>i.shared||i.owner===user),pages:Array.isArray(ui.pages)?ui.pages:[],bookings,clothes,members};
 }
 export const getTrips=()=>apiRequest<{user:string;trips:LegacyTrip[]}>('/api/app/trips');
 export async function saveTripUi(trip:LegacyTrip,ui:TripUi){const result=await apiRequest<{trip:LegacyTrip}>('/api/app/trips',{trip:{...trip,ui:{...trip.ui,...ui}}});if(!result.trip?.id)throw Error('Trip save did not return a saved record.');return result.trip}

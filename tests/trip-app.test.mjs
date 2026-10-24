@@ -151,3 +151,19 @@ test('owner can revoke a previously shared account after its login is removed',a
  const r=await handleTripApp(new Request('https://trip.example/api/app/trips',{headers:{Authorization:'Bearer '+token}}),f.env);assert.equal(r.status,200);assert.deepEqual((await r.json()).trips,[]);
  assert.equal((await f.request('Owner','share',{tripId:'shared',user:'Member',role:'Editor'})).status,400);
 });
+
+test('discovery recommendations dismissal and history persist with trip ACLs',async()=>{
+ const f=fixture([{id:'shared',created_by:'Owner',city:'Honolulu',shared_with:['Member','Viewer'],shared_roles:{Member:'Editor'},ui:{items:[],stops:[]}}]);
+ const discovery={id:'museum',title:'Museum',url:'https://museum.example/visit',kind:'places',state:'dismissed'};
+ assert.equal((await f.request('Member','trips',{trip:{id:'shared',ui:{items:[],discoveries:[discovery]}}})).status,200);
+ let read=await f.request('Member','trips');assert.deepEqual(read.body.trips[0].ui.discoveries,[discovery]);
+ const visited={...discovery,state:'visited',visitedOn:'2026-10-24'};
+ assert.equal((await f.request('Viewer','trips',{trip:{id:'shared',ui:{items:[],discoveries:[visited]}}})).status,403);
+ assert.equal((await f.request('Member','trips',{trip:{id:'shared',ui:{items:[],discoveries:[visited]}}})).status,200);
+ read=await f.request('Owner','trips');assert.deepEqual(read.body.trips[0].ui.discoveries,[visited]);assert.equal((await f.request('Other','trips')).body.trips.length,0);
+});
+test('discovery saves reject malformed state and unsafe source URLs',async()=>{
+ const f=fixture([{id:'mine',created_by:'Owner',city:'Honolulu',ui:{items:[]}}]);
+ for(const bad of [{kind:'invented'},{state:'gone'},{url:'javascript:alert(1)'},{url:'https://user:pass@museum.example'},{visitedOn:'not-a-date'}]){const d={id:'museum',title:'Museum',url:'https://museum.example',kind:'places',state:'recommended',...bad};assert.equal((await f.request('Owner','trips',{trip:{id:'mine',ui:{items:[],discoveries:[d]}}})).status,400)}
+ assert.equal(f.stored()[0].ui.discoveries,undefined);
+});
