@@ -1,6 +1,6 @@
 import {apiRequest,credentials} from './integration-api';
 export const isProduction=()=>(globalThis as typeof globalThis&{__TRIP_PRODUCTION__?:boolean}).__TRIP_PRODUCTION__===true;
-export type LiveStop={id:string;title:string;time:string;duration:number;place:string;day:number;date?:string;fixed?:boolean};
+export type LiveStop={id:string;title:string;time:string;duration:number;place:string;day:number;date?:string;fixed?:boolean;sourceUrl?:string;lat?:number;lon?:number};
 export type LiveItem={id:string;name:string;qty:number;packed:Record<string,number>;shared?:boolean;owner?:string};
 export type LivePage={id:string;title:string;text:string};
 export type LiveBooking={id:string;route:string;flight:string;date:string;time:string;image:string;bookingRef?:string};

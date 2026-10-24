@@ -18,7 +18,7 @@ export async function apiRequest<T=Record<string,unknown>>(path:string,body?:unk
  if(path.startsWith('/api/tools/')&&!path.startsWith('/api/tools/settings'))for(const [provider,key]of Object.entries(credentials.keys))if(key)headers['x-trip-key-'+provider]=key;
  const response=await fetch(path,{method:body===undefined?'GET':'POST',headers,...(body===undefined?{}:{body:JSON.stringify(body)})});
  const result=await response.json().catch(()=>({error:'Trip’s API is unavailable on this host.'}));
- if(!response.ok||result?.error){if(response.status===401&&credentials.token===requestToken){credentials.token='';credentials.groupId='';if((globalThis as {__TRIP_PRODUCTION__?:boolean}).__TRIP_PRODUCTION__){sessionStorage.removeItem('tripToolSession');sessionStorage.removeItem('tripToolExpires');sessionStorage.removeItem('tripToolUser')};credentials.user='';credentials.keys={sonar:'',firecrawl:'',apify:''}}throw Error(result?.error||'Request failed ('+response.status+').')}
+ if(!response.ok||result?.error){if(response.status===401&&credentials.token===requestToken){credentials.token='';credentials.groupId='';if((globalThis as {__TRIP_PRODUCTION__?:boolean}).__TRIP_PRODUCTION__){sessionStorage.removeItem('tripToolSession');sessionStorage.removeItem('tripToolExpires');sessionStorage.removeItem('tripToolUser')};credentials.user='';credentials.keys={sonar:'',firecrawl:'',apify:''}}throw Object.assign(new Error(result?.error||'Request failed ('+response.status+').'),{status:response.status})}
  return result as T;
 }
 export async function signIn(user:string,password:string){

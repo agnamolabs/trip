@@ -1,3 +1,5 @@
+import {storageEnv,initializeStore,listTrips,getTrip,saveTrip,deleteTrip,getRegistry} from './trip-store.mjs';
+import {discoverEvents,importEvent} from './trip-discovery.mjs';
 import {toolSession} from './trip-tools.mjs';
 import {isAdmin} from './trip-settings.mjs';
 import {knownAccountNames} from './trip-auth.mjs';
@@ -41,15 +43,17 @@ export async function handleTripApp(request,env,fetcher=fetch){
  if(!path.startsWith('/api/app/')&&!legacy)return null;
  try{
   if(request.headers.get('origin')&&request.headers.get('origin')!==url.origin)throw fail('Same-origin requests required',403);
+  env=storageEnv(env);await initializeStore(env);
   const session=await toolSession(request,env);if(!session)throw fail('Sign in to Trip',401);const user=session.user;
+  if(path==='/api/app/registry'&&request.method==='GET')return json({...await getRegistry(env),storage:'d1'});
   if(!env.TRIPS_KV)throw fail('Trip storage unavailable',503);
-  const raw=await env.TRIPS_KV.get('all_trips');const trips=raw?JSON.parse(raw):[];if(!Array.isArray(trips))throw fail('Trip data is unavailable',503);
+  const d1=!!env.TRIP_DB;const raw=d1?null:await env.TRIPS_KV.get('all_trips');const trips=d1?await listTrips(env,user):raw?JSON.parse(raw):[];if(!Array.isArray(trips))throw fail('Trip data is unavailable',503);
   const list=['/api/app/trips','/api/trips','/api/trips/shared'].includes(path);
   if(list&&request.method==='GET'){const visible=trips.filter(t=>canRead(t,user)).map(t=>view(t,user));return json(legacy?visible:{user,trips:visible})}
   if(list&&request.method==='POST'){
    const payload=await readBody(request,12*1024*1024),incoming=legacy?payload:payload.trip;
    if(!incoming||typeof incoming!=='object'||typeof incoming.id!=='string'||incoming.id.length>100)throw fail('Trip ID is required');
-   const index=trips.findIndex(t=>t.id===incoming.id),old=trips[index];
+   const index=trips.findIndex(t=>t.id===incoming.id),old=d1?await getTrip(env,incoming.id,{hydrateImages:false}):trips[index];
    if(old&&!canEdit(old,user))throw fail('This trip is read-only for your account',403);
    if(!old&&(!incoming.city||!incoming.depart))throw fail('Destination and departure date are required');
    const record={...(old||{}),...incoming,created_by:old?owner(old):user,shared_with:old?.shared_with||[],sharedWith:old?.sharedWith||[],shared_roles:old?.shared_roles||{}};
@@ -60,11 +64,12 @@ export async function handleTripApp(request,env,fetcher=fetch){
     record.ui=mergeUI(previousUi,incoming.ui,user,record.created_by);
    }
    record.updated_at=new Date().toISOString();if(index<0)trips.push(record);else trips[index]=record;
-   await env.TRIPS_KV.put('all_trips',JSON.stringify(trips));return json(legacy?{ok:true}:{trip:view(record,user)});
+   const saved=d1?await saveTrip(env,record,old?incoming.revision:undefined):record;
+   if(!d1)await env.TRIPS_KV.put('all_trips',JSON.stringify(trips));return json(legacy?{ok:true}:{trip:view(saved,user)});
   }
   if(list&&request.method==='DELETE'){
    const id=url.searchParams.get('id');const t=trips.find(t=>t.id===id);if(!t||owner(t)!==user)throw fail('Trip not found',404);
-   await env.TRIPS_KV.put('all_trips',JSON.stringify(trips.filter(t=>t.id!==id)));return json({ok:true});
+   if(d1)await deleteTrip(env,id,t.revision);else await env.TRIPS_KV.put('all_trips',JSON.stringify(trips.filter(t=>t.id!==id)));return json({ok:true});
   }
   if(['/api/app/share','/api/trips/share'].includes(path)&&request.method==='POST'){
    const body=await readBody(request,2000);const t=trips.find(t=>t.id===body.tripId);if(!t||owner(t)!==user)throw fail('Only the trip owner can change sharing',403);
@@ -75,7 +80,18 @@ export async function handleTripApp(request,env,fetcher=fetch){
    if(role!==null&&!knownAccountNames(env).includes(name))throw fail('Choose an existing Trip account');
    if(name===user)throw fail('The trip owner already has access');
    const members=shared(t).filter(n=>n!==name);if(role)members.push(name);t.shared_with=members;t.sharedWith=members;t.shared_roles={...(t.shared_roles||{})};if(role)t.shared_roles[name]=role;else delete t.shared_roles[name];
-   await env.TRIPS_KV.put('all_trips',JSON.stringify(trips));return json({ok:true,trip:view(t,user)});
+   const saved=d1?await saveTrip(env,t,t.revision):t;if(!d1)await env.TRIPS_KV.put('all_trips',JSON.stringify(trips));return json({ok:true,trip:view(saved,user)});
+  }
+  if(path==='/api/app/map'&&request.method==='GET'){
+   const t=trips.find(t=>t.id===url.searchParams.get('tripId'));if(!t||!canRead(t,user))throw fail('Trip not found',404);
+   let lat=Number(t.lat),lon=Number(t.lon);const valid=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a)<=90&&Math.abs(b)<=180;
+   if(!valid(lat,lon)||(!lat&&!lon)){const r=await fetcher('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(t.city||'')+'&count=1&language=en&format=json',{signal:AbortSignal.timeout(10000)});if(!r.ok)throw fail('Destination lookup unavailable',502);const geo=(await r.json()).results?.[0];if(!geo||!valid(geo.latitude,geo.longitude))throw fail('No map coordinates found for the destination',404);lat=geo.latitude;lon=geo.longitude}
+   const date=url.searchParams.get('date')||t.depart;const places=(t.ui?.stops||[]).filter(s=>s.date?s.date===date:s.day===Number(String(date).slice(-2))).map(s=>({id:s.id,title:s.title,place:s.place,time:s.time,...(typeof s.lat==='number'&&typeof s.lon==='number'&&valid(s.lat,s.lon)?{lat:s.lat,lon:s.lon}:{})}));
+   return json({destination:{lat,lon,label:t.city},places,provider:'OpenStreetMap / Open-Meteo'});
+  }
+  if(['/api/app/discover','/api/app/import'].includes(path)&&request.method==='POST'){
+   const body=await readBody(request,6000);const t=trips.find(t=>t.id===body.tripId);if(!t||!canRead(t,user))throw fail('Trip not found',404);if(!canEdit(t,user))throw fail('Choose an editable trip first',403);
+   return json(path.endsWith('/discover')?await discoverEvents(request,env,user,t,body,fetcher):await importEvent(request,env,user,t,body,fetcher));
   }
   if(path==='/api/app/weather'&&request.method==='GET'){
    const t=trips.find(t=>t.id===url.searchParams.get('tripId'));if(!t||!canRead(t,user))throw fail('Trip not found',404);

@@ -1,3 +1,4 @@
+import {storageEnv,initializeStore} from './trip-store.mjs';
 import {serveProductionUi} from './.build/ui.mjs';
 import {handleTripApp} from './trip-app.mjs';
 import { authenticateTrip, knownAccountNames } from './trip-auth.mjs';
@@ -2230,6 +2231,7 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
+    try{env=storageEnv(env);await initializeStore(env)}catch(error){return json({error:'D1 registry storage is unavailable. Existing records have been preserved.'},503)}
     const appResponse=await handleTripApp(request,env);
     if(appResponse)return appResponse;
     const providerRoutes=['/api/chat','/api/agents/run','/api/flights/search','/api/flights/track','/api/scan-trip','/api/suggest-packing'];
@@ -2553,6 +2555,8 @@ export default {
     if (path === '/api/health') {
       return json({
         status: 'ok',
+        storage: env.TRIP_DB?'d1':'kv',
+        registryVersion: env.TRIP_DB?1:null,
         edge: 'cloudflare-worker',
         gateway: 'ai-gateway',
         deepseek: CF_ACCOUNT_ID ? 'configured' : 'missing',
