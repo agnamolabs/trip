@@ -1,19 +1,30 @@
+import {knownAccountNames} from './trip-auth.mjs';
 const PROVIDERS=['sonar','firecrawl','apify'];
 const AGENTS=['Chat','Guide','Research','Planning'];
 const KEY='trip:integration-settings:v1';
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const json=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
-const admins=env=>String(env.TRIP_ADMIN_USERS||'').split(',').map(s=>s.trim()).filter(Boolean);
+const admins=env=>String(env.TRIP_ADMIN_USERS===undefined?'Gabe,Lux':env.TRIP_ADMIN_USERS).split(',').map(s=>s.trim()).filter(Boolean);
 export const isAdmin=(env,user)=>admins(env).includes(user);
 const serverKey=(env,p)=>({sonar:env.PPLX_KEY||env.PERPLEXITY_API_KEY,firecrawl:env.FIRECRAWL_API_KEY,apify:env.APIFY_TOKEN}[p]);
-async function encryptionKey(env){
- let bytes;try{bytes=Uint8Array.from(atob(env.TRIP_KEYS_ENCRYPTION_KEY||''),c=>c.charCodeAt(0))}catch{}
+async function encryptionKey(env,create=false){
+ let secret=env.TRIP_KEYS_ENCRYPTION_KEY;
+ if(!secret&&env.trip_agents){
+  const path='private/trip/keys-master-v1';
+  let object;try{object=await env.trip_agents.get(path)}catch{throw fail('Secure key storage is unavailable',503)}
+  if(object)secret=await object.text();
+  else if(create){
+   const candidate=btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))));
+   try{const saved=await env.trip_agents.put(path,candidate,{onlyIf:{etagDoesNotMatch:'*'},httpMetadata:{contentType:'application/octet-stream'}});if(saved)secret=candidate;else{const winner=await env.trip_agents.get(path);secret=winner&&await winner.text()}}catch{throw fail('Secure key storage is unavailable',503)}
+  }
+ }
+ let bytes;try{bytes=Uint8Array.from(atob(secret||''),c=>c.charCodeAt(0))}catch{}
  if(bytes?.length!==32)throw fail('Secure key storage is not configured on this server',503);
  return crypto.subtle.importKey('raw',bytes,'AES-GCM',false,['encrypt','decrypt']);
 }
 const encode=b=>btoa(String.fromCharCode(...new Uint8Array(b)));
 const decode=b=>Uint8Array.from(atob(b),c=>c.charCodeAt(0));
-async function encrypt(env,secret,scope){const iv=crypto.getRandomValues(new Uint8Array(12));const value=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode(scope)},await encryptionKey(env),new TextEncoder().encode(secret));return {iv:encode(iv),value:encode(value)}}
+async function encrypt(env,secret,scope){const iv=crypto.getRandomValues(new Uint8Array(12));const value=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode(scope)},await encryptionKey(env,true),new TextEncoder().encode(secret));return {iv:encode(iv),value:encode(value)}}
 async function decrypt(env,cipher,scope){try{return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:decode(cipher.iv),additionalData:new TextEncoder().encode(scope)},await encryptionKey(env),decode(cipher.value)))}catch(error){if(error.status)throw error;throw fail('Stored key could not be opened. Ask the owner to reconnect it.',503)}}
 async function read(env){if(!env.TRIPS_KV)throw fail('Settings storage unavailable',503);return JSON.parse(await env.TRIPS_KV.get(KEY)||'{"groups":[]}')}
 function access(env,user,g,p){return isAdmin(env,user)||g.members?.[user]?.includes(p)}
@@ -40,7 +51,7 @@ export async function handleSettings(request,env,user,body,fetcher=fetch){
  const path=new URL(request.url).pathname;
  if(path!=='/api/tools/settings'&&path!=='/api/tools/settings/test')return null;
  const config=await read(env);
- if(path==='/api/tools/settings'&&request.method==='GET')return json({user,isAdmin:isAdmin(env,user),secureStorageReady:await encryptionKey(env).then(()=>true,()=>false),serverProviders:Object.fromEntries(PROVIDERS.map(p=>[p,isAdmin(env,user)&&!!serverKey(env,p)])),groups:config.groups.filter(g=>PROVIDERS.some(p=>access(env,user,g,p))).map(g=>publicGroup(env,user,g))});
+ if(path==='/api/tools/settings'&&request.method==='GET')return json({user,isAdmin:isAdmin(env,user),secureStorageReady:!env.TRIP_KEYS_ENCRYPTION_KEY&&!!env.trip_agents?true:await encryptionKey(env).then(()=>true,()=>false),serverProviders:Object.fromEntries(PROVIDERS.map(p=>[p,isAdmin(env,user)&&!!serverKey(env,p)])),groups:config.groups.filter(g=>PROVIDERS.some(p=>access(env,user,g,p))).map(g=>publicGroup(env,user,g))});
  if(!isAdmin(env,user))throw fail('Only an integration owner can change keys, prompts or approvals',403);
  if(request.method!=='POST')throw fail('Method not allowed',405);
  if(path.endsWith('/test')){
@@ -65,9 +76,9 @@ export async function handleSettings(request,env,user,body,fetcher=fetch){
  group.name=body.name.trim();
  if(body.members!==undefined){
   if(!body.members||typeof body.members!=='object'||Array.isArray(body.members))throw fail('Invalid member approvals');
-  let known={};try{known=JSON.parse(env.TRIP_AUTH_USERS||'{}')}catch{throw fail('Account configuration unavailable',503)}
+  const known=knownAccountNames(env);
   const entries=Object.entries(body.members);if(entries.length>50)throw fail('A group supports up to 50 approved users');
-  for(const [name,providers]of entries){if(!Object.hasOwn(known,name))throw fail('Unknown account: '+name);if(!Array.isArray(providers)||providers.some(p=>!PROVIDERS.includes(p)))throw fail('Invalid provider approval')}
+  for(const [name,providers]of entries){if(!known.includes(name))throw fail('Unknown account: '+name);if(!Array.isArray(providers)||providers.some(p=>!PROVIDERS.includes(p)))throw fail('Invalid provider approval')}
   group.members=Object.fromEntries(entries.map(([u,p])=>[u,[...new Set(p)]]));
  }
  if(body.prompts!==undefined){if(!body.prompts||typeof body.prompts!=='object'||Array.isArray(body.prompts))throw fail('Invalid prompts');for(const agent of AGENTS){if(body.prompts[agent]!==undefined){if(typeof body.prompts[agent]!=='string'||body.prompts[agent].length>4000)throw fail('Prompt exceeds 4000 characters');group.prompts[agent]=body.prompts[agent]}}}

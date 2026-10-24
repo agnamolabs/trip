@@ -1,21 +1,14 @@
 # agnamo · trip
 
-Smart packing companion. [trip.agnamo.com](https://trip.agnamo.com)
+Trip planning, travel, packing, weather and Whitepages. [trip.agnamo.com](https://trip.agnamo.com)
 
-## Compact Trip UI prototype
-
-The approved UI and complete runnable source are in `prototypes/trip-mobile/`.
+The production Worker serves the responsive UI from `prototypes/trip-mobile/src/production.tsx` and the authenticated trip/provider handlers. Wrangler builds it automatically before deployment.
 
 ```sh
-cd prototypes/trip-mobile
-npm ci
-npm run dev
+node scripts/build-production.mjs
+node --test tests/*.test.mjs
 ```
 
-Live preview: https://agnamo-trip-preview.luxdev-3821.chatgpt.site
+Account → Connections manages provider keys, agent prompts and approved user groups. See [production behavior and limits](docs/production-ui.md) and [integration acceptance](docs/integration-acceptance.md).
 
-To generate a standalone HTML copy, run `npm run build` followed by `python scripts/make-offline-copy.py` from the prototype directory.
-
-The prototype uses local browser storage. AI chat, agents, flight/weather data, member roles, and optimization are demonstrations. Booking image import supports manual entry; OCR and the production backend are not connected.
-
-Validation: runtime integrity, production build, and four Sites worker tests passed. Production frontend and backend files are unchanged.
+The original visual reference prototype is retained under `prototypes/trip-mobile/`; production selects the real-data app and native web runtime.

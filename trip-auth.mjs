@@ -14,3 +14,8 @@ export async function authenticateTrip(env,user,password,verifiers=legacyVerifie
  let difference=0;for(let i=0;i<actual.length;i++)difference|=actual.charCodeAt(i)^verifiers[user].charCodeAt(i);
  return difference===0;
 }
+
+export function knownAccountNames(env) {
+ if(!env.TRIP_AUTH_USERS)return Object.keys(legacyVerifiers);
+ try{const accounts=JSON.parse(env.TRIP_AUTH_USERS);return accounts&&typeof accounts==='object'&&!Array.isArray(accounts)?Object.keys(accounts):[]}catch{return []}
+}

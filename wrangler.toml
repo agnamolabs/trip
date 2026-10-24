@@ -9,3 +9,6 @@ bucket_name = "trip-agents"
 [[kv_namespaces]]
 binding = "TRIPS_KV"
 id = "e1a47846a214431885a6f62b4d7a938d"
+
+[build]
+command = "node scripts/build-production.mjs"

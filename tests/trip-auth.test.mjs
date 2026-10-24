@@ -59,3 +59,4 @@ test('legacy verifier compatibility works without new account configuration',asy
  assert.equal(await authenticateTrip({},user,'wrong',verifiers),false);
  assert.equal(await authenticateTrip({TRIP_AUTH_USERS:JSON.stringify({[user]:'new-test-only'})},user,password,verifiers),false);
 });
+test('sign-in normalizes existing account casing without changing its identity',async()=>{const env=makeEnv();const r=await worker.fetch(auth(' owner ','test-only-owner-password'),env);assert.equal(r.status,200);assert.equal((await r.json()).user,'Owner')});

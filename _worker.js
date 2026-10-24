@@ -1,4 +1,6 @@
-import { authenticateTrip } from './trip-auth.mjs';
+import {serveProductionUi} from './.build/ui.mjs';
+import {handleTripApp} from './trip-app.mjs';
+import { authenticateTrip, knownAccountNames } from './trip-auth.mjs';
 import { isAdmin } from './trip-settings.mjs';
 import { handleTripTools, issueSession, toolSession } from './trip-tools.mjs';
 // agnamo · trip — Cloudflare Worker
@@ -2228,6 +2230,8 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
+    const appResponse=await handleTripApp(request,env);
+    if(appResponse)return appResponse;
     const providerRoutes=['/api/chat','/api/agents/run','/api/flights/search','/api/flights/track','/api/scan-trip','/api/suggest-packing'];
     if (providerRoutes.includes(path) && request.method !== 'OPTIONS') {
       const session=await toolSession(request,env);
@@ -2415,8 +2419,9 @@ export default {
     if (path === '/api/auth' && request.method === 'POST') {
       try {
         const { user, password } = await request.json();
-        if (await authenticateTrip(env,user,password)) {
-          return json({ valid: true, user, token: await issueSession(env, user) });
+        const account=typeof user==='string'?knownAccountNames(env).find(name=>name.toLowerCase()===user.trim().toLowerCase())||user:user;
+        if (await authenticateTrip(env,account,password)) {
+          return json({ valid: true, user:account, token: await issueSession(env, account) });
         }
         return json({ valid: false }, 401);
       } catch (err) {
@@ -2466,8 +2471,9 @@ export default {
     if (path === '/api/auth' && request.method === 'POST') {
       try {
         const { user, password } = await request.json();
-        if (await authenticateTrip(env,user,password)) {
-          return json({ valid: true, user, token: await issueSession(env, user) });
+        const account=typeof user==='string'?knownAccountNames(env).find(name=>name.toLowerCase()===user.trim().toLowerCase())||user:user;
+        if (await authenticateTrip(env,account,password)) {
+          return json({ valid: true, user:account, token: await issueSession(env, account) });
         }
         return json({ valid: false }, 401);
       } catch (err) {
@@ -2732,6 +2738,9 @@ export default {
     if (path === '/schema.sql') {
       return new Response(SCHEMA_SQL, { headers: { ...CORS, 'Content-Type': 'application/sql' } });
     }
+
+    const productionUi=serveProductionUi(request);
+    if(productionUi)return productionUi;
 
     // ─── Static assets ────────────────────────────────────────────────────────
     if (env.ASSETS) {

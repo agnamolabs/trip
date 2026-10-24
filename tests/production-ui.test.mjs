@@ -1,0 +1,28 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {existsSync,readFileSync} from 'node:fs';
+const artifact=new URL('../.build/ui.mjs',import.meta.url);
+test('production UI serves the approved native web app and static assets',{skip:!existsSync(artifact)?'Run node scripts/build-production.mjs first':false},async()=>{
+ const {serveProductionUi}=await import(artifact.href+'?test='+Date.now());
+ const response=serveProductionUi(new Request('https://trip.example/'));
+ assert.equal(response.status,200);
+ assert.equal(response.headers.get('content-type'),'text/html; charset=utf-8');
+ assert.equal(response.headers.get('cache-control'),'no-store');
+ const html=await response.text();
+ assert.ok(html.includes('window.__TRIP_PRODUCTION__=true'));
+ assert.ok(html.indexOf('window.__TRIP_PRODUCTION__=true')<html.indexOf('<script type="module">'));
+ assert.ok(html.includes('production-screen'));
+ assert.ok(!html.includes('Preview device:'));
+ assert.ok(!/<script[^>]+src=/.test(html));
+ assert.ok(!/<link[^>]+\.css/.test(html));
+ assert.equal(await serveProductionUi(new Request('https://trip.example/',{method:'HEAD'})).text(),'');
+ assert.equal(serveProductionUi(new Request('https://trip.example/api/auth')),null);
+ assert.equal(serveProductionUi(new Request('https://trip.example/',{method:'POST'})),null);
+ assert.equal(serveProductionUi(new Request('https://trip.example/missing.js')),null);
+ const art=serveProductionUi(new Request('https://trip.example/art/destination.jpg'));
+ assert.equal(art.headers.get('content-type'),'image/jpeg');
+ assert.ok((await art.arrayBuffer()).byteLength>1000);
+ assert.equal(serveProductionUi(new Request('https://trip.example/account',{headers:{accept:'text/html'}})).status,200);
+ const source=readFileSync(new URL('../prototypes/trip-mobile/src/production.tsx',import.meta.url),'utf8');
+ assert.ok(source.indexOf("sessionStorage.getItem('tripToolSession')")<source.indexOf('ReactDOM.createRoot'));
+});
