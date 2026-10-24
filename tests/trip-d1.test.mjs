@@ -222,3 +222,15 @@ test('oversized legacy photos without R2 fail migration without altering KV or c
  const original=JSON.stringify([{id:'oversized',created_by:'Owner',city:'Honolulu',ui:{clothes:[{id:'large',owner:'Owner',src:'data:image/jpeg;base64,'+'A'.repeat(1000000)}]}}]);const f=fixture({all_trips:original});
  try{await assert.rejects(()=>initializeStore(f.env),error=>error.status===503&&/image storage/i.test(error.message));assert.equal(f.legacy.get('all_trips'),original);assert.equal(f.writes.length,0);assert.equal((await f.db.prepare('SELECT COUNT(*) AS n FROM trips').first()).n,0);assert.equal(await f.db.prepare('SELECT value FROM store_meta WHERE key=?').bind('legacy_all_trips_imported_v1').first(),null)}finally{f.close()}
 });
+
+test('D1 retains discovery lifecycle and visited activities while rejecting stale overwrites',async()=>{
+ const f=fixture();try{
+  const discovery={id:'museum',title:'Museum',url:'https://museum.example',kind:'places',state:'recommended'};
+  const created=await saveTrip(f.env,{id:'discovery',created_by:'Owner',city:'Honolulu',ui:{items:[],stops:[],discoveries:[discovery]}});
+  const hidden=await saveTrip(f.env,{...created,ui:{...created.ui,discoveries:[{...discovery,state:'dismissed'}]}},created.revision);
+  assert.equal((await getTrip(f.env,'discovery')).ui.discoveries[0].state,'dismissed');
+  const visited=await saveTrip(f.env,{...hidden,ui:{...hidden.ui,discoveries:[{...discovery,state:'visited',visitedOn:'2026-10-24'}],stops:[{id:'visit',title:'Museum',discoveryId:'museum',visitedOn:'2026-10-24'}]}},hidden.revision);
+  await assert.rejects(saveTrip(f.env,{...hidden,ui:{items:[],stops:[],discoveries:[discovery]}},hidden.revision),conflict);
+  assert.deepEqual((await getTrip(f.env,'discovery')).ui,visited.ui);assert.equal(f.writes.length,0);
+ }finally{f.close()}
+});
