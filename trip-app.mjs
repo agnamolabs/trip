@@ -68,9 +68,12 @@ export async function handleTripApp(request,env,fetcher=fetch){
   }
   if(['/api/app/share','/api/trips/share'].includes(path)&&request.method==='POST'){
    const body=await readBody(request,2000);const t=trips.find(t=>t.id===body.tripId);if(!t||owner(t)!==user)throw fail('Only the trip owner can change sharing',403);
-   const name=body.user||body.username;if(!knownAccountNames(env).includes(name))throw fail('Choose an existing Trip account');
-   if(name===user)throw fail('The trip owner already has access');
+   const name=body.user||body.username;
+   if(typeof name!=='string'||!name.trim())throw fail('Choose a Trip account');
    const role=body.role===undefined?'Viewer':body.role;if(role!==null&&!['Viewer','Editor'].includes(role))throw fail('Invalid sharing role');
+   // Revocation must still work after an account is removed from authentication.
+   if(role!==null&&!knownAccountNames(env).includes(name))throw fail('Choose an existing Trip account');
+   if(name===user)throw fail('The trip owner already has access');
    const members=shared(t).filter(n=>n!==name);if(role)members.push(name);t.shared_with=members;t.sharedWith=members;t.shared_roles={...(t.shared_roles||{})};if(role)t.shared_roles[name]=role;else delete t.shared_roles[name];
    await env.TRIPS_KV.put('all_trips',JSON.stringify(trips));return json({ok:true,trip:view(t,user)});
   }

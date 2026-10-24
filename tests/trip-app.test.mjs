@@ -141,3 +141,13 @@ test('scanner returns extracted fields for review without automatically saving a
 test('shared trip readers never receive raw OCR through either legacy naming convention',async()=>{
  const f=fixture([{id:'shared',created_by:'Owner',shared_with:['Member'],raw_ocr:'PRIVATE_OCR_SNAKE',rawOcr:'PRIVATE_OCR_CAMEL',closet:[{src:'PRIVATE_CLOSET_PHOTO'}]}]);const r=await f.request('Member','trips');assert.equal(r.status,200);assert.equal(r.body.trips[0].raw_ocr,undefined);assert.equal(r.body.trips[0].rawOcr,undefined);assert.deepEqual(r.body.trips[0].closet,[]);assert.equal(JSON.stringify(r.body).includes('PRIVATE_OCR'),false);
 });
+
+
+test('owner can revoke a previously shared account after its login is removed',async()=>{
+ const f=fixture([{id:'shared',created_by:'Owner',shared_with:['Member'],sharedWith:['Member'],shared_roles:{Member:'Editor'}}]);
+ const token=await issueSession(f.env,'Member');
+ f.env.TRIP_AUTH_USERS=JSON.stringify({Owner:'test-owner',Other:'test-other'});
+ const revoked=await f.request('Owner','share',{tripId:'shared',user:'Member',role:null});assert.equal(revoked.status,200);assert.deepEqual(f.stored()[0].shared_with,[]);assert.deepEqual(f.stored()[0].sharedWith,[]);assert.equal(f.stored()[0].shared_roles.Member,undefined);
+ const r=await handleTripApp(new Request('https://trip.example/api/app/trips',{headers:{Authorization:'Bearer '+token}}),f.env);assert.equal(r.status,200);assert.deepEqual((await r.json()).trips,[]);
+ assert.equal((await f.request('Owner','share',{tripId:'shared',user:'Member',role:'Editor'})).status,400);
+});

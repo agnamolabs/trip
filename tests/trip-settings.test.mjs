@@ -191,3 +191,36 @@ test('unknown provider cannot be connection-tested',async()=>{
  const f=fixture(),g=(await f.create()).body.group;
  assert.equal((await f.request('Owner','settings/test',{groupId:g.id,provider:'arbitrary-host'})).status,400);assert.equal(f.calls.length,0);
 });
+
+test('pending connection test preserves a newer member revocation and prompt update',async()=>{
+ const f=fixture(),g=(await f.create()).body.group;
+ let signalStarted,releaseProvider;
+ const started=new Promise(resolve=>{signalStarted=resolve});
+ const providerReady=new Promise(resolve=>{releaseProvider=resolve});
+ const testing=f.request('Owner','settings/test',{groupId:g.id,provider:'sonar'},async()=>{signalStarted();await providerReady;return Response.json({choices:[{message:{content:'OK'}}]})});
+ await started;
+ let saved;
+ try{saved=await f.request('Owner','settings',{id:g.id,name:g.name,members:{},prompts:{Chat:'The newer saved prompt.'}})}finally{releaseProvider()}
+ const tested=await testing;
+ assert.equal(saved.status,200);assert.equal(tested.status,200);
+ const group=(await f.request('Owner','settings')).body.groups.find(x=>x.id===g.id);
+ assert.deepEqual(group.members,{});assert.equal(group.prompts.Chat,'The newer saved prompt.');assert.ok(group.providers.sonar.testedAt);
+ assert.equal((await f.request('Member','chat',{groupId:g.id,query:'I was revoked'})).status,403);
+});
+
+test('pending connection test cannot mark a rotated key verified',async()=>{
+ const f=fixture(),g=(await f.create()).body.group;
+ let signalStarted,releaseProvider;
+ const started=new Promise(resolve=>{signalStarted=resolve});
+ const providerReady=new Promise(resolve=>{releaseProvider=resolve});
+ const testing=f.request('Owner','settings/test',{groupId:g.id,provider:'sonar'},async()=>{signalStarted();await providerReady;return Response.json({choices:[{message:{content:'OK'}}]})});
+ await started;
+ let rotated;
+ try{rotated=await f.request('Owner','settings',{id:g.id,name:g.name,keys:{sonar:'test-new-key-during-request'}})}finally{releaseProvider()}
+ const tested=await testing;
+ assert.equal(rotated.status,200);assert.equal(tested.status,409);assert.match(tested.body.error,/changed during the test/);
+ const group=(await f.request('Owner','settings')).body.groups.find(x=>x.id===g.id);
+ assert.equal(group.providers.sonar.testedAt,null);
+ assert.equal((await f.request('Member','chat',{groupId:g.id,query:'Use the rotated key'})).status,200);
+ assert.equal(f.calls.at(-1).options.headers.Authorization,'Bearer test-new-key-during-request');
+});

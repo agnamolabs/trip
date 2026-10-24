@@ -28,7 +28,7 @@ async function encrypt(env,secret,scope){const iv=crypto.getRandomValues(new Uin
 async function decrypt(env,cipher,scope){try{return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:decode(cipher.iv),additionalData:new TextEncoder().encode(scope)},await encryptionKey(env),decode(cipher.value)))}catch(error){if(error.status)throw error;throw fail('Stored key could not be opened. Ask the owner to reconnect it.',503)}}
 async function read(env){if(!env.TRIPS_KV)throw fail('Settings storage unavailable',503);return JSON.parse(await env.TRIPS_KV.get(KEY)||'{"groups":[]}')}
 function access(env,user,g,p){return isAdmin(env,user)||g.members?.[user]?.includes(p)}
-function publicGroup(env,user,g){const allowed=PROVIDERS.filter(p=>access(env,user,g,p));return {id:g.id,name:g.name,allowedProviders:allowed,providers:Object.fromEntries(allowed.map(p=>[p,{configured:!!g.providers?.[p],source:g.providers?.[p]?.source||null,testedAt:g.providers?.[p]?.testedAt||null}])),prompts:g.prompts||{},apifyActor:g.apifyActor||'',apifyInputTemplate:g.apifyInputTemplate||'',...(isAdmin(env,user)?{members:g.members||{}}:{})}}
+function publicGroup(env,user,g){const allowed=PROVIDERS.filter(p=>access(env,user,g,p));return {id:g.id,name:g.name,allowedProviders:allowed,providers:Object.fromEntries(allowed.map(p=>[p,{configured:!!g.providers?.[p],source:g.providers?.[p]?.source||null,testedAt:g.providers?.[p]?.testedAt||null}])),prompts:g.prompts||{},mediaProvider:g.mediaProvider||'firecrawl',apifyActor:g.apifyActor||'',apifyInputTemplate:g.apifyInputTemplate||'',...(isAdmin(env,user)?{members:g.members||{}}:{})}}
 export async function settingsContext(env,user,groupId){
  const config=await read(env);let group=null;
  if(groupId){group=config.groups.find(g=>g.id===groupId);if(!group||!PROVIDERS.some(p=>access(env,user,group,p)))throw fail('You are not approved for this integration group',403)}
@@ -36,6 +36,7 @@ export async function settingsContext(env,user,groupId){
   prompt:agent=>group?.prompts?.[agent]||'',
   actor:group?.apifyActor||env.APIFY_ACTOR_ID,
   inputTemplate:group?.apifyInputTemplate||env.APIFY_INPUT_TEMPLATE,
+  mediaProvider:group?.mediaProvider||'firecrawl',
   async key(provider,supplied){
    if(group&&!access(env,user,group,provider))throw fail('Your group has not approved '+provider+' access',403);
    if(supplied)return supplied;
@@ -67,13 +68,15 @@ export async function handleSettings(request,env,user,body,fetcher=fetch){
     : body.provider==='firecrawl' ? result?.success===true&&(Array.isArray(result.data)||Array.isArray(result.data?.web))
     : typeof result?.data?.id==='string'&&!!result.data.id;
   if(!valid||result?.error)throw fail('Provider rejected the connection test or returned an invalid response',502);
-  const testedAt=new Date().toISOString();group.providers[body.provider].testedAt=testedAt;await env.TRIPS_KV.put(KEY,JSON.stringify(config));return json({ok:true,provider:body.provider,testedAt});
+  const current=await read(env);const currentGroup=current.groups.find(g=>g.id===body.groupId);if(!currentGroup?.providers?.[body.provider]||JSON.stringify(currentGroup.providers[body.provider])!==JSON.stringify(group.providers[body.provider]))throw fail('Connection changed during the test. Save and test it again.',409);
+  const testedAt=new Date().toISOString();currentGroup.providers[body.provider].testedAt=testedAt;await env.TRIPS_KV.put(KEY,JSON.stringify(current));return json({ok:true,provider:body.provider,testedAt});
  }
  if(typeof body.name!=='string'||!body.name.trim()||body.name.length>80)throw fail('Group name is required (max 80 characters)');
  let group=config.groups.find(g=>g.id===body.id);
  if(body.id&&!group)throw fail('Group not found',404);
  group=group?structuredClone(group):{id:crypto.randomUUID(),name:'',providers:{},prompts:{},members:{}};
  group.name=body.name.trim();
+ if(body.mediaProvider!==undefined){if(!['firecrawl','apify','none'].includes(body.mediaProvider))throw fail('Invalid image search provider');group.mediaProvider=body.mediaProvider}
  if(body.members!==undefined){
   if(!body.members||typeof body.members!=='object'||Array.isArray(body.members))throw fail('Invalid member approvals');
   const known=knownAccountNames(env);
