@@ -4,6 +4,7 @@ import {handleTripApp} from './trip-app.mjs';
 import { authenticateTrip, knownAccountNames } from './trip-auth.mjs';
 import { isAdmin } from './trip-settings.mjs';
 import { handleTripTools, issueSession, toolSession } from './trip-tools.mjs';
+import { handlePhotoTools } from './trip-photos.mjs';
 // agnamo · trip — Cloudflare Worker
 // Routes: /api/scan-trip, /api/suggest-packing, /api/health, /schema.sql
 // All AI traffic → Cloudflare AI Gateway → DeepSeek. SPA fallback to index.html.
@@ -2240,6 +2241,8 @@ export default {
       if(!session)return json({error:'Sign in to use provider tools'},401);
       if(!isAdmin(env,session.user))return json({error:'Use your approved integration group in Trip AI'},403);
     }
+    const photoResponse = await handlePhotoTools(request, env);
+    if (photoResponse) return photoResponse;
     const toolResponse = await handleTripTools(request, env);
     if (toolResponse) return toolResponse;
 

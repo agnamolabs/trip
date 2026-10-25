@@ -7,18 +7,22 @@ keep_vars = true
 binding = "trip_agents"
 bucket_name = "trip-agents"
 
+# Photo desk: cheap vision + planning on Workers AI (no third-party key).
+[ai]
+binding = "AI"
+
+[[d1_databases]]
+binding = "TRIP_DB"
+database_name = "trip-registry"
+database_id = "dc510a26-852a-4ae3-9602-d5ea442f981a"
+migrations_dir = "migrations"
+
 [[kv_namespaces]]
 binding = "TRIPS_KV"
 id = "e1a47846a214431885a6f62b4d7a938d"
 
 [build]
 command = "node scripts/build-production.mjs"
-
-# Wrangler auto-provisions and retains this named binding across deployments.
-[[d1_databases]]
-binding = "TRIP_DB"
-database_name = "trip-registry"
-migrations_dir = "migrations"
 
 [vars]
 TRIP_STORE_REQUIRED = "d1"

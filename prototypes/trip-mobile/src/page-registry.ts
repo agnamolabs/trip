@@ -1,5 +1,5 @@
 import {apiRequest} from './integration-api';
-const definitions={Travel:{path:'/travel',bucket:'Travel',renderer:'travel'},Planner:{path:'/planner',bucket:'Planner',renderer:'planner'},Packing:{path:'/packing',bucket:'Packing',renderer:'packing'},Weather:{path:'/weather',bucket:'Weather',renderer:'weather'},Whitepages:{path:'/whitepages',bucket:'Whitepages',renderer:'whitepages'},Map:{path:'/map',bucket:'Travel',renderer:'map'},Events:{path:'/events',bucket:'Planner',renderer:'events'}} as const;
+const definitions={Travel:{path:'/travel',bucket:'Travel',renderer:'travel'},Planner:{path:'/planner',bucket:'Planner',renderer:'planner'},Packing:{path:'/packing',bucket:'Packing',renderer:'packing'},Weather:{path:'/weather',bucket:'Weather',renderer:'weather'},Whitepages:{path:'/whitepages',bucket:'Whitepages',renderer:'whitepages'},Map:{path:'/map',bucket:'Travel',renderer:'map'},Events:{path:'/events',bucket:'Planner',renderer:'events'},Posts:{path:'/posts',bucket:'Travel',renderer:'posts'}} as const;
 export type PageId=keyof typeof definitions;
 export type RegistryPage={id:PageId;path:string;label:string;bucket:PageId;icon:string;renderer:string;nav:boolean;sort:number};
 export function idForPath(path:string):PageId|undefined{if(path==='/')return 'Planner';return (Object.entries(definitions).find(([,value])=>value.path===path)?.[0]) as PageId|undefined}

@@ -12,6 +12,7 @@ const pages=[
  ['Whitepages','Whitepages','/whitepages','whitepages','Whitepages',1,4],
  ['Map','Map','/map','map','Travel',0,5],
  ['Events','Events','/events','events','Planner',0,6],
+ ['Posts','Posts','/posts','posts','Travel',0,7],
 ];
 const schema=[
  `CREATE TABLE IF NOT EXISTS trips (id TEXT PRIMARY KEY,owner TEXT NOT NULL DEFAULT '',record_json TEXT NOT NULL,revision INTEGER NOT NULL CHECK(revision>=1),updated_at TEXT NOT NULL,write_token TEXT NOT NULL DEFAULT '')`,
