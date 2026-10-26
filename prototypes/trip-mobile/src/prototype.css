@@ -81,3 +81,5 @@
 .composer .composer-send{background:#174d4c;color:#fff}
 .chat-scroll{bottom:96px!important}
 @media(max-width:360px){.ai-suggest-grid{grid-template-columns:1fr}}
+.keydot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;background:#c9c1ae;vertical-align:1px}
+.keydot.ok{background:#1f7a4d}.keydot.warn{background:#b98a2f}

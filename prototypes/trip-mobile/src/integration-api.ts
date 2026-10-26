@@ -1,4 +1,4 @@
-export const providers=['sonar','firecrawl','apify'] as const;
+export const providers=['sonar','firecrawl','apify','openrouter','google'] as const;
 export const agents=['Chat','Guide','Research','Planning'] as const;
 export type Provider=typeof providers[number];
 export type Agent=typeof agents[number];
@@ -6,7 +6,7 @@ export type IntegrationGroup={
  id:string; name:string; allowedProviders:Provider[];
  providers:Partial<Record<Provider,{configured:boolean;source:'stored'|'server'|null;testedAt:string|null}>>;
  prompts:Partial<Record<Agent,string>>; members?:Record<string,Provider[]>;
- mediaProvider?:'firecrawl'|'apify'|'none'; apifyActor:string; apifyInputTemplate:string;
+ mediaProvider?:'firecrawl'|'apify'|'none'; googleCx?:string; apifyActor:string; apifyInputTemplate:string;
 };
 export type SettingsData={user:string;isAdmin:boolean;secureStorageReady:boolean;serverProviders:Record<Provider,boolean>;groups:IntegrationGroup[]};
 // Session and optional request-only keys are deliberately never serialized.

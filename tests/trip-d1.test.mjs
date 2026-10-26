@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createD1} from './helpers/d1.mjs';
 import {storageEnv,initializeStore,listTrips,getTrip,saveTrip,deleteTrip,getRegistry} from '../trip-store.mjs';
+import {addAccount,deleteAccount,authenticateTrip} from '../trip-auth.mjs';
 
 function fixture(legacyValues={}){
  const sqlite=createD1();const legacy=new Map(Object.entries(legacyValues));const reads=new Map(),writes=[];
@@ -232,5 +233,32 @@ test('D1 retains discovery lifecycle and visited activities while rejecting stal
   const visited=await saveTrip(f.env,{...hidden,ui:{...hidden.ui,discoveries:[{...discovery,state:'visited',visitedOn:'2026-10-24'}],stops:[{id:'visit',title:'Museum',discoveryId:'museum',visitedOn:'2026-10-24'}]}},hidden.revision);
   await assert.rejects(saveTrip(f.env,{...hidden,ui:{items:[],stops:[],discoveries:[discovery]}},hidden.revision),conflict);
   assert.deepEqual((await getTrip(f.env,'discovery')).ui,visited.ui);assert.equal(f.writes.length,0);
+ }finally{f.close()}
+});
+
+test('owner-created accounts sign in with a hashed password and nothing else',async()=>{
+ const f=fixture({});try{
+  await initializeStore(f.env);
+  const created=await addAccount(f.env,'vrinda','correct horse battery');
+  assert.equal(created.user,'Vrinda','account ids are normalised');
+  const row=(await f.db.prepare('SELECT salt, iterations, password_hash FROM accounts WHERE user_id=?').bind('Vrinda').first());
+  assert.ok(row.salt&&row.password_hash&&row.password_hash.length===64);
+  assert.equal(row.password_hash.includes('correct horse'),false,'the password is never stored in clear');
+  assert.equal(await authenticateTrip(f.env,'Vrinda','correct horse battery'),true);
+  assert.equal(await authenticateTrip(f.env,'Vrinda','wrong password'),false);
+  assert.equal(await authenticateTrip(f.env,'Nobody','correct horse battery'),false);
+  await addAccount(f.env,'Vrinda','a different password entirely');
+  assert.equal(await authenticateTrip(f.env,'Vrinda','a different password entirely'),true,'re-adding rotates the password');
+  assert.equal(await authenticateTrip(f.env,'Vrinda','correct horse battery'),false,'the old password stops working');
+  await deleteAccount(f.env,'Vrinda');
+  assert.equal(await authenticateTrip(f.env,'Vrinda','a different password entirely'),false);
+ }finally{f.close()}
+});
+
+test('account passwords are rejected unless they meet the minimum length',async()=>{
+ const f=fixture({});try{
+  await initializeStore(f.env);
+  await assert.rejects(()=>addAccount(f.env,'shorty','123'),/8-200 characters/);
+  await assert.rejects(()=>addAccount(f.env,'bad name!','longenoughpassword'),/2-40/);
  }finally{f.close()}
 });

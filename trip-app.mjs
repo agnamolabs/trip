@@ -2,7 +2,7 @@ import {storageEnv,initializeStore,listTrips,getTrip,saveTrip,deleteTrip,getRegi
 import {discoverEvents,importEvent} from './trip-discovery.mjs';
 import {toolSession} from './trip-tools.mjs';
 import {isAdmin} from './trip-settings.mjs';
-import {knownAccountNames} from './trip-auth.mjs';
+import {knownAccountNames,knownAccounts,addAccount,deleteAccount} from './trip-auth.mjs';
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const json=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
 const owner=t=>t.created_by||t.createdBy||'';
@@ -163,6 +163,24 @@ export async function handleTripApp(request,env,fetcher=fetch){
    const route=await routeBetween(fetcher,env,[{lat,lon},...withCoords.map(p=>({lat:p.lat,lon:p.lon}))]);
    return json({destination:{lat,lon,label:t.city},places,route,provider:'OpenStreetMap / Open-Meteo / OSRM',
     ...(withCoords.some(p=>p.approximate)?{approxCount:withCoords.filter(p=>p.approximate).length}:{})});
+  }
+  if(path==='/api/app/accounts'){
+   if(!isAdmin(env,user))throw fail('Only an owner can manage accounts',403);
+   if(request.method==='GET'){
+    const rows=env.TRIP_DB?await env.TRIP_DB.prepare('SELECT user_id, role, created_at FROM accounts ORDER BY user_id').all():{results:[]};
+    const records=(rows.results||[]).map(row=>({user:row.user_id,role:row.role,createdAt:row.created_at}));
+    const legacy=knownAccountNames(env).filter(name=>!records.some(r=>r.user===name)).map(name=>({user:name,role:'Legacy',createdAt:null}));
+    return json({accounts:[...legacy,...records]});
+   }
+   if(request.method==='POST'){
+    const body=await readBody(request,4000);
+    try{
+     if(body.remove){const gone=await deleteAccount(env,body.remove);return json({ok:true,...gone})}
+     const created=await addAccount(env,body.user,body.password,body.role==='Owner'?'Owner':'Member');
+     return json({ok:true,account:created});
+    }catch(error){throw fail('Account not saved: '+(error?.message||'unknown error'),error?.status||502)}
+   }
+   throw fail('Method not allowed',405);
   }
   if(['/api/app/discover','/api/app/import'].includes(path)&&request.method==='POST'){
    const body=await readBody(request,6000);const t=trips.find(t=>t.id===body.tripId);if(!t||!canRead(t,user))throw fail('Trip not found',404);if(!canEdit(t,user))throw fail('Choose an editable trip first',403);

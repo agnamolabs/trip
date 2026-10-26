@@ -1,12 +1,12 @@
-import {knownAccountNames} from './trip-auth.mjs';
-const PROVIDERS=['sonar','firecrawl','apify'];
+import {knownAccountNames,knownAccounts} from './trip-auth.mjs';
+const PROVIDERS=['sonar','firecrawl','apify','openrouter','google'];
 const AGENTS=['Chat','Guide','Research','Planning'];
 const KEY='trip:integration-settings:v1';
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const json=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
 const admins=env=>String(env.TRIP_ADMIN_USERS===undefined?'Gabe,Lux':env.TRIP_ADMIN_USERS).split(',').map(s=>s.trim()).filter(Boolean);
 export const isAdmin=(env,user)=>admins(env).includes(user);
-const serverKey=(env,p)=>({sonar:env.PPLX_KEY||env.PERPLEXITY_API_KEY,firecrawl:env.FIRECRAWL_API_KEY,apify:env.APIFY_TOKEN}[p]);
+const serverKey=(env,p)=>({sonar:env.PPLX_KEY||env.PERPLEXITY_API_KEY,firecrawl:env.FIRECRAWL_API_KEY,apify:env.APIFY_TOKEN,openrouter:env.OPENROUTER_API_KEY,google:env.GOOGLE_SEARCH_KEY}[p]);
 async function encryptionKey(env,create=false){
  let secret=env.TRIP_KEYS_ENCRYPTION_KEY;
  if(!secret&&env.trip_agents){
@@ -28,7 +28,7 @@ async function encrypt(env,secret,scope){const iv=crypto.getRandomValues(new Uin
 async function decrypt(env,cipher,scope){try{return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:decode(cipher.iv),additionalData:new TextEncoder().encode(scope)},await encryptionKey(env),decode(cipher.value)))}catch(error){if(error.status)throw error;throw fail('Stored key could not be opened. Ask the owner to reconnect it.',503)}}
 async function read(env){if(!env.TRIPS_KV)throw fail('Settings storage unavailable',503);return JSON.parse(await env.TRIPS_KV.get(KEY)||'{"groups":[]}')}
 function access(env,user,g,p){return isAdmin(env,user)||g.members?.[user]?.includes(p)}
-function publicGroup(env,user,g){const allowed=PROVIDERS.filter(p=>access(env,user,g,p));return {id:g.id,name:g.name,allowedProviders:allowed,providers:Object.fromEntries(allowed.map(p=>[p,{configured:!!g.providers?.[p],source:g.providers?.[p]?.source||null,testedAt:g.providers?.[p]?.testedAt||null}])),prompts:g.prompts||{},mediaProvider:g.mediaProvider||'firecrawl',apifyActor:g.apifyActor||'',apifyInputTemplate:g.apifyInputTemplate||'',...(isAdmin(env,user)?{members:g.members||{}}:{})}}
+function publicGroup(env,user,g){const allowed=PROVIDERS.filter(p=>access(env,user,g,p));return {id:g.id,name:g.name,allowedProviders:allowed,providers:Object.fromEntries(allowed.map(p=>[p,{configured:!!g.providers?.[p],source:g.providers?.[p]?.source||null,testedAt:g.providers?.[p]?.testedAt||null}])),prompts:g.prompts||{},mediaProvider:g.mediaProvider||'firecrawl',apifyActor:g.apifyActor||'',apifyInputTemplate:g.apifyInputTemplate||'',googleCx:g.settings?.googleCx||'',...(isAdmin(env,user)?{members:g.members||{}}:{})}}
 export async function settingsContext(env,user,groupId){
  const config=await read(env);let group=null;
  if(groupId){group=config.groups.find(g=>g.id===groupId);if(!group||!PROVIDERS.some(p=>access(env,user,group,p)))throw fail('You are not approved for this integration group',403)}
@@ -58,7 +58,16 @@ export async function handleSettings(request,env,user,body,fetcher=fetch){
  if(path.endsWith('/test')){
   if(!PROVIDERS.includes(body.provider))throw fail('Unknown provider');
   const context=await settingsContext(env,user,body.groupId);const key=await context.key(body.provider);
-  const specs={sonar:['https://api.perplexity.ai/v1/sonar','POST',{model:'sonar',max_tokens:8,messages:[{role:'user',content:'Reply OK.'}]}],firecrawl:['https://api.firecrawl.dev/v2/search','POST',{query:'site:example.com',limit:1}],apify:['https://api.apify.com/v2/users/me','GET',null]};
+  const groupForCx=config.groups.find(g=>g.id===body.groupId);
+  const googleCx=String(body.googleCx??groupForCx?.settings?.googleCx??'').trim();
+  if(body.provider==='google'&&!googleCx)throw fail('Add the Google engine ID (cx) before testing');
+  const specs={
+   sonar:['https://api.perplexity.ai/v1/sonar','POST',{model:'sonar',max_tokens:8,messages:[{role:'user',content:'Reply OK.'}]}],
+   firecrawl:['https://api.firecrawl.dev/v2/search','POST',{query:'site:example.com',limit:1}],
+   apify:['https://api.apify.com/v2/users/me','GET',null],
+   openrouter:['https://openrouter.ai/api/v1/key','GET',null],
+   google:['https://www.googleapis.com/customsearch/v1?q=honolulu&num=1&key='+encodeURIComponent(key)+'&cx='+encodeURIComponent(googleCx),'GET',null],
+  };
   const [url,method,payload]=specs[body.provider];let r;try{r=await fetcher(url,{method,headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},...(payload?{body:JSON.stringify(payload)}:{}),signal:AbortSignal.timeout(30000)})}catch{throw fail('Connection test timed out or failed',502)}
   if(!r.ok)throw fail(body.provider+' test returned HTTP '+r.status,502);
   const group=config.groups.find(g=>g.id===body.groupId);
@@ -66,6 +75,8 @@ export async function handleSettings(request,env,user,body,fetcher=fetch){
   let result;try{result=await r.json()}catch{throw fail('Provider test returned invalid JSON',502)}
   const valid=body.provider==='sonar' ? typeof result?.choices?.[0]?.message?.content==='string'&&!!result.choices[0].message.content.trim()
     : body.provider==='firecrawl' ? result?.success===true&&(Array.isArray(result.data)||Array.isArray(result.data?.web))
+    : body.provider==='openrouter' ? !!result?.data&&typeof result.data==='object'
+    : body.provider==='google' ? Array.isArray(result?.items)
     : typeof result?.data?.id==='string'&&!!result.data.id;
   if(!valid||result?.error)throw fail('Provider rejected the connection test or returned an invalid response',502);
   const current=await read(env);const currentGroup=current.groups.find(g=>g.id===body.groupId);if(!currentGroup?.providers?.[body.provider]||JSON.stringify(currentGroup.providers[body.provider])!==JSON.stringify(group.providers[body.provider]))throw fail('Connection changed during the test. Save and test it again.',409);
@@ -79,12 +90,13 @@ export async function handleSettings(request,env,user,body,fetcher=fetch){
  if(body.mediaProvider!==undefined){if(!['firecrawl','apify','none'].includes(body.mediaProvider))throw fail('Invalid image search provider');group.mediaProvider=body.mediaProvider}
  if(body.members!==undefined){
   if(!body.members||typeof body.members!=='object'||Array.isArray(body.members))throw fail('Invalid member approvals');
-  const known=knownAccountNames(env);
+  const known=[...new Set([...knownAccountNames(env),...(await knownAccounts(env))])];
   const entries=Object.entries(body.members);if(entries.length>50)throw fail('A group supports up to 50 approved users');
   for(const [name,providers]of entries){if(!known.includes(name))throw fail('Unknown account: '+name);if(!Array.isArray(providers)||providers.some(p=>!PROVIDERS.includes(p)))throw fail('Invalid provider approval')}
   group.members=Object.fromEntries(entries.map(([u,p])=>[u,[...new Set(p)]]));
  }
  if(body.prompts!==undefined){if(!body.prompts||typeof body.prompts!=='object'||Array.isArray(body.prompts))throw fail('Invalid prompts');for(const agent of AGENTS){if(body.prompts[agent]!==undefined){if(typeof body.prompts[agent]!=='string'||body.prompts[agent].length>4000)throw fail('Prompt exceeds 4000 characters');group.prompts[agent]=body.prompts[agent]}}}
+ if(body.googleCx!==undefined){if(typeof body.googleCx!=='string'||body.googleCx.length>120)throw fail('Invalid Google engine ID');group.settings={...(group.settings||{}),googleCx:body.googleCx.trim()}}
  if(body.apifyActor!==undefined){if(typeof body.apifyActor!=='string'||body.apifyActor.length>120)throw fail('Invalid Actor ID');group.apifyActor=body.apifyActor}
  if(body.apifyInputTemplate!==undefined){if(typeof body.apifyInputTemplate!=='string'||body.apifyInputTemplate.length>8000)throw fail('Invalid Actor template');if(body.apifyInputTemplate){try{JSON.parse(body.apifyInputTemplate.replaceAll('{{query}}','query'))}catch{throw fail('Actor template must be valid JSON')}}group.apifyInputTemplate=body.apifyInputTemplate}
  for(const p of PROVIDERS){
