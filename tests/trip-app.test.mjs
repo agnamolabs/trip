@@ -71,6 +71,26 @@ test('weather denies inaccessible trip before contacting provider',async()=>{
  const f=fixture([{id:'private',created_by:'Owner',lat:21.3,lon:-157.8}]);const r=await f.request('Member','weather?tripId=private');assert.equal(r.status,404);assert.equal(f.calls.length,0);
 });
 
+test('map places stops that have no coordinates and draws a route, then serves the cache',async()=>{
+ const f=fixture([{id:'map',created_by:'Member',city:'Honolulu',lat:21.3,lon:-157.8,ui:{stops:[
+  {id:'a',title:'Hike',place:'Diamond Head',time:'09:15',date:'2026-10-24'},
+  {id:'b',title:'Swim',place:'Hanauma Bay',time:'12:30',date:'2026-10-24'}]}}]);
+ const provider=async url=>{
+  if(String(url).includes('geocoding-api'))return Response.json({results:[{name:'Diamond Head',latitude:21.2627,longitude:-157.796}]});
+  if(String(url).includes('router.project-osrm.org'))return Response.json({routes:[{geometry:{coordinates:[[-157.796,21.2627],[-157.691,21.272],[-157.8,21.28]]}}]});
+  return Response.json({});
+ };
+ const first=await f.request('Member','map?tripId=map&date=2026-10-24',undefined,provider);
+ assert.equal(first.status,200);
+ assert.equal(first.body.places.filter(p=>typeof p.lat==='number').length,2,'every stop gets coordinates');
+ assert.equal(first.body.approxCount,2,'name-placed pins are labelled approximate');
+ assert.ok(Array.isArray(first.body.route)&&first.body.route.length>=2,'a driving line comes back');
+ const calls=f.calls.length;
+ const again=await f.request('Member','map?tripId=map&date=2026-10-24',undefined,provider);
+ assert.equal(again.status,200);
+ assert.equal(f.calls.length,calls,'second view is served from the KV cache');
+});
+
 test('weather provider failure is explicit rather than fabricated weather',async()=>{
  const f=fixture([{id:'own',created_by:'Member',lat:21.3,lon:-157.8}]);const r=await f.request('Member','weather?tripId=own',undefined,async()=>new Response('unavailable',{status:503}));assert.equal(r.status,502);assert.ok(r.body.error);assert.equal(r.body.temperature,undefined);
 });

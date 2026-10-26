@@ -41,6 +41,60 @@ function mergeUI(previous,incoming,user,tripOwner){
  next.clothes=[...oldClothes.filter(c=>(c.owner||tripOwner)!==user),...(incoming.clothes||[]).map(c=>({...c,owner:user}))];
  delete next.members;return next;
 }
+// Map helpers: geocode by place name and fetch a driving polyline, both cached in KV
+// so a day view costs at most one lookup per new stop.
+async function mapCache(env,key,value,ttl){
+ try{
+  if(!env.TRIPS_KV)return null;
+  if(value===undefined){const raw=await env.TRIPS_KV.get(key);return raw?JSON.parse(raw):null}
+  await env.TRIPS_KV.put(key,JSON.stringify(value),{expirationTtl:ttl});
+  return value;
+ }catch{return null}
+}
+async function geocodePlace(fetcher,env,query,city){
+ const clean=String(query||'').trim().slice(0,120);if(!clean)return null;
+ const key='geo5:'+String(city||'').toLowerCase()+':'+clean.toLowerCase();
+ const hit=await mapCache(env,key);
+ if(hit&&Number.isFinite(hit.lat))return hit;
+ if(hit&&hit.miss)return null;
+ // The geocoder matches a bare place name far better than "place, city".
+ const words=clean.split(/\s+/).filter(Boolean);
+ // Geocoders miss long phrases ("Waikiki Beach") but match the head noun ("Waikiki").
+ const variants=[clean,city?clean+' '+city:null,words.length>2?words.slice(0,2).join(' '):null,words.length>1?words[0]:null]
+  .filter(Boolean).filter((term,index,all)=>all.indexOf(term)===index).slice(0,4);
+ for(const term of variants){
+  try{
+   const url='https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(term)+'&count=1&language=en&format=json';
+   const r=await fetcher(url,{signal:AbortSignal.timeout(7000)});
+   if(!r.ok)continue;
+   const geo=(await r.json()).results?.[0];
+   if(!geo||!Number.isFinite(geo.latitude)||!Number.isFinite(geo.longitude))continue;
+   const point={lat:geo.latitude,lon:geo.longitude,label:geo.name||clean};
+   await mapCache(env,key,point,60*60*24*30);
+   return point;
+  }catch{/* try the next phrasing */}
+ }
+ await mapCache(env,key,{miss:true},60*60*24*7);
+ return null;
+}
+async function routeBetween(fetcher,env,points){
+ const usable=points.filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon));
+ if(usable.length<2||usable.length>12)return null;
+ const key='route3:'+usable.map(p=>p.lat.toFixed(4)+','+p.lon.toFixed(4)).join(';');
+ const hit=await mapCache(env,key);if(hit&&Array.isArray(hit.geometry))return hit.geometry;
+ try{
+  const url='https://router.project-osrm.org/route/v1/driving/'+usable.map(p=>p.lon.toFixed(5)+','+p.lat.toFixed(5)).join(';')+'?overview=simplified&geometries=geojson';
+  const r=await fetcher(url,{signal:AbortSignal.timeout(9000),headers:{'User-Agent':'trip.agnamo.com map'}});
+  if(!r.ok)return null;
+  const body=await r.json();
+  const coords=body?.routes?.[0]?.geometry?.coordinates;
+  if(!Array.isArray(coords))return null;
+  const geometry=coords.slice(0,1500).map(pair=>[Number(pair?.[1]),Number(pair?.[0])]).filter(pair=>Number.isFinite(pair[0])&&Number.isFinite(pair[1]));
+  if(geometry.length<2)return null;
+  await mapCache(env,key,{geometry},60*60*12);
+  return geometry;
+ }catch{return null}
+}
 export async function handleTripApp(request,env,fetcher=fetch){
  const url=new URL(request.url),path=url.pathname;
  const legacy=['/api/trips','/api/trips/shared','/api/trips/share'].includes(path);
@@ -89,9 +143,26 @@ export async function handleTripApp(request,env,fetcher=fetch){
   if(path==='/api/app/map'&&request.method==='GET'){
    const t=trips.find(t=>t.id===url.searchParams.get('tripId'));if(!t||!canRead(t,user))throw fail('Trip not found',404);
    let lat=Number(t.lat),lon=Number(t.lon);const valid=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a)<=90&&Math.abs(b)<=180;
-   if(!valid(lat,lon)||(!lat&&!lon)){const r=await fetcher('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(t.city||'')+'&count=1&language=en&format=json',{signal:AbortSignal.timeout(10000)});if(!r.ok)throw fail('Destination lookup unavailable',502);const geo=(await r.json()).results?.[0];if(!geo||!valid(geo.latitude,geo.longitude))throw fail('No map coordinates found for the destination',404);lat=geo.latitude;lon=geo.longitude}
-   const date=url.searchParams.get('date')||t.depart;const places=(t.ui?.stops||[]).filter(s=>s.date?s.date===date:s.day===Number(String(date).slice(-2))).map(s=>({id:s.id,title:s.title,place:s.place,time:s.time,...(typeof s.lat==='number'&&typeof s.lon==='number'&&valid(s.lat,s.lon)?{lat:s.lat,lon:s.lon}:{})}));
-   return json({destination:{lat,lon,label:t.city},places,provider:'OpenStreetMap / Open-Meteo'});
+   if(!valid(lat,lon)||(!lat&&!lon)){const r=await fetcher('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(t.city||'')+'&count=1&language=en&format=json',{signal:AbortSignal.timeout(10000)});if(!r.ok)throw fail('Destination lookup unavailable',502);const geo=(await r.json()).results?.[0];if(!geo||!valid(geo.latitude,geo.longitude))throw fail('No map coordinates found for this destination. Open directions instead.',404);lat=geo.latitude;lon=geo.longitude}
+   const date=url.searchParams.get('date')||t.depart;const showAll=date==='all';
+   const stops=(t.ui?.stops||[]).filter(s=>showAll||(s.date?s.date===date:s.day===Number(String(date).slice(-2))));
+   // Stops saved without coordinates are looked up by name, then cached for a month.
+   let lookups=0;
+   const places=await Promise.all(stops.map(async s=>{
+    let stopLat=Number(s.lat),stopLon=Number(s.lon);let approximate=false;
+    const known=valid(stopLat,stopLon)&&!(stopLat===0&&stopLon===0);
+    if(!known&&lookups<12&&(s.place||s.title)){
+     lookups++;
+     const found=await geocodePlace(fetcher,env,s.place||s.title,t.city||'');
+     if(found){stopLat=found.lat;stopLon=found.lon;approximate=true}
+    }
+    return {id:s.id,title:s.title,place:s.place,time:s.time,day:s.date||null,
+     ...(valid(stopLat,stopLon)&&!(stopLat===0&&stopLon===0)?{lat:stopLat,lon:stopLon}:{}),...(approximate?{approximate:true}:{})};
+   }));
+   const withCoords=places.filter(p=>valid(p.lat,p.lon));
+   const route=await routeBetween(fetcher,env,[{lat,lon},...withCoords.map(p=>({lat:p.lat,lon:p.lon}))]);
+   return json({destination:{lat,lon,label:t.city},places,route,provider:'OpenStreetMap / Open-Meteo / OSRM',
+    ...(withCoords.some(p=>p.approximate)?{approxCount:withCoords.filter(p=>p.approximate).length}:{})});
   }
   if(['/api/app/discover','/api/app/import'].includes(path)&&request.method==='POST'){
    const body=await readBody(request,6000);const t=trips.find(t=>t.id===body.tripId);if(!t||!canRead(t,user))throw fail('Trip not found',404);if(!canEdit(t,user))throw fail('Choose an editable trip first',403);

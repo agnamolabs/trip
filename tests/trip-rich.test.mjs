@@ -58,7 +58,7 @@ test('cards never expose unsafe source or image URLs',()=>{
 test('chat keeps the provider answer and enriches safe source cards',async()=>{
  const f=fixture();const r=await f.request('chat',{query:'Museum hours',includeImages:false},async()=>Response.json(sonar({citations:['https://museum.example/hours','javascript:alert(1)']})));
  assert.equal(r.status,200);assert.equal(r.body.answer,sonar().choices[0].message.content);assert.deepEqual(r.body.citations,['https://museum.example/hours']);assert.ok(r.body.sources.some(s=>s.url==='https://museum.example/hours'));assert.equal(r.body.sources[0].title,'Museum hours');assert.deepEqual(r.body.images,[]);assert.equal(f.calls.length,1);
- const payload=JSON.parse(f.calls[0].options.body);assert.match(payload.messages[0].content,/under 90 words/);
+ const payload=JSON.parse(f.calls[0].options.body);assert.match(payload.messages[0].content,/under 120 words/);
 });
 
 test('image lookup is opt-in and uses the approved media provider',async()=>{
