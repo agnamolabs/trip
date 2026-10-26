@@ -10,7 +10,7 @@ export type PostShot={scene:string;subjects:string[];details:string[];light:stri
 export type LivePost={id:string;format:string;angle?:string;title:string;caption:string;hashtags:string[];photoIds:string[];why:string};
 export type TripUi={discoveries:Discovery[];stops:LiveStop[];items:LiveItem[];pages:LivePage[];bookings:LiveBooking[];clothes:LiveClothing[];posts:LivePost[];members:{name:string;role:string}[]};
 export type LegacyTrip=Record<string,unknown>&{id:string;city?:string;depart?:string;return_date?:string;created_by?:string;ui?:Partial<TripUi>};
-export type LiveWeather={daily?:{time:string[];temperature_2m_max:number[];temperature_2m_min:number[];precipitation_probability_max?:number[]};current?:{temperature_2m?:number}};
+export type LiveWeather={daily?:{time:string[];temperature_2m_max:number[];temperature_2m_min:number[];precipitation_probability_max?:number[]};current?:{temperature_2m?:number;time?:string;weather_code?:number}};
 export const emptyTripUi=():TripUi=>({discoveries:[],stops:[],items:[],pages:[],bookings:[],clothes:[],posts:[],members:[]});
 const text=(value:unknown)=>typeof value==='string'?value:'';
 export function tripOwner(trip:LegacyTrip){return text(trip.created_by)||text(trip.createdBy)}
