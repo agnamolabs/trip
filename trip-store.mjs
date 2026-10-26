@@ -5,14 +5,16 @@ const wrappedEnvs=new WeakMap();
 const MAX_ROW_BYTES=900000;
 const IMPORT_MARKER='legacy_all_trips_imported_v1';
 const pages=[
- ['Travel','Travel','/travel','travel','Travel',1,0],
- ['Planner','Planner','/planner','planner','Planner',1,1],
- ['Packing','Packing','/packing','packing','Packing',1,2],
- ['Weather','Weather','/weather','weather','Weather',1,3],
- ['Whitepages','Whitepages','/whitepages','whitepages','Whitepages',1,4],
- ['Map','Map','/map','map','Travel',0,5],
- ['Events','Events','/events','events','Planner',0,6],
- ['Posts','Posts','/posts','posts','Travel',0,7],
+ ['Trip','Trip','/trip','trip','Trip',1,0],
+ ['Search','Search','/search','search','Search',1,1],
+ ['Calendar','Calendar','/calendar','calendar','Calendar',1,2],
+ ['Social','Social','/social','social','Social',1,3],
+ ['You','You','/you','you','You',1,4],
+ ['Pack','Pack','/pack','packing','Trip',0,5],
+ ['Map','Map','/map','map','Trip',0,6],
+ ['Weather','Weather','/weather','weather','Trip',0,7],
+ ['Notes','Notes','/notes','whitepages','Trip',0,8],
+ ['Travel','Travel','/travel','travel','Trip',0,9],
 ];
 const schema=[
  `CREATE TABLE IF NOT EXISTS trips (id TEXT PRIMARY KEY,owner TEXT NOT NULL DEFAULT '',record_json TEXT NOT NULL,revision INTEGER NOT NULL CHECK(revision>=1),updated_at TEXT NOT NULL,write_token TEXT NOT NULL DEFAULT '')`,
@@ -84,7 +86,7 @@ export async function initializeStore(env){
  const db=database(env);let pending=initByDatabase.get(db);if(pending)return pending;
  pending=(async()=>{
   await db.batch(schema.map(sql=>db.prepare(sql)));
-  await db.batch(pages.map(p=>db.prepare('INSERT OR IGNORE INTO page_registry(id,name,path,renderer,bucket,primary_nav,sort_order) VALUES(?,?,?,?,?,?,?)').bind(...p)));
+  await db.batch([db.prepare('DELETE FROM page_registry WHERE id NOT IN ('+pages.map(()=>'?').join(',')+')').bind(...pages.map(p=>p[0])),...pages.map(p=>db.prepare('INSERT OR REPLACE INTO page_registry(id,name,path,renderer,bucket,primary_nav,sort_order) VALUES(?,?,?,?,?,?,?)').bind(...p))]);
   const imported=await db.prepare('SELECT value FROM store_meta WHERE key=?').bind(IMPORT_MARKER).first();if(imported)return;
   const source=legacy(env);let raw;try{raw=source?await source.get('all_trips'):null}catch{throw fail('Legacy trip backup is unavailable; migration has not completed')}
   let trips;try{trips=raw?JSON.parse(raw):[]}catch{throw fail('Legacy trip backup is invalid; migration has not completed')}

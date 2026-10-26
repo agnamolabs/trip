@@ -83,3 +83,24 @@
 @media(max-width:360px){.ai-suggest-grid{grid-template-columns:1fr}}
 .keydot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;background:#c9c1ae;vertical-align:1px}
 .keydot.ok{background:#1f7a4d}.keydot.warn{background:#b98a2f}
+/* You: trip health, not a settings bin. */
+.you-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0 4px}
+.you-stat{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px}
+.you-stat b{display:block;font-size:25px;letter-spacing:-1.2px;line-height:1.1}
+.you-stat small{display:block;font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;color:#7a806f;font-weight:700;margin-top:4px}
+.you-stat span{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+.you-flight{display:flex;align-items:center;gap:11px;width:100%;text-align:left;border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px;margin-top:10px}
+.you-flight-badge{width:34px;height:34px;border-radius:9px;background:#123b39;color:#f7f3ea;display:grid;place-items:center;flex:0 0 34px}
+.you-flight b{display:block;font-size:13px}
+.you-flight small{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.you-warn{margin-top:18px;padding:12px;border-radius:12px;background:rgba(196,71,42,.07);border:1px solid rgba(196,71,42,.2)}
+.you-warn .eyebrow{color:#8e3320;margin-bottom:8px}
+.you-warn-row{display:flex;gap:8px;align-items:flex-start;margin:5px 0}
+.you-warn-row span{width:16px;height:16px;border-radius:50%;background:#c4472a;color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center;flex:0 0 16px;margin-top:1px}
+.you-warn-row p{margin:0;font-size:12px;line-height:1.45;color:#7d3a27}
+.you-links{margin-top:18px}
+.you-links .eyebrow{margin-bottom:4px}
+.you-links>button{display:flex;align-items:center;gap:10px;width:100%;min-height:54px;text-align:left;border-bottom:1px solid var(--line);padding:9px 0;font-size:13px;font-weight:600}
+.you-links>button span{flex:1}
+.you-links>button small{font-size:11px;color:var(--muted);font-weight:400}
+.you-links>button svg{width:15px;color:var(--muted)}

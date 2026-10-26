@@ -98,12 +98,13 @@ test('D1 generic record expiration is enforced without resurrecting old KV data'
  const key='tool-session:expired',f=fixture({[key]:'STALE'});try{await initializeStore(f.env);await f.env.TRIPS_KV.put(key,'NEW',{expirationTtl:60});assert.equal(await f.env.TRIPS_KV.get(key),'NEW');await f.db.prepare('UPDATE app_records SET expires_at=? WHERE key=?').bind(Date.now()-1000,key).run();assert.equal(await f.env.TRIPS_KV.get(key),null);assert.equal(await f.env.TRIPS_KV.get(key),null);assert.equal(f.reads.get(key)||0,0)}finally{f.close()}
 });
 
-test('D1 registry contains the product pages with Map, Events and Posts as secondary pages',async()=>{
+test('D1 registry carries the seven-screen structure with secondary pages folded under Trip',async()=>{
  const f=fixture();try{
-  const registry=await getRegistry(f.env);assert.equal(registry.version,1);assert.deepEqual(registry.pages.map(p=>p.id),['Travel','Planner','Packing','Weather','Whitepages','Map','Events','Posts']);assert.equal(registry.pages.length,8);
-  for(const p of registry.pages){assert.equal(p.path,'/'+p.id.toLowerCase());assert.equal(p.renderer,p.id.toLowerCase())}
-  assert.equal(registry.pages.find(p=>p.id==='Map').bucket,'Travel');assert.equal(registry.pages.find(p=>p.id==='Events').bucket,'Planner');assert.equal(registry.pages.find(p=>p.id==='Posts').bucket,'Travel');assert.equal(registry.pages.filter(p=>p.primaryNav).length,5);
-  await initializeStore(f.env);assert.equal((await f.db.prepare('SELECT COUNT(*) AS n FROM page_registry').first()).n,8);
+  const registry=await getRegistry(f.env);assert.equal(registry.version,1);assert.deepEqual(registry.pages.map(p=>p.id),['Trip','Search','Calendar','Social','You','Pack','Map','Weather','Notes','Travel']);assert.equal(registry.pages.length,10);
+  for(const p of registry.pages){assert.equal(p.path,'/'+p.id.toLowerCase())}
+  assert.equal(registry.pages.find(p=>p.id==='Notes').renderer,'whitepages');assert.equal(registry.pages.find(p=>p.id==='Pack').renderer,'packing');
+  assert.equal(registry.pages.find(p=>p.id==='Map').bucket,'Trip');assert.equal(registry.pages.find(p=>p.id==='Pack').bucket,'Trip');assert.equal(registry.pages.find(p=>p.id==='Search').bucket,'Search');assert.equal(registry.pages.filter(p=>p.primaryNav).length,5);
+  await initializeStore(f.env);assert.equal((await f.db.prepare('SELECT COUNT(*) AS n FROM page_registry').first()).n,10);
  }finally{f.close()}
 });
 
@@ -126,7 +127,7 @@ async function appRequest(f,user,path,body,fetcher=async()=>{throw Error('Unexpe
 }
 
 test('authenticated D1 registry endpoint serves the canonical product pages',async()=>{
- const f=fixture();try{assert.equal((await appRequest(f,null,'registry')).status,401);const r=await appRequest(f,'Owner','registry');assert.equal(r.status,200);assert.equal(r.body.storage,'d1');assert.deepEqual(r.body.pages.map(p=>p.id),['Travel','Planner','Packing','Weather','Whitepages','Map','Events','Posts'])}finally{f.close()}
+ const f=fixture();try{assert.equal((await appRequest(f,null,'registry')).status,401);const r=await appRequest(f,'Owner','registry');assert.equal(r.status,200);assert.equal(r.body.storage,'d1');assert.deepEqual(r.body.pages.map(p=>p.id),['Trip','Search','Calendar','Social','You','Pack','Map','Weather','Notes','Travel'])}finally{f.close()}
 });
 
 test('trip API uses D1 revisions for end-to-end conflict protection',async()=>{
