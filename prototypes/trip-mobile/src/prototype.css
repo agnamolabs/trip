@@ -106,3 +106,21 @@
 .you-links>button svg{width:15px;color:var(--muted)}
 .search-seeds{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 6px}
 .trip-app .search-seeds button{min-height:38px;padding:0 13px;font-size:12px;font-weight:600;border:1px solid var(--line);background:#fff;border-radius:100px;color:var(--ink)}
+/* Calendar feed: open-now places from OSM, filtered and ranked honestly. */
+.feed{margin-top:6px}
+.feed-filters{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0}
+.feed-filters-row{gap:10px}
+.feed-select{flex:1;min-width:0;margin:0;font-size:11px}
+.feed-select select{margin-top:5px;min-height:40px;font-size:13px}
+.feed-list{border-top:1px solid var(--line);margin-top:6px}
+.feed-card{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.feed-main{flex:1;min-width:0}
+.feed-top{display:flex;align-items:center;gap:8px}
+.feed-top b{font-size:14px;letter-spacing:-.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.feed-badge{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#6b5316;background:#f2e6c4;border-radius:100px;padding:3px 7px;flex:0 0 auto}
+.feed-meta{display:flex;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--muted);margin-top:3px}
+.feed-open{color:#1f7a4d;font-weight:650}
+.feed-actions{display:flex;gap:2px;flex:0 0 auto}
+.feed-actions a,.feed-actions button{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;color:var(--teal)}
+.feed-actions button{background:rgba(18,59,57,.1)}
+.feed-list-dim{opacity:.72}

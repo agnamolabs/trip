@@ -1,8 +1,9 @@
 import {storageEnv,initializeStore,listTrips,getTrip,saveTrip,deleteTrip,getRegistry} from './trip-store.mjs';
 import {discoverEvents,importEvent} from './trip-discovery.mjs';
 import {toolSession} from './trip-tools.mjs';
-import {isAdmin} from './trip-settings.mjs';
+import {isAdmin,settingsContext,defaultGroupId} from './trip-settings.mjs';
 import {knownAccountNames,knownAccounts,addAccount,deleteAccount} from './trip-auth.mjs';
+import {nearbyPlaces,nearbyPlacesGoogle,CATEGORIES} from './trip-nearby.mjs';
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const json=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
 const owner=t=>t.created_by||t.createdBy||'';
@@ -163,6 +164,36 @@ export async function handleTripApp(request,env,fetcher=fetch){
    const route=await routeBetween(fetcher,env,[{lat,lon},...withCoords.map(p=>({lat:p.lat,lon:p.lon}))]);
    return json({destination:{lat,lon,label:t.city},places,route,provider:'OpenStreetMap / Open-Meteo / OSRM',
     ...(withCoords.some(p=>p.approximate)?{approxCount:withCoords.filter(p=>p.approximate).length}:{})});
+  }
+  if(path==='/api/app/nearby'&&request.method==='GET'){
+   const t=trips.find(t=>t.id===url.searchParams.get('tripId'));if(!t||!canRead(t,user))throw fail('Trip not found',404);
+   let lat=Number(t.lat),lon=Number(t.lon);
+   if(!(Number.isFinite(lat)&&Number.isFinite(lon))||(!lat&&!lon)){
+    const found=await geocodePlace(fetcher,env,t.city||'','');
+    if(!found)throw fail('No coordinates found for this destination',404);
+    lat=found.lat;lon=found.lon;
+   }
+   const radius=Math.min(20000,Math.max(500,Number(url.searchParams.get('radius'))||8000));
+   // Google Places has ratings and a real open-now flag; OSM is the keyless fallback.
+   let placesKey='';
+   try{
+    const ctx=await settingsContext(env,user,await defaultGroupId(env,user));
+    placesKey=await ctx.key('google');
+   }catch{placesKey=''}
+   const key='nearby2:'+(placesKey?'g':'o')+':'+lat.toFixed(3)+','+lon.toFixed(3)+':'+radius;
+   const cached=await mapCache(env,key);
+   let items=cached?.items;
+   let provider=placesKey?'Google Places':'OpenStreetMap';
+   if(!Array.isArray(items)){
+    if(placesKey){
+     try{items=await nearbyPlacesGoogle(placesKey,lat,lon,radius,fetcher)}
+     catch{items=await nearbyPlaces(fetcher,lat,lon,radius);provider='OpenStreetMap'}
+    }else{
+     items=await nearbyPlaces(fetcher,lat,lon,radius);
+    }
+    await mapCache(env,key,{items},60*60*6);
+   }
+   return json({center:{lat,lon},radius,provider,categories:CATEGORIES,items,retrievedAt:new Date().toISOString()});
   }
   if(path==='/api/app/accounts'){
    if(!isAdmin(env,user))throw fail('Only an owner can manage accounts',403);
