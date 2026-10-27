@@ -1,12 +1,12 @@
 import {knownAccountNames,knownAccounts} from './trip-auth.mjs';
-const PROVIDERS=['sonar','firecrawl','apify','openrouter','google'];
+const PROVIDERS=['sonar','firecrawl','apify','openrouter','google','nitemcp'];
 const AGENTS=['Chat','Guide','Research','Planning'];
 const KEY='trip:integration-settings:v1';
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const json=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
 const admins=env=>String(env.TRIP_ADMIN_USERS===undefined?'Gabe,Lux':env.TRIP_ADMIN_USERS).split(',').map(s=>s.trim()).filter(Boolean);
 export const isAdmin=(env,user)=>admins(env).includes(user);
-const serverKey=(env,p)=>({sonar:env.PPLX_KEY||env.PERPLEXITY_API_KEY,firecrawl:env.FIRECRAWL_API_KEY,apify:env.APIFY_TOKEN,openrouter:env.OPENROUTER_API_KEY,google:env.GOOGLE_SEARCH_KEY}[p]);
+const serverKey=(env,p)=>({sonar:env.PPLX_KEY||env.PERPLEXITY_API_KEY,firecrawl:env.FIRECRAWL_API_KEY,apify:env.APIFY_TOKEN,openrouter:env.OPENROUTER_API_KEY,google:env.GOOGLE_SEARCH_KEY,nitemcp:env.NITEMCP_API_KEY}[p]);
 async function encryptionKey(env,create=false){
  let secret=env.TRIP_KEYS_ENCRYPTION_KEY;
  if(!secret&&env.trip_agents){
@@ -28,7 +28,7 @@ async function encrypt(env,secret,scope){const iv=crypto.getRandomValues(new Uin
 async function decrypt(env,cipher,scope){try{return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:decode(cipher.iv),additionalData:new TextEncoder().encode(scope)},await encryptionKey(env),decode(cipher.value)))}catch(error){if(error.status)throw error;throw fail('Stored key could not be opened. Ask the owner to reconnect it.',503)}}
 async function read(env){if(!env.TRIPS_KV)throw fail('Settings storage unavailable',503);return JSON.parse(await env.TRIPS_KV.get(KEY)||'{"groups":[]}')}
 function access(env,user,g,p){return isAdmin(env,user)||g.members?.[user]?.includes(p)}
-function publicGroup(env,user,g){const allowed=PROVIDERS.filter(p=>access(env,user,g,p));return {id:g.id,name:g.name,allowedProviders:allowed,providers:Object.fromEntries(allowed.map(p=>[p,{configured:!!g.providers?.[p],source:g.providers?.[p]?.source||null,testedAt:g.providers?.[p]?.testedAt||null}])),prompts:g.prompts||{},mediaProvider:g.mediaProvider||'firecrawl',apifyActor:g.apifyActor||'',apifyInputTemplate:g.apifyInputTemplate||'',googleCx:g.settings?.googleCx||'',chatModel:g.settings?.chatModel||'sonar',openrouterModel:g.settings?.openrouterModel||'',discoverySource:g.settings?.discoverySource||'firecrawl',...(isAdmin(env,user)?{members:g.members||{}}:{})}}
+function publicGroup(env,user,g){const allowed=PROVIDERS.filter(p=>access(env,user,g,p));return {id:g.id,name:g.name,allowedProviders:allowed,providers:Object.fromEntries(allowed.map(p=>[p,{configured:!!g.providers?.[p],source:g.providers?.[p]?.source||null,testedAt:g.providers?.[p]?.testedAt||null}])),prompts:g.prompts||{},mediaProvider:g.mediaProvider||'firecrawl',apifyActor:g.apifyActor||'',apifyInputTemplate:g.apifyInputTemplate||'',googleCx:g.settings?.googleCx||'',chatModel:g.settings?.chatModel||'sonar',nitemcpModel:g.settings?.nitemcpModel||'',nitemcpBase:g.settings?.nitemcpBase||'',openrouterModel:g.settings?.openrouterModel||'',discoverySource:g.settings?.discoverySource||'firecrawl',...(isAdmin(env,user)?{members:g.members||{}}:{})}}
 export async function settingsContext(env,user,groupId){
  const config=await read(env);let group=null;
  if(groupId){group=config.groups.find(g=>g.id===groupId);if(!group||!PROVIDERS.some(p=>access(env,user,group,p)))throw fail('You are not approved for this integration group',403)}
@@ -67,6 +67,7 @@ export async function handleSettings(request,env,user,body,fetcher=fetch){
    firecrawl:['https://api.firecrawl.dev/v2/search','POST',{query:'site:example.com',limit:1}],
    apify:['https://api.apify.com/v2/users/me','GET',null],
    openrouter:['https://openrouter.ai/api/v1/key','GET',null],
+   nitemcp:[String(body.nitemcpBase||'https://api.nitemcp.com/v1').replace(/\/+$/,'')+'/models','GET',null],
    google:['https://www.googleapis.com/customsearch/v1?q=honolulu&num=1&key='+encodeURIComponent(key)+'&cx='+encodeURIComponent(googleCx),'GET',null],
   };
   const [url,method,payload]=specs[body.provider];let r;try{r=await fetcher(url,{method,headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},...(payload?{body:JSON.stringify(payload)}:{}),signal:AbortSignal.timeout(30000)})}catch{throw fail('Connection test timed out or failed',502)}
@@ -77,6 +78,7 @@ export async function handleSettings(request,env,user,body,fetcher=fetch){
   const valid=body.provider==='sonar' ? typeof result?.choices?.[0]?.message?.content==='string'&&!!result.choices[0].message.content.trim()
     : body.provider==='firecrawl' ? result?.success===true&&(Array.isArray(result.data)||Array.isArray(result.data?.web))
     : body.provider==='openrouter' ? !!result?.data&&typeof result.data==='object'
+    : body.provider==='nitemcp' ? Array.isArray(result?.data)
     : body.provider==='google' ? Array.isArray(result?.items)
     : typeof result?.data?.id==='string'&&!!result.data.id;
   if(!valid||result?.error)throw fail('Provider rejected the connection test or returned an invalid response',502);
@@ -97,7 +99,9 @@ export async function handleSettings(request,env,user,body,fetcher=fetch){
   group.members=Object.fromEntries(entries.map(([u,p])=>[u,[...new Set(p)]]));
  }
  if(body.prompts!==undefined){if(!body.prompts||typeof body.prompts!=='object'||Array.isArray(body.prompts))throw fail('Invalid prompts');for(const agent of AGENTS){if(body.prompts[agent]!==undefined){if(typeof body.prompts[agent]!=='string'||body.prompts[agent].length>4000)throw fail('Prompt exceeds 4000 characters');group.prompts[agent]=body.prompts[agent]}}}
- if(body.chatModel!==undefined){if(!['sonar','openrouter'].includes(body.chatModel))throw fail('Invalid chat model');group.settings={...(group.settings||{}),chatModel:body.chatModel}}
+ if(body.chatModel!==undefined){if(!['sonar','openrouter','nitemcp'].includes(body.chatModel))throw fail('Invalid chat model');group.settings={...(group.settings||{}),chatModel:body.chatModel}}
+ if(body.nitemcpModel!==undefined){if(typeof body.nitemcpModel!=='string'||body.nitemcpModel.length>120)throw fail('Invalid nitemcp model');group.settings={...(group.settings||{}),nitemcpModel:body.nitemcpModel.trim()}}
+ if(body.nitemcpBase!==undefined){if(typeof body.nitemcpBase!=='string'||body.nitemcpBase.length>200||!/^https:\/\//.test(body.nitemcpBase))throw fail('nitemcp base URL must be https');group.settings={...(group.settings||{}),nitemcpBase:body.nitemcpBase.trim()}}
  if(body.openrouterModel!==undefined){if(typeof body.openrouterModel!=='string'||body.openrouterModel.length>120)throw fail('Invalid OpenRouter model');group.settings={...(group.settings||{}),openrouterModel:body.openrouterModel.trim()}}
  if(body.discoverySource!==undefined){if(!['firecrawl','google'].includes(body.discoverySource))throw fail('Invalid discovery source');group.settings={...(group.settings||{}),discoverySource:body.discoverySource}}
  if(body.googleCx!==undefined){if(typeof body.googleCx!=='string'||body.googleCx.length>120)throw fail('Invalid Google engine ID');group.settings={...(group.settings||{}),googleCx:body.googleCx.trim()}}

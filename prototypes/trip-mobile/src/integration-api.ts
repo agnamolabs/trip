@@ -6,7 +6,7 @@ export type IntegrationGroup={
  id:string; name:string; allowedProviders:Provider[];
  providers:Partial<Record<Provider,{configured:boolean;source:'stored'|'server'|null;testedAt:string|null}>>;
  prompts:Partial<Record<Agent,string>>; members?:Record<string,Provider[]>;
- mediaProvider?:'firecrawl'|'apify'|'none'; googleCx?:string; chatModel?:'sonar'|'openrouter'; openrouterModel?:string; discoverySource?:'firecrawl'|'google'; apifyActor:string; apifyInputTemplate:string;
+ mediaProvider?:'firecrawl'|'apify'|'none'; googleCx?:string; chatModel?:'sonar'|'openrouter'|'nitemcp'; nitemcpModel?:string; nitemcpBase?:string; openrouterModel?:string; discoverySource?:'firecrawl'|'google'; apifyActor:string; apifyInputTemplate:string;
 };
 export type SettingsData={user:string;isAdmin:boolean;secureStorageReady:boolean;serverProviders:Record<Provider,boolean>;groups:IntegrationGroup[]};
 // Session and optional request-only keys are deliberately never serialized.
