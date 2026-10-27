@@ -28,7 +28,7 @@ async function encrypt(env,secret,scope){const iv=crypto.getRandomValues(new Uin
 async function decrypt(env,cipher,scope){try{return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:decode(cipher.iv),additionalData:new TextEncoder().encode(scope)},await encryptionKey(env),decode(cipher.value)))}catch(error){if(error.status)throw error;throw fail('Stored key could not be opened. Ask the owner to reconnect it.',503)}}
 async function read(env){if(!env.TRIPS_KV)throw fail('Settings storage unavailable',503);return JSON.parse(await env.TRIPS_KV.get(KEY)||'{"groups":[]}')}
 function access(env,user,g,p){return isAdmin(env,user)||g.members?.[user]?.includes(p)}
-function publicGroup(env,user,g){const allowed=PROVIDERS.filter(p=>access(env,user,g,p));return {id:g.id,name:g.name,allowedProviders:allowed,providers:Object.fromEntries(allowed.map(p=>[p,{configured:!!g.providers?.[p],source:g.providers?.[p]?.source||null,testedAt:g.providers?.[p]?.testedAt||null}])),prompts:g.prompts||{},mediaProvider:g.mediaProvider||'firecrawl',apifyActor:g.apifyActor||'',apifyInputTemplate:g.apifyInputTemplate||'',googleCx:g.settings?.googleCx||'',...(isAdmin(env,user)?{members:g.members||{}}:{})}}
+function publicGroup(env,user,g){const allowed=PROVIDERS.filter(p=>access(env,user,g,p));return {id:g.id,name:g.name,allowedProviders:allowed,providers:Object.fromEntries(allowed.map(p=>[p,{configured:!!g.providers?.[p],source:g.providers?.[p]?.source||null,testedAt:g.providers?.[p]?.testedAt||null}])),prompts:g.prompts||{},mediaProvider:g.mediaProvider||'firecrawl',apifyActor:g.apifyActor||'',apifyInputTemplate:g.apifyInputTemplate||'',googleCx:g.settings?.googleCx||'',chatModel:g.settings?.chatModel||'sonar',openrouterModel:g.settings?.openrouterModel||'',discoverySource:g.settings?.discoverySource||'firecrawl',...(isAdmin(env,user)?{members:g.members||{}}:{})}}
 export async function settingsContext(env,user,groupId){
  const config=await read(env);let group=null;
  if(groupId){group=config.groups.find(g=>g.id===groupId);if(!group||!PROVIDERS.some(p=>access(env,user,group,p)))throw fail('You are not approved for this integration group',403)}
@@ -37,6 +37,7 @@ export async function settingsContext(env,user,groupId){
   actor:group?.apifyActor||env.APIFY_ACTOR_ID,
   inputTemplate:group?.apifyInputTemplate||env.APIFY_INPUT_TEMPLATE,
   mediaProvider:group?.mediaProvider||'firecrawl',
+  settings:()=>group?.settings||{},
   async key(provider,supplied){
    if(group&&!access(env,user,group,provider))throw fail('Your group has not approved '+provider+' access',403);
    if(supplied)return supplied;
@@ -96,6 +97,9 @@ export async function handleSettings(request,env,user,body,fetcher=fetch){
   group.members=Object.fromEntries(entries.map(([u,p])=>[u,[...new Set(p)]]));
  }
  if(body.prompts!==undefined){if(!body.prompts||typeof body.prompts!=='object'||Array.isArray(body.prompts))throw fail('Invalid prompts');for(const agent of AGENTS){if(body.prompts[agent]!==undefined){if(typeof body.prompts[agent]!=='string'||body.prompts[agent].length>4000)throw fail('Prompt exceeds 4000 characters');group.prompts[agent]=body.prompts[agent]}}}
+ if(body.chatModel!==undefined){if(!['sonar','openrouter'].includes(body.chatModel))throw fail('Invalid chat model');group.settings={...(group.settings||{}),chatModel:body.chatModel}}
+ if(body.openrouterModel!==undefined){if(typeof body.openrouterModel!=='string'||body.openrouterModel.length>120)throw fail('Invalid OpenRouter model');group.settings={...(group.settings||{}),openrouterModel:body.openrouterModel.trim()}}
+ if(body.discoverySource!==undefined){if(!['firecrawl','google'].includes(body.discoverySource))throw fail('Invalid discovery source');group.settings={...(group.settings||{}),discoverySource:body.discoverySource}}
  if(body.googleCx!==undefined){if(typeof body.googleCx!=='string'||body.googleCx.length>120)throw fail('Invalid Google engine ID');group.settings={...(group.settings||{}),googleCx:body.googleCx.trim()}}
  if(body.apifyActor!==undefined){if(typeof body.apifyActor!=='string'||body.apifyActor.length>120)throw fail('Invalid Actor ID');group.apifyActor=body.apifyActor}
  if(body.apifyInputTemplate!==undefined){if(typeof body.apifyInputTemplate!=='string'||body.apifyInputTemplate.length>8000)throw fail('Invalid Actor template');if(body.apifyInputTemplate){try{JSON.parse(body.apifyInputTemplate.replaceAll('{{query}}','query'))}catch{throw fail('Actor template must be valid JSON')}}group.apifyInputTemplate=body.apifyInputTemplate}
@@ -106,4 +110,12 @@ export async function handleSettings(request,env,user,body,fetcher=fetch){
  }
  const index=config.groups.findIndex(g=>g.id===group.id);if(index<0)config.groups.push(group);else config.groups[index]=group;
  await env.TRIPS_KV.put(KEY,JSON.stringify(config));return json({ok:true,group:publicGroup(env,user,group)});
+}
+
+// When a client omits a group, fall back to the first group this user can actually use,
+// so a configured brain is never silently ignored.
+export async function defaultGroupId(env,user){
+ const config=await read(env);
+ const group=config.groups.find(g=>PROVIDERS.some(provider=>g.providers?.[provider]&&access(env,user,g,provider)));
+ return group?.id||'';
 }
