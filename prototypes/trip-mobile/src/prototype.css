@@ -104,3 +104,5 @@
 .you-links>button span{flex:1}
 .you-links>button small{font-size:11px;color:var(--muted);font-weight:400}
 .you-links>button svg{width:15px;color:var(--muted)}
+.search-seeds{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 6px}
+.trip-app .search-seeds button{min-height:38px;padding:0 13px;font-size:12px;font-weight:600;border:1px solid var(--line);background:#fff;border-radius:100px;color:var(--ink)}

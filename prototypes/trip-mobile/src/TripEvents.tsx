@@ -19,9 +19,9 @@ export default function TripEvents({tripId,city,date,stops,discoveries,stopDate,
  const all=mergeDiscoveries(discoveries,found);
  const state=view==='Hidden'?'dismissed':view==='History'?'visited':'recommended';
  const cards=all.filter(d=>d.state===state&&(view==='History'||view==='Hidden'||d.kind===kind));
- async function discover(){
+ async function discover(term?:string){
   const token=credentials.token,id=tripId,request=++run.current;keyboard.hide();setBusy(true);setError('');
-  try{const result=await apiRequest<{results:Discovery[]}>('/api/app/discover',{tripId,date,kind,...(query.trim()?{query:query.trim()}:{}),...(credentials.groupId?{groupId:credentials.groupId}:{})});
+  try{const result=await apiRequest<{results:Discovery[]}>('/api/app/discover',{tripId,date,kind,...((term??query).trim()?{query:(term??query).trim()}:{}),...(credentials.groupId?{groupId:credentials.groupId}:{})});
    if(!active.current||tripRef.current!==id||credentials.token!==token||request!==run.current)return;
    if(!Array.isArray(result.results))throw Error('Search returned an invalid response.');
    const rows=result.results.filter(r=>r&&typeof r.title==='string'&&typeof r.url==='string'&&safeUrl(r.url)).map(r=>({...r,id:discoveryKey(r.url),kind,state:'recommended' as const}));
@@ -36,7 +36,7 @@ export default function TripEvents({tripId,city,date,stops,discoveries,stopDate,
  }
  async function changeState(item:Discovery,next:Discovery['state']){setError('');const updated=all.map(d=>d.id===item.id?{...d,state:next,visitedOn:next==='visited'?date:undefined}:d);if(await onDiscoveries(updated))setFound([]);else setError('Could not save this change. Refresh the trip and retry.');}
  const draft=(item:Discovery):EventDraft=>({title:item.title,place:item.place||item.title,date:safeDate(item.date)||date,time:safeTime(item.time),duration:60,sourceUrl:safeUrl(item.url),discoveryId:item.id,lat:item.lat,lon:item.lon});
- return <><div className="section-title"><button className="text-btn" onClick={onBack}><ArrowLeftIcon/> Planner</button><span className="eyebrow">EXPLORE + PLAN</span></div><div className="page-title"><h1>Discover.</h1><button className="primary" disabled={!canEdit||saving||busy} onClick={()=>onAdd()}><PlusIcon/> Add</button></div>
+ return <><div className="section-title"><button className="text-btn" onClick={onBack}><ArrowLeftIcon/> Trip</button><span className="eyebrow">SEARCH</span></div><div className="page-title"><h1>Search.</h1><button className="primary" disabled={!canEdit||saving||busy} onClick={()=>onAdd()}><PlusIcon/> Add</button></div>
  <div className="view-tabs discovery-tabs">{['Discover','Saved plan','History','Hidden'].map(v=><button key={v} className={view===v?'selected':''} onClick={()=>setView(v)}>{v}</button>)}</div>
  <label className="field">Plan or visited date<KeyboardInput type="date" aria-label="Discovery date" value={date} onChange={e=>{if(safeDate(e.target.value))onDateChange(e.target.value)}}/></label>
  {view==='Discover'&&<><div className="view-tabs">{(['places','trails','events'] as const).map(k=><button className={kind===k?'selected':''} key={k} onClick={()=>setKind(k)}>{k[0].toUpperCase()+k.slice(1)}</button>)}</div><form onSubmit={e=>{e.preventDefault();discover()}}><div className="search"><MagnifyingGlassIcon/><KeyboardInput aria-label="Search places trails or events" placeholder={'Find '+kind+' in '+city} value={query} onChange={e=>setQuery(e.target.value)} onBlur={()=>keyboard.hide()}/></div><div className="trip-events-actions"><button className="primary" disabled={busy||saving||!canEdit}>{busy?'Searching…':'Search '+kind}</button><button type="button" className="text-btn" disabled={busy||!canEdit} onClick={()=>setImportOpen(v=>!v)}>Import link <ArrowRightIcon/></button></div></form>
@@ -48,6 +48,13 @@ export default function TripEvents({tripId,city,date,stops,discoveries,stopDate,
  {view!=='Discover'&&<button className="subtle" disabled={!canEdit||saving||busy} onClick={()=>changeState(item,'recommended')}>{view==='History'?'Undo visited':'Restore recommendation'}</button>}
  </div></article>})}
  {view==='History'&&stops.filter(s=>s.visitedOn&&!cards.some(d=>d.id===s.discoveryId||discoveryKey(d.url)===discoveryKey(s.sourceUrl||''))).map(s=><button className="agenda-row full" key={s.id} onClick={()=>onEdit(s)}><span className="event-name">{s.title}<small>Visited {s.visitedOn} · {s.place}</small></span><ArrowRightIcon/></button>)}
- {!cards.length&&!(view==='History'&&stops.some(s=>s.visitedOn))&&<p className="quiet">{view==='History'?'Mark places or activities visited to keep them here.':view==='Hidden'?'Dismissed recommendations appear here. Restore them anytime.':'Search to discover places, trails and events. Saved and dismissed choices survive reloads.'}</p>}
+ {!cards.length&&!(view==='History'&&stops.some(s=>s.visitedOn))&&<p className="quiet">{view==='History'?'Mark places or activities visited to keep them here.':view==='Hidden'?'Dismissed recommendations appear here. Restore them anytime.':'Search to discover places, trails and events. Saved and dismissed choices survive reloads.'}
+  <div className="search-seeds">{[
+    {label:'Hikes near me',kind:'trails',query:'hikes'},
+    {label:'Good food nearby',kind:'places',query:'food'},
+    {label:'Free things to do',kind:'places',query:'free things to do'},
+    {label:'What is on this week',kind:'events',query:'events this week'},
+  ].map(seed=><button key={seed.label} type="button" className="chip" disabled={busy||!canEdit} onClick={()=>{setQuery(seed.query);void discover(seed.query)}}>{seed.label}</button>)}</div>
+  <p className="micro">Each tap runs one search. Results are cached for the trip, so revisiting is free.</p></p>}
  </section>}</>;
 }
