@@ -124,3 +124,5 @@
 .feed-actions a,.feed-actions button{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;color:var(--teal)}
 .feed-actions button{background:rgba(18,59,57,.1)}
 .feed-list-dim{opacity:.72}
+.feed-rating{color:#8a6520;font-weight:650}
+.feed-badge.guide{background:#e4ebe4;color:#174d4c}

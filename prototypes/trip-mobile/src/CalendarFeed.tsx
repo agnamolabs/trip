@@ -7,15 +7,20 @@ type NearbyPlace = {
   name: string;
   category: string;
   indoor: boolean;
-  distanceKm: number;
+  distanceKm: number | null;
+  rating?: number | null;
+  reviews?: number | null;
+  ratingNote?: string;
   hours: string;
   open: boolean | null;
   difficulty: string | null;
   durationMin: number;
   notable: boolean;
+  listing?: boolean;
+  guide?: boolean;
   sourceUrl: string;
-  lat: number;
-  lon: number;
+  lat: number | null;
+  lon: number | null;
 };
 
 const LABEL: Record<string, string> = {
@@ -28,6 +33,7 @@ const minutes = (value: number) => (value < 60 ? `${value} min` : `${Math.round(
 
 export default function CalendarFeed({tripId,date,onAdd}:{tripId:string;date:string;onAdd:(place:NearbyPlace)=>void}) {
   const [items,setItems] = useState<NearbyPlace[]>([]);
+  const [source,setSource] = useState<{provider:string;listing:boolean}>({provider:'',listing:false});
   const [error,setError] = useState('');
   const [busy,setBusy] = useState(false);
   const [openOnly,setOpenOnly] = useState(true);
@@ -40,8 +46,8 @@ export default function CalendarFeed({tripId,date,onAdd}:{tripId:string;date:str
     let active = true;
     const token = credentials.token;
     setBusy(true); setError('');
-    apiRequest<{items:NearbyPlace[]}>(`/api/app/nearby?tripId=${encodeURIComponent(tripId)}&radius=${withinKm * 1000}`)
-      .then(result => { if (active && credentials.token === token) setItems(Array.isArray(result.items) ? result.items : []); })
+    apiRequest<{items:NearbyPlace[];provider?:string;listing?:boolean}>(`/api/app/nearby?tripId=${encodeURIComponent(tripId)}&radius=${withinKm * 1000}`)
+      .then(result => { if (active && credentials.token === token) { setItems(Array.isArray(result.items) ? result.items : []); setSource({provider:result.provider||'', listing:!!result.listing}); } })
       .catch(reason => { if (active) setError((reason as Error).message); })
       .finally(() => { if (active) setBusy(false); });
     return () => { active = false; };
@@ -52,7 +58,7 @@ export default function CalendarFeed({tripId,date,onAdd}:{tripId:string;date:str
   const visible = useMemo(() => items.filter(item => {
     if (openOnly && item.open !== true) return false;
     if (cats.length && !cats.includes(item.category)) return false;
-    if (item.distanceKm > withinKm) return false;
+    if (item.distanceKm != null && item.distanceKm > withinKm) return false;
     if (maxMinutes && item.durationMin > maxMinutes) return false;
     if (difficulty && item.difficulty !== difficulty) return false;
     return true;
@@ -66,12 +72,13 @@ export default function CalendarFeed({tripId,date,onAdd}:{tripId:string;date:str
       <div className="feed-main">
         <div className="feed-top">
           <b>{item.name}</b>
-          {item.notable && <span className="feed-badge">well known</span>}
+          {item.guide ? <span className="feed-badge guide">guide</span> : item.notable && <span className="feed-badge">well known</span>}
         </div>
         <div className="feed-meta">
           <span>{LABEL[item.category] || item.category}</span>
+          {item.rating != null && <><span>·</span><span className="feed-rating">★ {item.rating.toFixed(1)}{item.reviews ? ' (' + item.reviews + ')' : ''}</span></>}
           <span>·</span>
-          <span>{item.distanceKm} km</span>
+          <span>{item.distanceKm != null ? item.distanceKm + ' km' : 'distance n/a'}</span>
           <span>·</span>
           <span>{minutes(item.durationMin)}</span>
           {item.difficulty && <><span>·</span><span>{item.difficulty}</span></>}
@@ -80,7 +87,7 @@ export default function CalendarFeed({tripId,date,onAdd}:{tripId:string;date:str
         </div>
       </div>
       <div className="feed-actions">
-        <button type="button" aria-label={'Add ' + item.name + ' to ' + date} onClick={() => onAdd(item)}><PlusIcon/></button>
+        {!item.guide && <button type="button" aria-label={'Add ' + item.name + ' to ' + date} onClick={() => onAdd(item)}><PlusIcon/></button>}
       </div>
     </div>
   );
@@ -134,7 +141,11 @@ export default function CalendarFeed({tripId,date,onAdd}:{tripId:string;date:str
 
     {!busy && !error && !visible.length && <p className="quiet">{EMPTY}</p>}
     <p className="micro" style={{marginTop:10}}>
-      OpenStreetMap has no ratings, so this is ordered by open-now, notability and distance — not stars. Tap + to drop it on {date}.
+      {source.listing
+        ? `Parsed from listing pages via ${source.provider || 'Firecrawl'} — ratings are listing scores, and distance is unknown for these. Tap + to drop one on ${date}.`
+        : source.provider === 'Google Places'
+          ? `Ordered by open now, then rating, then distance. Tap + to drop one on ${date}.`
+          : `OpenStreetMap has no ratings, so this is ordered by open-now, notability and distance — not stars. Tap + to drop it on ${date}.`}
     </p>
   </section>;
 }

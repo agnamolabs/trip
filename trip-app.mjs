@@ -3,7 +3,7 @@ import {discoverEvents,importEvent} from './trip-discovery.mjs';
 import {toolSession} from './trip-tools.mjs';
 import {isAdmin,settingsContext,defaultGroupId} from './trip-settings.mjs';
 import {knownAccountNames,knownAccounts,addAccount,deleteAccount} from './trip-auth.mjs';
-import {nearbyPlaces,nearbyPlacesGoogle,CATEGORIES} from './trip-nearby.mjs';
+import {nearbyPlaces,nearbyPlacesGoogle,nearbyFromFirecrawl,CATEGORIES} from './trip-nearby.mjs';
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const json=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
 const owner=t=>t.created_by||t.createdBy||'';
@@ -180,20 +180,35 @@ export async function handleTripApp(request,env,fetcher=fetch){
     const ctx=await settingsContext(env,user,await defaultGroupId(env,user));
     placesKey=await ctx.key('google');
    }catch{placesKey=''}
-   const key='nearby2:'+(placesKey?'g':'o')+':'+lat.toFixed(3)+','+lon.toFixed(3)+':'+radius;
+   let firecrawlKey='';
+   try{
+    const ctx=await settingsContext(env,user,await defaultGroupId(env,user));
+    firecrawlKey=await ctx.key('firecrawl');
+   }catch{firecrawlKey=''}
+   const sourceTag=placesKey?'g':firecrawlKey?'f':'o';
+   const key='nearby3:'+sourceTag+':'+lat.toFixed(3)+','+lon.toFixed(3)+':'+radius;
    const cached=await mapCache(env,key);
    let items=cached?.items;
    let provider=placesKey?'Google Places':'OpenStreetMap';
+   let listing=false;
    if(!Array.isArray(items)){
+    // Places (ratings) → Overpass (hours, trails) → listing pages (never empty).
     if(placesKey){
-     try{items=await nearbyPlacesGoogle(placesKey,lat,lon,radius,fetcher)}
-     catch{items=await nearbyPlaces(fetcher,lat,lon,radius);provider='OpenStreetMap'}
-    }else{
-     items=await nearbyPlaces(fetcher,lat,lon,radius);
+     try{items=await nearbyPlacesGoogle(placesKey,lat,lon,radius,fetcher);provider='Google Places'}catch{items=null}
     }
-    await mapCache(env,key,{items},60*60*6);
+    if(!Array.isArray(items)&&!(await mapCache(env,'osm:down'))){
+     try{items=await nearbyPlaces(fetcher,lat,lon,radius);provider='OpenStreetMap'}catch{items=null;await mapCache(env,'osm:down',{at:Date.now()},60*30)}
+    }
+    if(!Array.isArray(items)&&firecrawlKey){
+     try{items=await nearbyFromFirecrawl(firecrawlKey,t.city||'this destination',lat,lon,fetcher);provider='Firecrawl listings';listing=true}catch{items=null}
+    }
+    if(!Array.isArray(items))throw fail('Nearby lookup is unavailable right now. Try again in a minute.',503);
+    await mapCache(env,key,{items,provider,listing},60*60*6);
+   }else{
+    provider=cached?.provider||provider;
+    listing=!!cached?.listing;
    }
-   return json({center:{lat,lon},radius,provider,categories:CATEGORIES,items,retrievedAt:new Date().toISOString()});
+   return json({center:{lat,lon},radius,provider,listing,categories:CATEGORIES,items,retrievedAt:new Date().toISOString()});
   }
   if(path==='/api/app/accounts'){
    if(!isAdmin(env,user))throw fail('Only an owner can manage accounts',403);

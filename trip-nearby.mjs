@@ -133,9 +133,6 @@ export async function nearbyPlaces(fetcher, lat, lon, radius, now = new Date()) 
   const mirrors = [
     'https://overpass-api.de/api/interpreter',
     'https://overpass.kumi.systems/api/interpreter',
-    'https://overpass.private.coffee/api/interpreter',
-    'https://overpass.nchc.org.tw/api/interpreter',
-    'https://overpass.openstreetmap.ru/api/interpreter',
   ];
   let data = null;
   let lastError = '';
@@ -146,7 +143,7 @@ export async function nearbyPlaces(fetcher, lat, lon, radius, now = new Date()) 
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'trip.agnamo.com nearby (trip.agnamo.com)' },
         body,
-        signal: AbortSignal.timeout(18000),
+        signal: AbortSignal.timeout(8000),
       });
     } catch {
       lastError = 'timeout';
@@ -270,6 +267,92 @@ export async function nearbyPlacesGoogle(key, lat, lon, radius, fetcher) {
     const ratingDiff = (b.rating || 0) - (a.rating || 0);
     if (ratingDiff) return ratingDiff;
     return a.distanceKm - b.distanceKm;
+  });
+  return items;
+}
+
+// Third path: when neither Places nor Overpass answers, fall back to listing pages the
+// app already pays for. Ratings and opening states here are parsed from listing text,
+// so they are labelled as listing data and never presented as verified.
+export function parseListing(text, now = new Date()) {
+  const value = typeof text === 'string' ? text : '';
+  const ratingMatch = /(\d(?:\.\d)?)\s*(?:★|stars?\b)/i.exec(value) || /(\d(?:\.\d)?)\s*\(\s*([\d,]{2,7})\s*\)/.exec(value);
+  const rating = ratingMatch ? Math.min(5, Math.max(0, Number(ratingMatch[1]))) : null;
+  const reviewsMatch = /\(\s*([\d,]{2,7})\s*\)/.exec(value);
+  const reviews = ratingMatch?.[2] ? Number(String(ratingMatch[2]).replace(/,/g, '')) : reviewsMatch ? Number(reviewsMatch[1].replace(/,/g, '')) : null;
+  let open = null;
+  if (/\bopen now\b|\bopen until\b|\bnow open\b/i.test(value)) open = true;
+  else if (/\bpermanently closed\b|\btemporarily closed\b|\bclosed now\b/i.test(value)) open = false;
+  else {
+    const closes = /\bclos(?:e|es|ing)\s*(?:at\s*)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i.exec(value);
+    if (closes) {
+      let hour = Number(closes[1]) % 12;
+      if ((closes[3] || '').toLowerCase() === 'pm') hour += 12;
+      if ((closes[3] || '').toLowerCase() === 'am') hour = Number(closes[1]) % 12;
+      const minutes = hour * 60 + Number(closes[2] || 0);
+      open = now.getHours() * 60 + now.getMinutes() < minutes;
+    }
+  }
+  return { rating: Number.isFinite(rating) ? rating : null, reviews: Number.isFinite(reviews) ? reviews : null, open };
+}
+
+const LISTING_QUERIES = [
+  { category: 'food', query: 'restaurants and bars open now in' },
+  { category: 'museum', query: 'museums and attractions in' },
+  { category: 'park', query: 'parks beaches and hiking trails in' },
+];
+const LISTING_DURATION = { food: 75, museum: 120, park: 90 };
+
+export async function nearbyFromFirecrawl(key, city, lat, lon, fetcher, now = new Date()) {
+  const results = await Promise.all(LISTING_QUERIES.map(async entry => {
+    try {
+      const response = await fetcher('https://api.firecrawl.dev/v2/search', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: entry.query + ' ' + city, limit: 5, sources: ['web'] }),
+        signal: AbortSignal.timeout(20000),
+      });
+      if (!response.ok) return [];
+      const payload = await response.json();
+      const rows = Array.isArray(payload?.data) ? payload.data : Array.isArray(payload?.data?.web) ? payload.data.web : [];
+      return rows.map(row => ({ ...row, category: entry.category }));
+    } catch {
+      return [];
+    }
+  }));
+  const items = [];
+  const seen = new Set();
+  for (const row of results.flat()) {
+    const url = typeof row?.url === 'string' ? row.url : '';
+    const title = typeof row?.title === 'string' ? row.title.replace(/\s*[|–-]\s*(Yelp|Tripadvisor|Google).*$/i, '').trim() : '';
+    if (!url || !title || seen.has(url)) continue;
+    seen.add(url);
+    const parsed = parseListing([row.title, row.description].filter(Boolean).join(' · '), now);
+    const guide = /^(top\s+\d+|\d+\s+best|the\s+\d+|best\s+)/i.test(title) || /\bbest\b/i.test(title);
+    items.push({
+      guide,
+      id: 'listing/' + url.slice(0, 120),
+      name: title.slice(0, 90),
+      category: row.category,
+      indoor: row.category !== 'park',
+      distanceKm: null,
+      lat: null,
+      lon: null,
+      hours: '',
+      open: parsed.open,
+      difficulty: null,
+      durationMin: LISTING_DURATION[row.category] || 60,
+      notable: (parsed.reviews || 0) >= 500,
+      rating: parsed.rating,
+      reviews: parsed.reviews,
+      sourceUrl: url,
+      listing: true,
+    });
+  }
+  items.sort((a, b) => {
+    const openDiff = Number(b.open === true) - Number(a.open === true);
+    if (openDiff) return openDiff;
+    return (b.rating || 0) - (a.rating || 0);
   });
   return items;
 }
