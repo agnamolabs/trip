@@ -22,6 +22,7 @@ export async function searxSearch(env, { query, categories = 'general', language
   const auth = searxAuth(env);
   if (auth) headers.Authorization = auth;
   if (env.SEARX_KEY) headers['x-media-key'] = env.SEARX_KEY;
+  if (env.SEARX_GATEWAY_KEY) headers['x-gateway-key'] = env.SEARX_GATEWAY_KEY;
   const response = await fetcher(url, { headers, signal: AbortSignal.timeout(timeout) });
   if (!response.ok) throw Object.assign(new Error('Search failed (' + response.status + ')'), { status: 502 });
   const data = await response.json();
@@ -41,6 +42,7 @@ export async function searxImages(env, { query, count = 6, fetcher = fetch, time
   const auth = searxAuth(env);
   if (auth) headers.Authorization = auth;
   if (env.SEARX_KEY) headers['x-media-key'] = env.SEARX_KEY;
+  if (env.SEARX_GATEWAY_KEY) headers['x-gateway-key'] = env.SEARX_GATEWAY_KEY;
   try {
     const response = await fetcher(url, { headers, signal: AbortSignal.timeout(timeout) });
     if (!response.ok) return [];

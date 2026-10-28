@@ -5,6 +5,7 @@ import { authenticateTrip, knownAccountNames } from './trip-auth.mjs';
 import { isAdmin } from './trip-settings.mjs';
 import { handleTripTools, issueSession, toolSession } from './trip-tools.mjs';
 import { handlePhotoTools } from './trip-photos.mjs';
+import { handleTower } from './trip-tower.mjs';
 // agnamo · trip — Cloudflare Worker
 // Routes: /api/scan-trip, /api/suggest-packing, /api/health, /schema.sql
 // All AI traffic → Cloudflare AI Gateway → DeepSeek. SPA fallback to index.html.
@@ -2746,6 +2747,8 @@ export default {
       return new Response(SCHEMA_SQL, { headers: { ...CORS, 'Content-Type': 'application/sql' } });
     }
 
+    const towerResponse = await handleTower(request, env);
+    if (towerResponse) return towerResponse;
     const productionUi=serveProductionUi(request);
     if(productionUi)return productionUi;
 
