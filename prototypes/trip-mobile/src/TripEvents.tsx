@@ -53,12 +53,12 @@ export default function TripEvents({tripId,city,date,stops,discoveries,stopDate,
  <div className="place-grid">{cards.map(item=>{const planned=stops.find(s=>s.discoveryId===item.id||(s.sourceUrl&&discoveryKey(s.sourceUrl)===discoveryKey(item.url)));const domain=(()=>{try{return new URL(safeUrl(item.url)||'').hostname.replace(/^www\./,'')}catch{return ''}})();return <article className="place-card" key={item.id}>
   <a className="place-media-link" href={safeUrl(item.url)} target="_blank" rel="noopener noreferrer" aria-label={'Open '+item.title}>
    <PlaceMedia src={item.image} name={item.title}/>
-   <span className="place-top"><span className="place-kind">{item.kind}</span>{item.sourceTitle?<span className="place-via">{item.sourceTitle}</span>:domain&&<span className="place-via">{domain}</span>}</span>
+   <span className="place-top"><span className="place-kind">{item.placeKind||item.kind}</span>{item.sourceTitle&&<span className="place-via">{item.sourceTitle}</span>}</span>
   </a>
   <div className="place-body">
    <h3>{item.title}</h3>
    {item.description&&<p>{item.description}</p>}
-   <div className="place-meta"><span>{domain||item.kind}</span>{item.date&&<><span>·</span><span>{item.date}{item.time?' '+item.time:''}</span></>}{view==='History'&&item.visitedOn&&<><span>·</span><span>visited {item.visitedOn}</span></>}</div>
+   <div className="place-meta">{domain&&!/google\./.test(domain)&&<span>{domain}</span>}{item.date&&<><span>·</span><span>{item.date}{item.time?' '+item.time:''}</span></>}{view==='History'&&item.visitedOn&&<><span>·</span><span>visited {item.visitedOn}</span></>}</div>
   </div>
   <div className="place-actions">
    {view==='Discover'&&<>{planned?<button className="pill-action" disabled={saving} onClick={()=>onEdit(planned)}>View in plan</button>:<button className="pill-action primary" disabled={!canEdit||saving||busy} onClick={()=>onAdd(draft(item))}>Add to a day <PlusIcon/></button>}<a className="pill-action" href={'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((item.place||item.title)+', '+city)} target="_blank" rel="noopener noreferrer">Map</a><button className="icon-action" aria-label={'Dismiss '+item.title} disabled={!canEdit||saving||busy} onClick={()=>changeState(item,'dismissed')}>✕</button><button className="icon-action" aria-label={'Mark '+item.title+' visited'} disabled={!canEdit||saving||busy} onClick={()=>changeState(item,'visited')}>✓</button></>}

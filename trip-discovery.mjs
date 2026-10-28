@@ -1,6 +1,7 @@
 import {handleSettings,settingsContext} from './trip-settings.mjs';
 import {safePublicUrl} from './trip-rich.mjs';
 import {parsePlaces,placeId} from './trip-places.mjs';
+import {searchVenues,refineWithModel,cityCentre,photoDebug} from './trip-venues.mjs';
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const str=(v,max=200)=>typeof v==='string'?v.trim().slice(0,max):'';
 const validDate=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&Number.isFinite(Date.parse(v+'T12:00:00Z'))&&new Date(v+'T12:00:00Z').toISOString().slice(0,10)===v;
@@ -34,6 +35,25 @@ async function providerCall(endpoint,payload,key,fetcher){
 export async function discoverEvents(request,env,user,trip,body,fetcher=fetch){
  const date=body.date||trip.depart;if(date&&!validDate(date))throw fail('Choose a valid event date');const term=str(body.query,300);const conn=await connection(request,env,user,body.groupId);
  const kind=body.kind||'events';if(!['places','trails','events'].includes(kind))throw fail('Choose places, trails or events');
+ // Real venues first: Photon knows the restaurants, not the articles about them.
+ if(kind==='places'||kind==='trails'){
+  const centre=await cityCentre(fetcher,trip.city);
+  if(centre){
+   try{
+    const want=term||(kind==='trails'?'hike':'food');
+    let gid=body.groupId;
+    if(!gid){const response=await handleSettings(new Request(new URL('/api/tools/settings',request.url)),env,user,null);const config=await response.json();gid=config.groups?.find(g=>g.allowedProviders?.some(p=>['firecrawl','google'].includes(p)))?.id}
+    const ctx=await settingsContext(env,user,gid);
+    let imageKey=conn&&conn.source==='firecrawl'?String(conn.key||''):'';
+    if(!imageKey){try{imageKey=String(await ctx.key('firecrawl')||'')}catch{}}
+    let orKey='';try{orKey=String(await ctx.key('openrouter')||'')}catch{}
+    photoDebug.key=Boolean(imageKey);photoDebug.source=String(conn&&conn.source||'none');
+    const found=await searchVenues({fetcher,kv:env.TRIPS_KV,imageKey,lat:centre.lat,lon:centre.lon,city:trip.city,query:want,limit:18});
+    const venues=orKey?await refineWithModel({fetcher,key:orKey,query:want,venues:found.venues}):found.venues;
+    if(venues.length)return {provider:'OpenStreetMap',query:want,results:venues.map(v=>({id:v.id,title:v.name,description:v.address||v.city||'',url:'https://www.google.com/maps/search/?api=1&query='+v.lat+','+v.lon,image:v.image,placeKind:v.kind,sourceTitle:v.distanceKm!=null?v.distanceKm+' km':'',kind,lat:v.lat,lon:v.lon})),retrievedAt:new Date().toISOString()};
+   }catch(error){/* fall through to articles */}
+  }
+ }
  const query=[(term?term+' '+kind:'')||({places:'places attractions to visit',trails:'hiking trails trailheads',events:'events things to do'}[kind]),str(trip.city),...(kind==='events'?[date]:[])].filter(Boolean).join(' ');
  const data=conn.source==='google'?null:await providerCall('search',{query,limit:6,sources:['web']},conn.key,fetcher);
  const list=conn.source==='google'?await googleSearch(query,conn,fetcher):(Array.isArray(data)?data:data?.web);

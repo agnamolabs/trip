@@ -1,6 +1,6 @@
 import type {LiveStop} from './live-trip';
 export type DiscoveryKind='places'|'trails'|'events';
-export type Discovery={id:string;title:string;description?:string;url:string;image?:string;sourceTitle?:string;kind:DiscoveryKind;state:'recommended'|'dismissed'|'visited';visitedOn?:string;date?:string;time?:string;place?:string;lat?:number;lon?:number};
+export type Discovery={id:string;title:string;description?:string;url:string;image?:string;sourceTitle?:string;placeKind?:string;kind:DiscoveryKind;state:'recommended'|'dismissed'|'visited';visitedOn?:string;date?:string;time?:string;place?:string;lat?:number;lon?:number};
 export const validDate=(v:string)=>/^\d{4}-\d{2}-\d{2}$/.test(v)&&Number.isFinite(Date.parse(v+'T12:00:00Z'))&&new Date(v+'T12:00:00Z').toISOString().slice(0,10)===v;
 const minutes=(s:string)=>/^([01]\d|2[0-3]):[0-5]\d$/.test(s)?Number(s.slice(0,2))*60+Number(s.slice(3)):NaN;
 export function fitIntoDay(stops:LiveStop[],date:string,duration:number,stopDate:(s:LiveStop)=>string,earliest='09:00',latest='20:00',buffer=15):{time:string;error?:never}|{time?:never;error:string}{
