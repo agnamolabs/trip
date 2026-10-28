@@ -14,6 +14,13 @@ test('a search asks for JSON and sends basic auth', async () => {
   assert.deepEqual(results, [{ title: 'Poke spots', url: 'https://example.com/poke', description: 'eleven places' }]);
 });
 
+test('a media gateway key rides along as a header', async () => {
+  let seen;
+  const fetcher = async (url, options) => { seen = options; return json({ results: [] }); };
+  await searxSearch({ SEARX_URL: 'https://media.example/searx', SEARX_KEY: 'mk_123' }, { query: 'x', fetcher });
+  assert.equal(seen.headers['x-media-key'], 'mk_123');
+});
+
 test('a basic auth value is never double wrapped', () => {
   assert.equal(searxAuth({ SEARX_AUTH: 'Basic abc' }), 'Basic abc');
   assert.equal(searxAuth({}), '');

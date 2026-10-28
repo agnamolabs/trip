@@ -25,5 +25,5 @@ id = "e1a47846a214431885a6f62b4d7a938d"
 command = "node scripts/build-production.mjs"
 
 [vars]
-SEARX_URL = "https://standing-encyclopedia-achievements-fibre.trycloudflare.com"
+SEARX_URL = "https://trip-media.agnamo.workers.dev/searx"
 TRIP_STORE_REQUIRED = "d1"
