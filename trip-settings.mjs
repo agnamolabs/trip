@@ -71,7 +71,12 @@ export async function handleSettings(request,env,user,body,fetcher=fetch){
    google:['https://www.googleapis.com/customsearch/v1?q=honolulu&num=1&key='+encodeURIComponent(key)+'&cx='+encodeURIComponent(googleCx),'GET',null],
   };
   const [url,method,payload]=specs[body.provider];let r;try{r=await fetcher(url,{method,headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},...(payload?{body:JSON.stringify(payload)}:{}),signal:AbortSignal.timeout(30000)})}catch{throw fail('Connection test timed out or failed',502)}
-  if(!r.ok)throw fail(body.provider+' test returned HTTP '+r.status,502);
+  if(!r.ok){
+   const name={sonar:'Perplexity Sonar',firecrawl:'Firecrawl',apify:'Apify',openrouter:'OpenRouter',nitemcp:'nitemcp',google:'Google Search'}[body.provider]||body.provider;
+   if(r.status===401||r.status===403)throw fail(name+' rejected this API key. Check the key and save it again.',502);
+   if(r.status===429)throw fail(name+' is rate limiting the test. Try again in a minute.',502);
+   throw fail(body.provider+' test returned HTTP '+r.status,502);
+  }
   const group=config.groups.find(g=>g.id===body.groupId);
   if(!group?.providers?.[body.provider])throw fail('Save the provider before testing');
   let result;try{result=await r.json()}catch{throw fail('Provider test returned invalid JSON',502)}

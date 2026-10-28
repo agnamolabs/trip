@@ -4,6 +4,14 @@ import {handleSettings,settingsContext,isAdmin,defaultGroupId} from './trip-sett
 const reply = (value, status = 200) => Response.json(value, {status, headers: {'Cache-Control':'no-store'}});
 const safeUrl = safePublicUrl;
 const fail = (message, status = 400) => Object.assign(new Error(message), {status});
+// A rejected key is the one upstream failure the user can actually fix, so it gets its own wording.
+const PROVIDER_NAME = {sonar:'Perplexity Sonar', firecrawl:'Firecrawl', apify:'Apify', openrouter:'OpenRouter', nitemcp:'nitemcp'};
+const upstreamFailure = (provider, status) => {
+  const name = PROVIDER_NAME[provider] || provider;
+  if (status === 401 || status === 403) return fail(name + ' rejected this API key. Open Settings and check it.', 502);
+  if (status === 429) return fail(name + ' is rate limiting requests. Try again in a minute.', 502);
+  return fail(provider + ' returned HTTP ' + status, 502);
+};
 export async function issueSession(env, user) {
   if (!env.TRIPS_KV) throw fail('Session storage unavailable', 503);
   const token = crypto.randomUUID() + crypto.randomUUID();
@@ -50,7 +58,7 @@ export async function handleTripTools(request, env, fetcher = fetch) {
       try { response=await fetcher(url,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await key(provider)},body:JSON.stringify(payload),signal:AbortSignal.timeout(35000)}); }
       catch(error) { if(error.status)throw error; throw fail(provider+' request failed or timed out',502); }
       // Do not expose upstream bodies: they may contain keys, inputs or provider internals.
-      if(!response.ok)throw fail(provider+' returned HTTP '+response.status,502);
+      if(!response.ok)throw upstreamFailure(provider,response.status);
       try {const reader=response.body?.getReader();const chunks=[];let size=0;if(reader)while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>1048576){await reader.cancel();throw fail(provider+' response was too large',502)}chunks.push(value)}const data=new Uint8Array(size);let offset=0;for(const chunk of chunks){data.set(chunk,offset);offset+=chunk.byteLength}return JSON.parse(new TextDecoder().decode(data));} catch(error) {if(error.status)throw error;throw fail(provider+' returned invalid JSON',502); }
     }
     // The chat brain is a server setting, never a picker in the UI.
