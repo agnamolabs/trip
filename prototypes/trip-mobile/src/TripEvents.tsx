@@ -5,6 +5,13 @@ import {apiRequest,credentials} from './integration-api';
 import type {LiveStop} from './live-trip';
 import {discoveryKey,mergeDiscoveries,validDate,type Discovery,type DiscoveryKind} from './trip-planning';
 import './trip-discovery.css';
+function PlaceMedia({src,name}:{src?:string;name:string}){
+ const [failed,setFailed]=useState(false);
+ const initials=name.split(/\s+/).filter(Boolean).slice(0,2).map(word=>word[0]).join('').toUpperCase();
+ return <span className="place-media">
+  {src&&!failed?<img src={src} alt="" loading="lazy" referrerPolicy="no-referrer" onError={()=>setFailed(true)}/>:<span className="place-fallback" aria-hidden="true">{initials||'·'}</span>}
+ </span>;
+}
 export type EventDraft={title:string;place:string;date:string;time:string;duration:number;sourceUrl:string;discoveryId?:string;lat?:number;lon?:number};
 const safeUrl=(value:string)=>{try{const url=new URL(value);return url.protocol==='https:'&&!url.username&&!url.password?url.href:''}catch{return ''}};
 const safeDate=(value:string|undefined)=>typeof value==='string'&&validDate(value)?value:'';
@@ -43,10 +50,21 @@ export default function TripEvents({tripId,city,date,stops,discoveries,stopDate,
  {importOpen&&<form className="trip-events-import" onSubmit={e=>{e.preventDefault();importLink()}}><label className="field">Place or event link<KeyboardInput type="url" aria-label="Event link" placeholder="https://…" value={url} onChange={e=>setUrl(e.target.value)}/></label><button className="subtle wide" disabled={busy||!url.trim()}>Read link and review <ArrowRightIcon/></button></form>}<p className="quiet">Search results are recommendations. Check opening hours, trail conditions and event times at the source.</p></>}
  {error&&<p role="alert" className="live-error">{error}</p>}
  {view==='Saved plan'?<div className="trip-ux-events"><h2>Saved events and places</h2>{days.length?days.map(day=><section key={day}><h3>{day}</h3>{filtered.filter(s=>stopDate(s)===day).map(stop=><button key={stop.id} className="agenda-row full" disabled={saving} onClick={()=>onEdit(stop)}><span className="time">{stop.time||'Not set'}</span><span className="event-name">{stop.title}<small>{stop.place||'Place not saved'} · {stop.duration} min</small>{overlaps.has(stop.id)&&<small className="trip-ux-overlap">Time overlap</small>}</span><ArrowRightIcon/></button>)}</section>):<p className="quiet">No activities in your plan yet. Add a discovery to get started.</p>}</div>:<section className="trip-events-found"><h2>{view==='History'?'Trip history':view==='Hidden'?'Hidden recommendations':'Recommendations'}</h2>
- {cards.map(item=>{const planned=stops.find(s=>s.discoveryId===item.id||(s.sourceUrl&&discoveryKey(s.sourceUrl)===discoveryKey(item.url)));return <article className="trip-events-card" key={item.id}><a href={safeUrl(item.url)} target="_blank" rel="noopener noreferrer"><h3>{item.title}</h3></a>{item.description&&<p>{item.description}</p>}<small>{view==='History'?'Visited '+item.visitedOn:[item.kind,item.date,item.time,item.place].filter(Boolean).join(' · ')}</small><div className="discovery-actions">
- {view==='Discover'&&<>{planned?<button className="subtle" disabled={saving} onClick={()=>onEdit(planned)}>View in plan</button>:<button className="subtle" disabled={!canEdit||saving||busy} onClick={()=>onAdd(draft(item))}>Fit into a day / Add <PlusIcon/></button>}<button className="text-btn" disabled={!canEdit||saving||busy} onClick={()=>importLink(item)}>Read source details</button><a className="subtle" href={'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((item.place||item.title)+', '+city)} target="_blank" rel="noopener noreferrer">Open in Maps</a><button className="text-btn" disabled={!canEdit||saving||busy} onClick={()=>changeState(item,'dismissed')}>Dismiss</button><button className="text-btn" disabled={!canEdit||saving||busy} onClick={()=>changeState(item,'visited')}>Visited on {date}</button></>}
- {view!=='Discover'&&<button className="subtle" disabled={!canEdit||saving||busy} onClick={()=>changeState(item,'recommended')}>{view==='History'?'Undo visited':'Restore recommendation'}</button>}
- </div></article>})}
+ <div className="place-grid">{cards.map(item=>{const planned=stops.find(s=>s.discoveryId===item.id||(s.sourceUrl&&discoveryKey(s.sourceUrl)===discoveryKey(item.url)));const domain=(()=>{try{return new URL(safeUrl(item.url)||'').hostname.replace(/^www\./,'')}catch{return ''}})();return <article className="place-card" key={item.id}>
+  <a className="place-media-link" href={safeUrl(item.url)} target="_blank" rel="noopener noreferrer" aria-label={'Open '+item.title}>
+   <PlaceMedia src={item.image} name={item.title}/>
+   <span className="place-top"><span className="place-kind">{item.kind}</span>{item.sourceTitle?<span className="place-via">{item.sourceTitle}</span>:domain&&<span className="place-via">{domain}</span>}</span>
+  </a>
+  <div className="place-body">
+   <h3>{item.title}</h3>
+   {item.description&&<p>{item.description}</p>}
+   <div className="place-meta"><span>{domain||item.kind}</span>{item.date&&<><span>·</span><span>{item.date}{item.time?' '+item.time:''}</span></>}{view==='History'&&item.visitedOn&&<><span>·</span><span>visited {item.visitedOn}</span></>}</div>
+  </div>
+  <div className="place-actions">
+   {view==='Discover'&&<>{planned?<button className="pill-action" disabled={saving} onClick={()=>onEdit(planned)}>View in plan</button>:<button className="pill-action primary" disabled={!canEdit||saving||busy} onClick={()=>onAdd(draft(item))}>Add to a day <PlusIcon/></button>}<a className="pill-action" href={'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((item.place||item.title)+', '+city)} target="_blank" rel="noopener noreferrer">Map</a><button className="icon-action" aria-label={'Dismiss '+item.title} disabled={!canEdit||saving||busy} onClick={()=>changeState(item,'dismissed')}>✕</button><button className="icon-action" aria-label={'Mark '+item.title+' visited'} disabled={!canEdit||saving||busy} onClick={()=>changeState(item,'visited')}>✓</button></>}
+   {view!=='Discover'&&<button className="pill-action" disabled={!canEdit||saving||busy} onClick={()=>changeState(item,'recommended')}>{view==='History'?'Undo visited':'Restore'}</button>}
+  </div>
+ </article>})}</div>
  {view==='History'&&stops.filter(s=>s.visitedOn&&!cards.some(d=>d.id===s.discoveryId||discoveryKey(d.url)===discoveryKey(s.sourceUrl||''))).map(s=><button className="agenda-row full" key={s.id} onClick={()=>onEdit(s)}><span className="event-name">{s.title}<small>Visited {s.visitedOn} · {s.place}</small></span><ArrowRightIcon/></button>)}
  {!cards.length&&!(view==='History'&&stops.some(s=>s.visitedOn))&&<p className="quiet">{view==='History'?'Mark places or activities visited to keep them here.':view==='Hidden'?'Dismissed recommendations appear here. Restore them anytime.':'Search to discover places, trails and events. Saved and dismissed choices survive reloads.'}
   <div className="search-seeds">{[

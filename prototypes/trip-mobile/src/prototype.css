@@ -140,3 +140,26 @@
 .trip-app .search-seeds button{min-height:44px}
 /* Keep the last row clear of the floating chat button on every screen that shows it. */
 .main-scroll:has(+ .bottom-chrome .floating-ai) .trip-content{padding-bottom:96px}
+
+/* Places feed: one card per place, photo first, edge-to-edge on every width. */
+.production-screen{width:100%!important;max-width:none!important;border-inline:0!important}
+.place-card{border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden;margin:14px 0;box-shadow:0 2px 12px -8px rgba(20,29,28,.5)}
+.place-media-link{display:block;position:relative;text-decoration:none;color:inherit}
+.place-media{display:block;position:relative;aspect-ratio:16/9;background:linear-gradient(135deg,#123b39,#1d5653);overflow:hidden}
+.place-media img{width:100%;height:100%;object-fit:cover;display:block}
+.place-fallback{position:absolute;inset:0;display:grid;place-items:center;font-family:Georgia,serif;font-style:italic;font-size:34px;color:#e8efe4;opacity:.9}
+.place-top{position:absolute;left:10px;right:10px;top:10px;display:flex;gap:6px;align-items:center;justify-content:space-between}
+.place-kind{font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;background:rgba(255,253,248,.92);color:#174d4c;border-radius:100px;padding:4px 9px}
+.place-via{font-size:10px;color:#f4f7f0;background:rgba(20,29,28,.6);border-radius:100px;padding:4px 9px;max-width:62%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.place-body{padding:14px 16px 2px}
+.place-body h3{font-size:17px;line-height:1.25;letter-spacing:-.35px;margin:0 0 6px;overflow-wrap:anywhere}
+.place-body p{font-size:13px;line-height:1.5;color:#5c6965;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.place-meta{display:flex;gap:6px;font-size:11px;color:#5c6965;margin-top:9px;overflow:hidden;white-space:nowrap}
+.place-actions{display:flex;align-items:center;gap:8px;padding:12px 12px 14px 16px;flex-wrap:wrap}
+.trip-app .pill-action{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:100px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:12.5px;font-weight:650}
+.trip-app .pill-action.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+.trip-app .pill-action svg{width:13px}
+.trip-app .icon-action{width:40px;height:40px;border-radius:50%;background:#eef1e8;border:1px solid #dcd8c9;color:#174d4c;display:grid;place-items:center;font-size:16px;font-weight:700;line-height:1}
+.trip-app .icon-action:last-child{margin-left:auto}
+.place-grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:760px){.place-grid{grid-template-columns:repeat(auto-fill,minmax(360px,1fr))}}

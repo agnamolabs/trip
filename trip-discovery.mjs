@@ -1,5 +1,6 @@
 import {handleSettings,settingsContext} from './trip-settings.mjs';
-import {safePublicUrl,normalizeSources} from './trip-rich.mjs';
+import {safePublicUrl} from './trip-rich.mjs';
+import {parsePlaces,placeId} from './trip-places.mjs';
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const str=(v,max=200)=>typeof v==='string'?v.trim().slice(0,max):'';
 const validDate=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&Number.isFinite(Date.parse(v+'T12:00:00Z'))&&new Date(v+'T12:00:00Z').toISOString().slice(0,10)===v;
@@ -37,7 +38,25 @@ export async function discoverEvents(request,env,user,trip,body,fetcher=fetch){
  const data=conn.source==='google'?null:await providerCall('search',{query,limit:6,sources:['web']},conn.key,fetcher);
  const list=conn.source==='google'?await googleSearch(query,conn,fetcher):(Array.isArray(data)?data:data?.web);
  if(!Array.isArray(list))throw fail('Event lookup returned no result list',502);
- return {provider:conn.source==='google'?'Google':'Firecrawl',query,results:normalizeSources(list).map(r=>({id:r.url,...r,kind,sourceUrl:r.url})),retrievedAt:new Date().toISOString()};
+ // One card per place, not one card per article that mentions places.
+ const places=[];
+ const seen=new Set();
+ for(const row of list){
+  const pageUrl=safePublicUrl(row?.url)||'';
+  if(!pageUrl)continue;
+  for(const place of parsePlaces(row.description,row.title,pageUrl)){
+   const name=place.name.trim();
+   const dedupe=name.toLowerCase().replace(/[^a-z0-9]+/g,'');
+   if(!name||dedupe.length<3||seen.has(dedupe))continue;
+   seen.add(dedupe);
+   const ownUrl=safePublicUrl(place.url);
+   places.push({id:placeId(place)+'-'+places.length,title:name,description:place.detail,url:ownUrl||pageUrl+'#place-'+places.length,image:safePublicUrl(place.image)||'',sourceTitle:String(row.title||'').slice(0,90),sourceUrl:pageUrl,kind});
+  }
+ }
+ if(!places.length)throw fail('No places could be read from those results. Try a different search.',502);
+ // Places with a photo lead: the card is useless without one.
+ places.sort((a,b)=>Number(!!b.image)-Number(!!a.image));
+ return {provider:conn.source==='google'?'Google':'Firecrawl',query,results:places.slice(0,24),retrievedAt:new Date().toISOString()};
 }
 export async function importEvent(request,env,user,trip,body,fetcher=fetch){
  const url=safePublicUrl(body.url);if(!url)throw fail('Use a public HTTPS event or venue link');const conn=await connection(request,env,user,body.groupId);const key=conn.key;
