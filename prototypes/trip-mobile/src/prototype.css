@@ -126,3 +126,18 @@
 .feed-list-dim{opacity:.72}
 .feed-rating{color:#8a6520;font-weight:650}
 .feed-badge.guide{background:#e4ebe4;color:#174d4c}
+
+/* Stability: long names ellipsize or wrap instead of pushing rows sideways. */
+.feed-top b{flex:1;min-width:0}
+.post-card h2{overflow-wrap:anywhere}
+.trip-map-place b,.trip-map-place small{overflow-wrap:anywhere}
+.event-name,.you-flight b,.you-flight small,.you-links>button span,.you-links>button small{min-width:0;overflow-wrap:anywhere}
+/* Filter pills: the class existed in the feed and search seeds with no rule behind it. */
+.trip-app .chip{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 13px;font-size:12px;font-weight:600;border:1px solid var(--line);background:#fff;border-radius:100px;color:var(--ink)}
+.trip-app .chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+/* Tap targets: 44px minimum on feed actions, feed selects and seed pills. */
+.feed-actions a,.feed-actions button{width:44px;height:44px}
+.feed-select select{min-height:44px}
+.trip-app .search-seeds button{min-height:44px}
+/* Keep the last row clear of the floating chat button on every screen that shows it. */
+.main-scroll:has(+ .bottom-chrome .floating-ai) .trip-content{padding-bottom:96px}
