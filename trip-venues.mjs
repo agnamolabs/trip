@@ -122,7 +122,7 @@ async function mapLimit(items, limit, worker) {
   return out;
 }
 
-export async function searchVenues({ fetcher = fetch, kv, imageKey, lat, lon, city, query, radius = 12, limit = 18, photos = 9 }) {
+export async function searchVenues({ fetcher = fetch, kv, imageKey, imageSearch, lat, lon, city, query, radius = 12, limit = 18, photos = 6 }) {
   const intent = classifyIntent(query);
   const features = await photonVenues({ fetcher, lat, lon, intent });
   const seen = new Set();
@@ -138,7 +138,13 @@ export async function searchVenues({ fetcher = fetch, kv, imageKey, lat, lon, ci
   }
   venues.sort((a, b) => (a.distanceKm ?? 99) - (b.distanceKm ?? 99));
   const top = venues.slice(0, limit);
-  await mapLimit(top.slice(0, photos), 5, async venue => {
+  await mapLimit(top.slice(0, photos), 8, async venue => {
+    if (imageSearch) {
+      try {
+        const found = await imageSearch(venue);
+        if (found) { venue.image = found; return; }
+      } catch {}
+    }
     venue.image = await venuePhoto({ fetcher, kv, key: imageKey, name: venue.name, city: city || venue.city });
   });
   return { intent, venues: top };

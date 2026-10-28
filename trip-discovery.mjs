@@ -2,6 +2,7 @@ import {handleSettings,settingsContext} from './trip-settings.mjs';
 import {safePublicUrl} from './trip-rich.mjs';
 import {parsePlaces,placeId} from './trip-places.mjs';
 import {searchVenues,refineWithModel,cityCentre,photoDebug} from './trip-venues.mjs';
+import {searxSearch,searxImages,searxBase} from './trip-searx.mjs';
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const str=(v,max=200)=>typeof v==='string'?v.trim().slice(0,max):'';
 const validDate=v=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&Number.isFinite(Date.parse(v+'T12:00:00Z'))&&new Date(v+'T12:00:00Z').toISOString().slice(0,10)===v;
@@ -48,16 +49,23 @@ export async function discoverEvents(request,env,user,trip,body,fetcher=fetch){
     if(!imageKey){try{imageKey=String(await ctx.key('firecrawl')||'')}catch{}}
     let orKey='';try{orKey=String(await ctx.key('openrouter')||'')}catch{}
     photoDebug.key=Boolean(imageKey);photoDebug.source=String(conn&&conn.source||'none');
-    const found=await searchVenues({fetcher,kv:env.TRIPS_KV,imageKey,lat:centre.lat,lon:centre.lon,city:trip.city,query:want,limit:18});
+    const found=await searchVenues({fetcher,kv:env.TRIPS_KV,imageKey,imageSearch:searxBase(env)?(async venue=>{const shots=await searxImages(env,{query:[venue.name,venue.city||trip.city].filter(Boolean).join(' '),count:3,fetcher});return shots[0]||''}):undefined,lat:centre.lat,lon:centre.lon,city:trip.city,query:want,limit:18});
     const venues=orKey?await refineWithModel({fetcher,key:orKey,query:want,venues:found.venues}):found.venues;
     if(venues.length)return {provider:'OpenStreetMap',query:want,results:venues.map(v=>({id:v.id,title:v.name,description:v.address||v.city||'',url:'https://www.google.com/maps/search/?api=1&query='+v.lat+','+v.lon,image:v.image,placeKind:v.kind,sourceTitle:v.distanceKm!=null?v.distanceKm+' km':'',kind,lat:v.lat,lon:v.lon})),retrievedAt:new Date().toISOString()};
    }catch(error){/* fall through to articles */}
   }
  }
  const query=[(term?term+' '+kind:'')||({places:'places attractions to visit',trails:'hiking trails trailheads',events:'events things to do'}[kind]),str(trip.city),...(kind==='events'?[date]:[])].filter(Boolean).join(' ');
- const data=conn.source==='google'?null:await providerCall('search',{query,limit:6,sources:['web']},conn.key,fetcher);
- const list=conn.source==='google'?await googleSearch(query,conn,fetcher):(Array.isArray(data)?data:data?.web);
+ let list=[];
+ if(searxBase(env)){try{list=await searxSearch(env,{query,fetcher})}catch(error){list=[]}}
+ if(!Array.isArray(list)||!list.length){const data=conn.source==='google'?null:await providerCall('search',{query,limit:6,sources:['web']},conn.key,fetcher);list=conn.source==='google'?await googleSearch(query,conn,fetcher):(Array.isArray(data)?data:data?.web);list=list||[]}
  if(!Array.isArray(list))throw fail('Event lookup returned no result list',502);
+ // Events: the listing itself is the card. Places and trails: pull the venues out of the article.
+ if(kind==='events'){
+  const events=list.map((row,index)=>{const title=str(row?.title,200);const url=safePublicUrl(row?.url)||'';if(!title||!url)return null;return {id:'event-'+index+'-'+url.slice(-24).replace(/[^a-z0-9]/gi,''),title,description:String(row?.description||'').replace(/\s+/g,' ').slice(0,240),url,sourceUrl:url,image:'',sourceTitle:'',kind,state:'recommended'};}).filter(Boolean);
+  if(events.length)return {provider:searxBase(env)?'SearXNG':'Firecrawl',query,results:events.slice(0,24),retrievedAt:new Date().toISOString()};
+  throw fail('No events could be read from those results. Try a different search.',502);
+ }
  // One card per place, not one card per article that mentions places.
  const places=[];
  const seen=new Set();
