@@ -44,3 +44,18 @@ test('malformed and oversized input is rejected before provider requests',async(
 test('invalid provider response does not become a canned answer',async()=>{
  const r=await read(await handleTripTools(req('chat',{query:'hello'}),env,async()=>Response.json({choices:null})));assert.equal(r.status,502);assert.ok(!r.body.answer);
 });
+
+test('a rejected provider key reads as an actionable message, not a raw status',async()=>{
+ const r=await read(await handleTripTools(req('chat',{query:'hello'}),env,async()=>new Response('SECRET_KEY',{status:401})));
+ assert.equal(r.status,502);
+ assert.match(r.body.error,/Perplexity Sonar rejected this API key/);
+ assert.match(r.body.error,/Settings/);
+ assert.equal(/HTTP 401/.test(r.body.error),false);
+ assert.equal(JSON.stringify(r.body).includes('SECRET_KEY'),false);
+});
+test('a rate-limited provider is named without echoing the upstream body',async()=>{
+ const r=await read(await handleTripTools(req('research',{provider:'firecrawl',query:'museum hours'}),env,async()=>new Response('slow down',{status:429})));
+ assert.equal(r.status,502);
+ assert.match(r.body.error,/Firecrawl is rate limiting requests/);
+ assert.equal(/slow down/.test(r.body.error),false);
+});

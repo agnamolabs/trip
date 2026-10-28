@@ -1,5 +1,5 @@
 import {useEffect,useMemo,useState} from 'react';
-import {ExternalLinkIcon,PlusIcon} from '@radix-ui/react-icons';
+import {PlusIcon} from '@radix-ui/react-icons';
 import {apiRequest,credentials} from './integration-api';
 
 type NearbyPlace = {
@@ -41,6 +41,7 @@ export default function CalendarFeed({tripId,date,onAdd}:{tripId:string;date:str
   const [withinKm,setWithinKm] = useState(8);
   const [maxMinutes,setMaxMinutes] = useState(0);
   const [difficulty,setDifficulty] = useState('');
+  const [attempt,setAttempt] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -51,7 +52,7 @@ export default function CalendarFeed({tripId,date,onAdd}:{tripId:string;date:str
       .catch(reason => { if (active) setError((reason as Error).message); })
       .finally(() => { if (active) setBusy(false); });
     return () => { active = false; };
-  }, [tripId, withinKm]);
+  }, [tripId, withinKm, attempt]);
 
   const categories = useMemo(() => [...new Set(items.map(item => item.category))], [items]);
 
@@ -66,6 +67,8 @@ export default function CalendarFeed({tripId,date,onAdd}:{tripId:string;date:str
 
   const labelled = visible.filter(item => item.open === true);
   const unknown = visible.filter(item => item.open === null);
+  const filtersOn = openOnly || cats.length > 0 || maxMinutes > 0 || !!difficulty;
+  const resetFilters = () => { setOpenOnly(false); setCats([]); setMaxMinutes(0); setDifficulty(''); setWithinKm(8); };
 
   const card = (item: NearbyPlace) => (
     <div className="feed-card" key={item.id}>
@@ -129,7 +132,7 @@ export default function CalendarFeed({tripId,date,onAdd}:{tripId:string;date:str
       </label>
     </div>
 
-    {error && <p role="alert" className="live-error">{error}</p>}
+    {error && <div className="live-error"><p role="alert">{error}</p><button type="button" className="subtle" disabled={busy} onClick={() => setAttempt(value => value + 1)}>Try again</button></div>}
     {busy && !items.length && <p className="quiet">Reading OpenStreetMap around your destination…</p>}
 
     {labelled.length > 0 && <div className="feed-list">{labelled.slice(0, 24).map(card)}</div>}
@@ -139,13 +142,15 @@ export default function CalendarFeed({tripId,date,onAdd}:{tripId:string;date:str
       <div className="feed-list feed-list-dim">{unknown.slice(0, 8).map(card)}</div>
     </>}
 
-    {!busy && !error && !visible.length && <p className="quiet">{EMPTY}</p>}
-    <p className="micro" style={{marginTop:10}}>
+    {!busy && !error && (items.length
+      ? (!visible.length && <div className="feed-empty"><p className="quiet">{EMPTY}</p>{filtersOn && <button type="button" className="subtle" onClick={resetFilters}>Clear filters</button>}</div>)
+      : <div className="feed-empty"><p className="quiet">No places came back for this destination. Try a wider distance.</p><button type="button" className="subtle" onClick={() => setWithinKm(20)}>Widen to 20 km</button></div>)}
+    {!!items.length && <p className="micro" style={{marginTop:10}}>
       {source.listing
         ? `Parsed from listing pages via ${source.provider || 'Firecrawl'} — ratings are listing scores, and distance is unknown for these. Tap + to drop one on ${date}.`
         : source.provider === 'Google Places'
           ? `Ordered by open now, then rating, then distance. Tap + to drop one on ${date}.`
           : `OpenStreetMap has no ratings, so this is ordered by open-now, notability and distance — not stars. Tap + to drop it on ${date}.`}
-    </p>
+    </p>}
   </section>;
 }

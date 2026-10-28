@@ -151,13 +151,21 @@ export default function PostDesk({city,canEdit,saved,onSave}:{city:string;canEdi
      const result=await apiRequest<{results:{id:string;ok:boolean;tags?:PostShot;error?:string}[]}>('/api/tools/photos/analyze',{
       photos:batch.map(shot=>({id:shot.id,dataUrl:shot.analysis})),
      });
+     const seen=new Set<string>();
      for(const item of result.results||[]){
+      seen.add(item.id);
       if(item.ok&&item.tags){
        setShots(current=>current.map(shot=>shot.id===item.id?{...shot,status:'done',tags:item.tags,rank:rankOf(item.tags!.post,shot.sharp,shot.portrait)}:shot));
       }else{
        failed+=1;firstError=firstError||item.error||'';
        patch([item.id],{status:'failed',error:item.error||'Photo analysis failed'});
       }
+     }
+     // A photo the service never answered for must not sit on "working" forever.
+     const unanswered=batch.filter(shot=>!seen.has(shot.id));
+     if(unanswered.length){
+      failed+=unanswered.length;firstError=firstError||'The reader returned no result for some photos.';
+      patch(unanswered.map(shot=>shot.id),{status:'failed',error:'No result returned'});
      }
     }catch(error){
      const message=error instanceof Error?error.message:'Photo analysis failed';

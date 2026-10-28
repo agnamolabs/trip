@@ -20,7 +20,7 @@ function view(t,user){
 async function readBody(request,limit){const reader=request.body?.getReader();let size=0;const chunks=[];if(reader)while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>limit){await reader.cancel();throw fail('Upload is too large',413)}chunks.push(value)}const bytes=new Uint8Array(size);let off=0;for(const c of chunks){bytes.set(c,off);off+=c.byteLength}try{return JSON.parse(new TextDecoder().decode(bytes))}catch{throw fail('Invalid JSON')}}
 function mergeUI(previous,incoming,user,tripOwner){
  if(!incoming||typeof incoming!=='object'||Array.isArray(incoming))throw fail('Invalid trip content');
- if((incoming.pages||[]).length>30)throw fail('Whitepages is limited to 30 pages');
+ if((incoming.pages||[]).length>30)throw fail('Notes is limited to 30 pages');
  for(const key of ['stops','pages','bookings','clothes','discoveries'])if(incoming[key]!==undefined&&!Array.isArray(incoming[key]))throw fail('Invalid '+key);
  if(incoming.discoveries){
   if(incoming.discoveries.length>500)throw fail('Keep up to 500 discoveries per trip');

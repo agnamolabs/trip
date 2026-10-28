@@ -224,3 +224,12 @@ test('pending connection test cannot mark a rotated key verified',async()=>{
  assert.equal((await f.request('Member','chat',{groupId:g.id,query:'Use the rotated key'})).status,200);
  assert.equal(f.calls.at(-1).options.headers.Authorization,'Bearer test-new-key-during-request');
 });
+
+test('a rejected key in a connection test says the key was rejected',async()=>{
+ const f=fixture(),g=(await f.create()).body.group;
+ const r=await f.request('Owner','settings/test',{groupId:g.id,provider:'sonar'},async()=>new Response('SECRET_UPSTREAM_TEXT',{status:401}));
+ assert.equal(r.status,502);
+ assert.match(r.body.error,/Perplexity Sonar rejected this API key/);
+ assert.equal(/HTTP 401/.test(r.body.error),false);
+ assert.equal(JSON.stringify(r.body).includes('SECRET_UPSTREAM_TEXT'),false);
+});

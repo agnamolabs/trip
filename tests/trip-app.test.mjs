@@ -187,3 +187,10 @@ test('discovery saves reject malformed state and unsafe source URLs',async()=>{
  for(const bad of [{kind:'invented'},{state:'gone'},{url:'javascript:alert(1)'},{url:'https://user:pass@museum.example'},{visitedOn:'not-a-date'}]){const d={id:'museum',title:'Museum',url:'https://museum.example',kind:'places',state:'recommended',...bad};assert.equal((await f.request('Owner','trips',{trip:{id:'mine',ui:{items:[],discoveries:[d]}}})).status,400)}
  assert.equal(f.stored()[0].ui.discoveries,undefined);
 });
+
+test('the 30-page limit names the Notes screen, not the retired Whitepages label',async()=>{
+ const original=packingTrip(),f=fixture([original]);const visible=(await f.request('Member','trips')).body.trips[0].ui;
+ visible.pages=Array.from({length:31},(_,i)=>({id:String(i),title:'Page',text:''}));
+ const r=await f.request('Member','trips',{trip:{id:'pack',ui:visible}});
+ assert.equal(r.status,400);assert.match(r.body.error,/^Notes is limited to 30 pages$/);
+});

@@ -22,13 +22,13 @@ export default function LiveTools({onClose,context,initialMode='Chat',onAction}:
  const conversationScope=useRef(credentials.user+'|'+groupId);
  const requestId=useRef(0),active=useRef(true);useEffect(()=>{active.current=true;return()=>{active.current=false;requestId.current++}},[]);
  const keyboard=useKeyboard(),insets=useKeyboardInsets();
- async function refreshGroups(){const token=credentials.token;try{const next=await loadSettings();if(!active.current||credentials.token!==token)return;setConfig(next);const selected=next.groups.find(g=>g.id===credentials.groupId)||next.groups[0];const scope=next.user+'|'+(selected?.id||'');if(conversationScope.current!==scope){setTurns([]);conversationScope.current=scope}setGroupId(selected?.id||'');credentials.groupId=selected?.id||'';setError('')}catch(e){if(!active.current)return;setError((e as Error).message);if(!credentials.token)setSignedIn(false)}}
+ async function refreshGroups(){const token=credentials.token;try{const next=await loadSettings();if(!active.current||credentials.token!==token)return;setConfig(next);const list=next.groups??[];const selected=list.find(g=>g.id===credentials.groupId)||list[0];const scope=next.user+'|'+(selected?.id||'');if(conversationScope.current!==scope){setTurns([]);conversationScope.current=scope}setGroupId(selected?.id||'');credentials.groupId=selected?.id||'';setError('')}catch(e){if(!active.current)return;setError((e as Error).message);if(!credentials.token)setSignedIn(false)}}
  useEffect(()=>{if(signedIn)refreshGroups()},[signedIn]);
- const group=config?.groups.find(g=>g.id===groupId);
+ const group=config?.groups?.find(g=>g.id===groupId);
  const provider=mode==='Firecrawl'?'firecrawl':mode==='Apify'?'apify':'sonar';
- const allowed=!!config&&(group?group.allowedProviders.includes(provider):!!config.isAdmin);
+ const allowed=!!config&&(group?(group.allowedProviders||[]).includes(provider):!!config.isAdmin);
  const imageProvider=group?.mediaProvider||'firecrawl';
- const imagesAllowed=imageProvider!=='none'&&!!config&&(group?group.allowedProviders.includes(imageProvider as 'firecrawl'|'apify'):!!config.isAdmin);
+ const imagesAllowed=imageProvider!=='none'&&!!config&&(group?(group.allowedProviders||[]).includes(imageProvider as 'firecrawl'|'apify'):!!config.isAdmin);
  async function run(text?:string){const ask=(text??query).trim();if(!ask||!allowed||busy)return;keyboard.hide();setBusy(true);setError('');const question=ask,id=++requestId.current,token=credentials.token;
   const history=turns.slice(-3).flatMap(t=>[{role:'user',content:t.query.slice(0,800)},...(t.result?.answer?[{role:'assistant',content:t.result.answer.slice(0,800)}]:[])]);
   setTurns(current=>[...current,{id,query:question,mode}].slice(-12));setQuery('');
